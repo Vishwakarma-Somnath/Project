@@ -147,8 +147,8 @@ function runMatter() {
     if (!mouse.position.x) return;
     // smoothly move the attractor body towards the mouse
     Body.translate(attractiveBody, {
-      x: (mouse.position.x - attractiveBody.position.x) * 0.12,
-      y: (mouse.position.y - attractiveBody.position.y) * 0.12,
+      x: (mouse.position.x - attractiveBody.position.x) * 0.15,
+      y: (mouse.position.y - attractiveBody.position.y) * 0.15,
     });
   });
 
