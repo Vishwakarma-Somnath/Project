@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="font.css" />
     <link rel="stylesheet" href="output.css" />
     <link rel="stylesheet" href="style.css" />
+    <script src="script01.js"></script>
     <!-- Link Swiper's CSS -->
     <link
       rel="stylesheet"
@@ -1570,8 +1571,14 @@
     <img src="./images/contact-me.svg" alt="phone" />
   </div>
   <div class="flex flex-col md:flex-row items-center mt-10">
-  <form name="contactUS" method="POST" data-netlify="true" netlify-honeypot="bot-field" onsubmit="sendMail(event)" class="w-full">
-    
+  <form 
+    name="contactUS" 
+    method="POST" 
+    data-netlify="true" 
+    netlify-honeypot="bot-field" 
+    onsubmit="sendMail(event)" 
+    class="w-full"
+  >
     <!-- Hidden field for Netlify -->
     <input type="hidden" name="form-name" value="contactUS" />
     <p class="hidden">
@@ -1580,26 +1587,24 @@
 
     <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
     <div class="relative mb-4">
-      <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none"></div>
       <input
         type="text"
         id="name"
         name="name"
         required
-        class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+        class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
         placeholder="Enter your name"
       />
     </div>
 
     <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Email</label>
     <div class="relative mb-4">
-      <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none"></div>
       <input
         type="email"
         id="email"
         name="email"
         required
-        class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+        class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
         placeholder="demo@gmail.com"
       />
     </div>
@@ -1968,6 +1973,7 @@
     <script src="https://cdn.jsdelivr.net/npm/matter-attractors@0.1.6/build/matter-attractors.min.js"></script>
   </body>
 </html>
+
 
 
 
