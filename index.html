@@ -1569,7 +1569,7 @@
   <div class="w-full">
     <img src="./images/contact-me.svg" alt="phone" />
   </div>
-  <form name="contactUS" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="w-full">
+  <form name="contactUS" method="POST" onsubmit="sendMail(event)" netlify-honeypot="bot-field" class="w-full">
     
     <!-- Hidden field for Netlify -->
     <input type="hidden" name="form-name" value="contactUS" />
@@ -1971,6 +1971,7 @@
     <script src="https://cdn.jsdelivr.net/npm/matter-attractors@0.1.6/build/matter-attractors.min.js"></script>
   </body>
 </html>
+
 
 
 
