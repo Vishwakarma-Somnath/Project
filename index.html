@@ -1571,7 +1571,14 @@
     <img src="./images/contact-me.svg" alt="phone" />
   </div>
   <!-- Contact Form -->
-<form onsubmit="sendMail(event)">
+<form name="contactUS" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onsubmit="sendMail(event)">
+  <input type="hidden" name="form-name" value="contactUS" />
+  
+  <!-- Honeypot field (hidden from users) -->
+  <p style="display:none;">
+    <label>Don’t fill this out if you're human: <input name="bot-field" /></label>
+  </p>
+
   <div class="flex flex-col md:flex-row items-center mt-10">
     
     <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
@@ -1594,12 +1601,77 @@
         class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"></textarea>
     </div>
 
-    <button type="submit"
-      class="w-full text-white bg-[#1788ae] hover:bg-[#1280a4] focus:ring-4 focus:ring-[#4489a0] font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 focus:outline-none">
-      Send
+    <button id="sendBtn" type="submit"
+      class="w-full flex justify-center items-center gap-2 text-white bg-[#1788ae] hover:bg-[#1280a4] focus:ring-4 focus:ring-[#4489a0] font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 focus:outline-none">
+      <span id="btnText">Send</span>
+      <svg id="spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
     </button>
   </div>
 </form>
+
+<!-- Load EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  (function(){
+    emailjs.init({ publicKey: "a_VfFYRUt306Tl45E" });
+  })();
+
+  function sendMail(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const sendBtn = document.getElementById("sendBtn");
+    const btnText = document.getElementById("btnText");
+    const spinner = document.getElementById("spinner");
+
+    // Show loading spinner
+    btnText.textContent = "Sending...";
+    spinner.classList.remove("hidden");
+    sendBtn.disabled = true;
+
+    const firstName = form.querySelector('input[name="name"]').value.trim();
+    const email = form.querySelector('input[name="email"]').value.trim();
+    const message = form.querySelector('textarea[name="message"]').value.trim();
+
+    if (!firstName || !email || !message) {
+      alert("Please fill in all required fields.");
+      resetButton();
+      return;
+    }
+
+    let params = { from_name: firstName, from_email: email, message: message };
+
+    // Always send to Netlify backup
+    fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(new FormData(form)).toString()
+    }).catch(err => console.error("Netlify submission failed:", err));
+
+    // Send email via EmailJS
+    emailjs.send("service_ggu2apc", "template_sp3cetg", params)
+      .then(() => {
+        alert("Email sent successfully!");
+        form.reset();
+        resetButton();
+      })
+      .catch((error) => {
+        alert("EmailJS failed, but message saved to Netlify.");
+        console.error(error);
+        form.reset();
+        resetButton();
+      });
+
+    function resetButton() {
+      btnText.textContent = "Send";
+      spinner.classList.add("hidden");
+      sendBtn.disabled = false;
+    }
+  }
+</script>
 </div>
     </section>
     <footer class="flex flex-col items-center pb-10">
