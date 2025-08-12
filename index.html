@@ -1569,8 +1569,8 @@
   <div class="w-full">
     <img src="./images/contact-me.svg" alt="phone" />
   </div>
-  <div
-  <form name="contactUS" method="POST" onsubmit="sendMail(event)" netlify-honeypot="bot-field" class="w-full">
+  <div class="flex flex-col md:flex-row items-center mt-10">
+  <form name="contactUS" method="POST" data-netlify="true" netlify-honeypot="bot-field" onsubmit="sendMail(event)" class="w-full">
     
     <!-- Hidden field for Netlify -->
     <input type="hidden" name="form-name" value="contactUS" />
@@ -1580,9 +1580,7 @@
 
     <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
     <div class="relative mb-4">
-      <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-        <!-- Icon -->
-      </div>
+      <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none"></div>
       <input
         type="text"
         id="name"
@@ -1595,9 +1593,7 @@
 
     <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Email</label>
     <div class="relative mb-4">
-      <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-        <!-- Icon -->
-      </div>
+      <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none"></div>
       <input
         type="email"
         id="email"
@@ -1972,6 +1968,7 @@
     <script src="https://cdn.jsdelivr.net/npm/matter-attractors@0.1.6/build/matter-attractors.min.js"></script>
   </body>
 </html>
+
 
 
 
