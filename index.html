@@ -1570,6 +1570,17 @@
   <div class="w-full">
     <img src="./images/contact-me.svg" alt="phone" />
   </div>
+  <script type="text/javascript"
+                             src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+                             <script type="text/javascript">
+                            (function(){
+                             emailjs.init({
+                                          publicKey: "a_VfFYRUt306Tl45E",
+                                          });
+                                         })();                 
+                    </script>
+                    <script src="script01.js"></script>
+                <form onsubmit="sendMail(event)">
   <div class="flex flex-col md:flex-row items-center mt-10">
   <form 
     name="contactUS" 
