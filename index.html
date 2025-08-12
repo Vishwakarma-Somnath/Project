@@ -1570,72 +1570,36 @@
   <div class="w-full">
     <img src="./images/contact-me.svg" alt="phone" />
   </div>
-  <script type="text/javascript"
-                             src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-                             <script type="text/javascript">
-                            (function(){
-                             emailjs.init({
-                                          publicKey: "a_VfFYRUt306Tl45E",
-                                          });
-                                         })();                 
-                    </script>
-                    <script src="script01.js"></script>
-                <form onsubmit="sendMail(event)">
+  <!-- Contact Form -->
+<form onsubmit="sendMail(event)">
   <div class="flex flex-col md:flex-row items-center mt-10">
-    <input type="hidden" name="form-name" value="contactUS" />
-    <p class="hidden">
-      <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
-    </p>
-    class="w-full"
-  >
-    <!-- Hidden field for Netlify -->
-    <input type="hidden" name="form-name" value="contactUS" />
-    <p class="hidden">
-      <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
-    </p>
-
+    
     <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
-    <div class="relative mb-4">
-      <input
-        type="text"
-        id="name"
-        name="name"
-        required
+    <div class="relative mb-4 w-full">
+      <input type="text" id="name" name="name" required
         class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-        placeholder="Enter your name"
-      />
+        placeholder="Enter your name" />
     </div>
 
     <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Email</label>
-    <div class="relative mb-4">
-      <input
-        type="email"
-        id="email"
-        name="email"
-        required
+    <div class="relative mb-4 w-full">
+      <input type="email" id="email" name="email" required
         class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-        placeholder="demo@gmail.com"
-      />
+        placeholder="demo@gmail.com" />
     </div>
 
     <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Message</label>
-    <div class="relative mb-4">
-      <textarea
-        id="message"
-        name="message"
-        rows="8"
-        required
-        class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-      ></textarea>
+    <div class="relative mb-4 w-full">
+      <textarea id="message" name="message" rows="8" required
+        class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"></textarea>
     </div>
 
-    <button
-      type="submit"
-      class="w-full text-white bg-[#1788ae] hover:bg-[#1280a4] focus:ring-4 focus:ring-[#4489a0] font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 focus:outline-none"
-    >
+    <button type="submit"
+      class="w-full text-white bg-[#1788ae] hover:bg-[#1280a4] focus:ring-4 focus:ring-[#4489a0] font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 focus:outline-none">
       Send
     </button>
-  </form>
+  </div>
+</form>
 </div>
     </section>
     <footer class="flex flex-col items-center pb-10">
