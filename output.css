@@ -426,7 +426,7 @@ embed,
 object {
   display: block;
   /* 1 */
-  vertical-align: middle;
+  vertical-align: middle ;
   /* 2 */
 }
 
@@ -857,7 +857,7 @@ video {
 }
 
 .max-w-\[\] {
-  max-width: ;
+  max-width: 0;
 }
 
 .max-w-\[600px\] {
@@ -1068,7 +1068,7 @@ video {
 }
 
 .bg-\[\#ffe578ffe578\] {
-  background-color: #ffe578ffe578;
+  background-color: #ffe578;
 }
 
 .bg-\[\#47afa1\] {
@@ -1087,11 +1087,11 @@ video {
 }
 
 .bg-\[\] {
-  background-color: ;
+  background-color: transparent;
 }
 
 .bg-\[\#\#1f2937\] {
-  background-color: ##1f2937;
+  background-color: #1f2937;
 }
 
 .bg-\[\#1f2937\] {
@@ -1110,7 +1110,7 @@ video {
 }
 
 .bg-\[\[\#1788ae\]\] {
-  background-color: [#1788ae];
+  background-color: #1788ae;
 }
 
 .bg-gradient-to-l {
@@ -1976,9 +1976,9 @@ video {
     background-color: rgb(37 99 235 / var(--tw-bg-opacity));
   }
 
-  .dark\:text-gray-400 {
+  .dark\:text-yellow-300 {
     --tw-text-opacity: 1;
-    color: rgb(156 163 175 / var(--tw-text-opacity));
+    color: rgba(147, 197, 253, var(--tw-text-opacity));
   }
 
   .dark\:text-white {
