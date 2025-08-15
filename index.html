@@ -1578,24 +1578,24 @@
   <p style="display:none;">
     <label>Don’t fill this out if you're human: <input name="bot-field" /></label>
   </p>
-
-  <div class="flex flex-col md:flex-row items-center mt-10">
+<div class="min-h-screen flex items-center justify-center px-6 py-12">
+  <div class="container grid grid-cols-2 gap-12 max-w-6xl w-full">
     
-    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-red">Name</label>
     <div class="relative mb-4 w-full">
       <input type="text" id="name" name="name" required
         class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
         placeholder="Enter your name" />
     </div>
 
-    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Email</label>
+    <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-red>Your Email</label>
     <div class="relative mb-4 w-full">
       <input type="email" id="email" name="email" required
         class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
         placeholder="demo@gmail.com" />
     </div>
 
-    <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Message</label>
+    <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-red">Message</label>
     <div class="relative mb-4 w-full">
       <textarea id="message" name="message" rows="8" required
         class="bg-gray-50 border-2 outline-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#1788ae] focus:border-[#1788ae] block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"></textarea>
@@ -1610,6 +1610,7 @@
       </svg>
     </button>
   </div>
+</div>
 </form>
 
 <!-- Load EmailJS SDK -->
