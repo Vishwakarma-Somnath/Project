@@ -1976,9 +1976,9 @@ video {
     background-color: rgb(37 99 235 / var(--tw-bg-opacity));
   }
 
-  .dark\:text-yellow-300 {
+  .dark\:text-yellow {
     --tw-text-opacity: 1;
-    color: rgba(147, 197, 253, var(--tw-text-opacity));
+    color: rgba(252, 211, 77, var(--tw-text-opacity));
   }
 
   .dark\:text-white {
