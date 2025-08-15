@@ -1981,9 +1981,9 @@ video {
     color: rgba(252, 211, 77, var(--tw-text-opacity));
   }
 
-  .dark\:text-white {
+  .dark\:text-yellow-300 {
     --tw-text-opacity: 1;
-    color: rgb(255 255 255 / var(--tw-text-opacity));
+    color: rgba(252, 211, 77, var(--tw-text-opacity));
   }
 
   .dark\:placeholder-gray-400::-moz-placeholder {
