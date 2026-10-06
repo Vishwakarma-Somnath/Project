@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Folder Menu</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f4f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            color: #222;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .folder-btn {
+            padding: 25px 15px;
+            border: none;
+            border-radius: 12px;
+            background: #2563eb;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .folder-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 500px) {
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>My Latest Projects Documents </h1>
+
+        <div class="buttons">
+
+            <a class="folder-btn" href="PLC/">
+                📁 CIMFR (CENTRAL INSTITUTE OF MINING AND FUEL RESEARCH)
+            </a>
+
+            <a class="folder-btn" href="HMI/">
+                📁 PESO (Petroleum and Explosives Safety Organisation)
+            </a>
+
+            <a class="folder-btn" href="Projects/">
+                📁 Cold_Flaring
+            </a>
+
+            <a class="folder-btn" href="Documents/">
+                📁 Degasing_Unit
+            </a>
+
+            <a class="folder-btn" href="Software/">
+                📁 HST (HYDRO TESTING UNIT)
+            </a>
+
+            <a class="folder-btn" href="Images/">
+                📁 Videos
+            </a>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
