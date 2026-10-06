@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <!-- Favicons -->
-        <link href="images/name-logo04 copy.png"  rel="icon"/>
-        <link href="images/name-logo04 copy.png" rel="icon">
-    <title>My_Latest_Projects_Documents</title>
 
-      <body>
-        <canvas id="heart"></canvas>
-	<script src="script02.js"></script>
-	</body>
+    <!-- Favicon -->
+    <link href="images/name-logo04 copy.png" rel="icon">
+
+    <title>My_Latest_Projects_Documents</title>
 
     <style>
         * {
             box-sizing: border-box;
         }
 
+        html,
         body {
             margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             display: flex;
@@ -27,38 +30,52 @@
             align-items: center;
             min-height: 100vh;
             color: #fff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Heart animation canvas */
+        #heart {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .container {
             width: 90%;
-            max-width: 800px;
-            text-align: left;
-            background: rgba(255, 255, 255, 0.1);
+            max-width: 1800px;
+            text-align: center;
+            background: transparent);
             padding: 40px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+
+            /* Keep content above canvas */
+            position: relative;
+            z-index: 1;
         }
 
-        h1 {
+        .algerian-title {
+            font-family: "Algerian", serif;
+            font-size: 40px;
+            font-weight: normal;
+            color: #ffffff;
             margin-bottom: 30px;
-            font-size: 2.2rem;
-            color: #f1f1f1;
-            text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         .buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(2, minmax(250px, 1fr));
+            gap: 20px 800px;
+			
         }
 
-            .algerian-title {
-            font-family: "Algerian", serif;
-            font-size: 40px;
-            font-weight: normal;
-            color: rgb(255, 255, 255);
-        }
         .folder-btn {
             padding: 20px;
             border: none;
@@ -73,13 +90,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
         .folder-btn:hover {
             background: linear-gradient(135deg, #d81dcc, #a21caf);
             transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 10px 18px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.3);
         }
 
         .folder-btn:active {
@@ -90,55 +107,106 @@
             .buttons {
                 grid-template-columns: 1fr;
             }
+
+            .algerian-title {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 25px;
+            }
         }
     </style>
 </head>
 
 <body>
+
+    <!-- Animated Heart Canvas -->
+    <canvas id="heart"></canvas>
+
     <div class="container" role="main" aria-label="Project Documents">
-        <h1 class="algerian-title">📂 My Latest Projects Documents</h1>
+
+        <h1 class="algerian-title">
+            📂 My Latest Projects Documents
+        </h1>
 
         <div class="buttons">
-            <a class="folder-btn" href="Projects/CIMFR.pdf" target="_blank" aria-label="Open CIMFR Document">
+
+            <a class="folder-btn"
+               href="Projects/CIMFR.pdf"
+               target="_blank"
+               aria-label="Open CIMFR Document">
                 📁 CIMFR (Central Institute of Mining and Fuel Research)
             </a>
 
-            <a class="folder-btn" href="Projects/PESO_1.pdf" target="_blank" aria-label="Open PESO 1 Document">
+            <a class="folder-btn"
+               href="Projects/PESO_1.pdf"
+               target="_blank"
+               aria-label="Open PESO 1 Document">
                 📁 PESO_1 (Petroleum and Explosives Safety Organisation)
             </a>
 
-            <a class="folder-btn" href="Projects/PESO_2.pdf" target="_blank" aria-label="Open PESO 2 Document">
+            <a class="folder-btn"
+               href="Projects/PESO_2.pdf"
+               target="_blank"
+               aria-label="Open PESO 2 Document">
                 📁 PESO_2 (Petroleum and Explosives Safety Organisation)
             </a>
 
-            <a class="folder-btn" href="Projects/Cold_Flaring.pdf" target="_blank" aria-label="Open Cold Flaring Document">
+            <a class="folder-btn"
+               href="Projects/Cold_Flaring.pdf"
+               target="_blank"
+               aria-label="Open Cold Flaring Document">
                 📁 Cold_Flaring
             </a>
 
-            <a class="folder-btn" href="Projects/Degasing_Unit.pdf" target="_blank" aria-label="Open Degasing Unit Document">
+            <a class="folder-btn"
+               href="Projects/Degasing_Unit.pdf"
+               target="_blank"
+               aria-label="Open Degasing Unit Document">
                 📁 Degasing_Unit
             </a>
 
-            <a class="folder-btn" href="Projects/HYDRO TESTING.pdf" target="_blank" aria-label="Open Hydro Testing Document">
+            <a class="folder-btn"
+               href="Projects/HYDRO TESTING.pdf"
+               target="_blank"
+               aria-label="Open Hydro Testing Document">
                 📁 HST (Hydro Testing Unit)
             </a>
 
-                        <a class="folder-btn" href="Projects/Cold_Flaring.pdf" target="_blank" aria-label="Open Cold Flaring Document">
+            <a class="folder-btn"
+               href="Projects/Cold_Flaring.pdf"
+               target="_blank"
+               aria-label="Open Pneumatic Testing Unit">
                 📁 PNEUMATIC TESTING UNIT
             </a>
 
-            <a class="folder-btn" href="Projects/Degasing_Unit.pdf" target="_blank" aria-label="Open Degasing Unit Document">
+            <a class="folder-btn"
+               href="Projects/Degasing_Unit.pdf"
+               target="_blank"
+               aria-label="Open SC Valve Screwing Machine">
                 📁 SC Valve Screwing Machine
             </a>
 
-            <a class="folder-btn" href="Projects/HYDRO TESTING.pdf" target="_blank" aria-label="Open Hydro Testing Document">
+            <a class="folder-btn"
+               href="Projects/HYDRO TESTING.pdf"
+               target="_blank"
+               aria-label="Open Punch Marking Machine">
                 📁 PUNCH (Marking) MACHINE
             </a>
 
-            <a class="folder-btn" href="Projects/HYDRO TESTING.pdf" target="_blank" aria-label="Open Hydro Testing Document">
+            <a class="folder-btn"
+               href="Projects/HYDRO TESTING.pdf"
+               target="_blank"
+               aria-label="Open Foot Ring Machine">
                 📁 Foot Ring Machine
             </a>
+
         </div>
     </div>
+
+    <!-- JavaScript -->
+    <script src="script02.js"></script>
+
 </body>
 </html>
