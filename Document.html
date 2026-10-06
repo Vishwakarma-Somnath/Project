@@ -210,83 +210,54 @@
     font-family: "Algerian", serif;
     font-size: 50px;
     font-weight: normal;
-    color: #ffffff;
     margin-bottom: 30px;
 
-    /* Initial glow */
-    text-shadow:
-        0 0 5px #00ffff,
-        0 0 10px #00ffff,
-        0 0 20px #00ffff,
-        0 0 40px #0088ff;
+    background: linear-gradient(
+        90deg,
+        #ff0000,
+        #ffff00,
+        #00ffff,
+        #00ff00,
+        #ff00ff,
+        #ff0000
+    );
 
-    /* Animation */
+    background-size: 400% 100%;
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
     animation:
-        titleGlow 2s ease-in-out infinite alternate,
+        titleColor 5s linear infinite,
         titleFloat 3s ease-in-out infinite;
 
-    letter-spacing: 2px;
+    text-shadow: none;
+    letter-spacing: 3px;
 }
 
-
-/* ==========================
-   TITLE GLOW ANIMATION
-   ========================== */
-
-@keyframes titleGlow {
-
+@keyframes titleColor {
     0% {
-        color: #ffffff;
-
-        text-shadow:
-            0 0 5px #00ffff,
-            0 0 10px #00ffff,
-            0 0 20px #00ffff;
-
-        letter-spacing: 2px;
+        background-position: 0% 50%;
     }
 
     50% {
-        color: #ffffff;
-
-        text-shadow:
-            0 0 10px #00ffff,
-            0 0 20px #00ffff,
-            0 0 40px #0088ff,
-            0 0 60px #0088ff;
-
-        letter-spacing: 4px;
+        background-position: 100% 50%;
     }
 
     100% {
-        color: #ffffff;
-
-        text-shadow:
-            0 0 5px #ffffff,
-            0 0 15px #00ffff,
-            0 0 30px #0088ff;
-
-        letter-spacing: 2px;
+        background-position: 0% 50%;
     }
 }
 
-
-/* ==========================
-   TITLE FLOAT ANIMATION
-   ========================== */
-
 @keyframes titleFloat {
-
-    0% {
+    0%,
+    100% {
         transform: translateY(0px);
     }
 
     50% {
         transform: translateY(-8px);
-    }
-
-    100% {
-        transform: translateY(0px);
     }
 }
 
