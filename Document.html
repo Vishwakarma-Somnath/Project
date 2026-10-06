@@ -24,7 +24,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            background: black;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -44,6 +44,25 @@
             z-index: 0;
             pointer-events: none;
         }
+		#heart-name {
+			position: fixed;
+			left: 50%;
+			top: 83%;
+			transform: translateX(-50%);
+	
+			z-index: 11;
+		pointer-events: none;
+
+			font-family: "Algerian", serif;
+			font-size: 32px;
+			font-weight: bold;
+			color: #ffffff;
+
+		text-shadow:
+			0 0 5px red,
+			0 0 10px red,
+			0 0 15px red;
+		}
 
         .container {
             width: 90%;
@@ -123,6 +142,7 @@
 
     <!-- Animated Heart Canvas -->
     <canvas id="heart"></canvas>
+	<div id="heart-name">Rohit</div>
 
     <div class="container" role="main" aria-label="Project Documents">
 
