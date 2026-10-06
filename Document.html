@@ -44,88 +44,158 @@
             z-index: 0;
             pointer-events: none;
         }
-		#heart-name {
-			position: fixed;
-			left: 35%;
-			top: 83%;
-			transform: translateX(-50%);
-	
-			z-index: 11;
-		pointer-events: none;
+		#heart-name,
+#heart-name01,
+#heart-name02,
+#heart-name03 {
+    position: fixed;
+    transform: translateX(-50%);
+    z-index: 11;
+    pointer-events: none;
 
-			font-family: "Algerian", serif;
-			font-size: 32px;
-			font-weight: bold;
-			color: #23f3f0;
+    font-family: "Algerian", serif;
+    font-size: 32px;
+    font-weight: bold;
 
-		text-shadow:
-			0 0 5px red,
-			0 0 10px red,
-			0 0 15px red;
-		}
-		#heart-name01 {
-			position: fixed;
-			left: 35%;
-			top: 20%;
-			transform: translateX(-50%);
-	
-			z-index: 11;
-		pointer-events: none;
+    /* Animation */
+    animation:
+        nameFloat 3s ease-in-out infinite,
+        nameGlow 1.8s ease-in-out infinite alternate;
 
-			font-family: "Algerian", serif;
-			font-size: 32px;
-			font-weight: bold;
-			color: #ffffff;
+    white-space: nowrap;
+}
 
-		text-shadow:
-			0 0 5px red,
-			0 0 10px red,
-			0 0 15px red;
-		}
-		#heart-name02 {
-			position: fixed;
-			left: 65%;
-			top: 20%;
-			transform: translateX(-50%);
-	
-			z-index: 11;
-		pointer-events: none;
+/* ------------------------------
+   SOMNATH
+   ------------------------------ */
 
-			font-family: "Algerian", serif;
-			font-size: 32px;
-			font-weight: bold;
-			color: #5eed42;
+#heart-name01 {
+    left: 35%;
+    top: 20%;
+    color: #ffffff;
 
-		text-shadow:
-			0 0 5px red,
-			0 0 10px red,
-			0 0 15px red;
-		}
-		
-		#heart-name03 {
-			position: fixed;
-			left: 65%;
-			top: 83%;
-			transform: translateX(-50%) scale(1.05);
-	
-			z-index: 11;
-		pointer-events: none;
+    animation-delay: 0s;
 
-			font-family: "Algerian", serif;
-			font-size: 32px;
-			font-weight: bold;
-			color: #fef603;
+    text-shadow:
+        0 0 5px red,
+        0 0 10px red,
+        0 0 15px red,
+        0 0 25px red;
+}
 
-		text-shadow:
-			0 0 5px red,
-			0 0 10px red,
-			0 0 15px red;
-		}
+/* ------------------------------
+   VISHWAKARMA
+   ------------------------------ */
+
+#heart-name02 {
+    left: 65%;
+    top: 20%;
+    color: #5eed42;
+
+    animation-delay: 0.5s;
+
+    text-shadow:
+        0 0 5px #00ff00,
+        0 0 10px #00ff00,
+        0 0 15px #00ff00,
+        0 0 25px #00ff00;
+}
+
+/* ------------------------------
+   ROHIT
+   ------------------------------ */
+
+#heart-name {
+    left: 35%;
+    top: 83%;
+    color: #23f3f0;
+
+    animation-delay: 1s;
+
+    text-shadow:
+        0 0 5px red,
+        0 0 10px red,
+        0 0 15px red,
+        0 0 25px red;
+}
+
+/* ------------------------------
+   VISHWAKARMA 2
+   ------------------------------ */
+
+#heart-name03 {
+    left: 65%;
+    top: 83%;
+    color: #fef603;
+
+    animation-delay: 1.5s;
+
+    text-shadow:
+        0 0 5px #ffff00,
+        0 0 10px #ffff00,
+        0 0 15px #ffff00,
+        0 0 25px #ffff00;
+}
+
+
+/* ==============================
+   FLOATING ANIMATION
+   ============================== */
+
+@keyframes nameFloat {
+
+    0% {
+        transform: translate(-50%, 0px) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(-50%, -8px) rotate(-1deg);
+    }
+
+    50% {
+        transform: translate(-50%, -15px) rotate(0deg);
+    }
+
+    75% {
+        transform: translate(-50%, -8px) rotate(1deg);
+    }
+
+    100% {
+        transform: translate(-50%, 0px) rotate(0deg);
+    }
+}
+
+
+/* ==============================
+   GLOW / PULSE ANIMATION
+   ============================== */
+
+@keyframes nameGlow {
+
+    0% {
+        opacity: 0.75;
+        letter-spacing: 1px;
+        filter: brightness(0.9);
+    }
+
+    50% {
+        opacity: 1;
+        letter-spacing: 3px;
+        filter: brightness(1.4);
+    }
+
+    100% {
+        opacity: 0.85;
+        letter-spacing: 1px;
+        filter: brightness(1);
+    }
+}
+
         .container {
             width: 90%;
             max-width: 1800px;
             text-align: center;
-            background: transparent);
+            background: transparent;
             padding: 40px;
             border-radius: 20px;
             backdrop-filter: none;
