@@ -45,25 +45,25 @@
             pointer-events: none;
         }
 		#heart-name,
-#heart-name01,
-#heart-name02,
-#heart-name03 {
-    position: fixed;
-    transform: translateX(-50%);
-    z-index: 11;
-    pointer-events: none;
+        #heart-name01,
+        #heart-name02,
+        #heart-name03 {
+            position: fixed;
+            transform: translateX(-50%);
+            z-index: 11;
+            pointer-events: none;
 
-    font-family: "Algerian", serif;
-    font-size: 32px;
-    font-weight: bold;
+            font-family: "Algerian", serif;
+            font-size: 32px;
+            font-weight: bold;
 
-    /* Animation */
-    animation:
+        /* Animation */
+            animation:
         nameFloat 3s ease-in-out infinite,
         nameGlow 1.8s ease-in-out infinite alternate;
 
     white-space: nowrap;
-}
+    }
 
 /* ------------------------------
    SOMNATH
@@ -207,13 +207,88 @@
         }
 
         .algerian-title {
-            font-family: "Algerian", serif;
-            font-size: 40px;
-            font-weight: normal;
-            color: #ffffff;
-            margin-bottom: 30px;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
-        }
+    font-family: "Algerian", serif;
+    font-size: 50px;
+    font-weight: normal;
+    color: #ffffff;
+    margin-bottom: 30px;
+
+    /* Initial glow */
+    text-shadow:
+        0 0 5px #00ffff,
+        0 0 10px #00ffff,
+        0 0 20px #00ffff,
+        0 0 40px #0088ff;
+
+    /* Animation */
+    animation:
+        titleGlow 2s ease-in-out infinite alternate,
+        titleFloat 3s ease-in-out infinite;
+
+    letter-spacing: 2px;
+}
+
+
+/* ==========================
+   TITLE GLOW ANIMATION
+   ========================== */
+
+@keyframes titleGlow {
+
+    0% {
+        color: #ffffff;
+
+        text-shadow:
+            0 0 5px #00ffff,
+            0 0 10px #00ffff,
+            0 0 20px #00ffff;
+
+        letter-spacing: 2px;
+    }
+
+    50% {
+        color: #ffffff;
+
+        text-shadow:
+            0 0 10px #00ffff,
+            0 0 20px #00ffff,
+            0 0 40px #0088ff,
+            0 0 60px #0088ff;
+
+        letter-spacing: 4px;
+    }
+
+    100% {
+        color: #ffffff;
+
+        text-shadow:
+            0 0 5px #ffffff,
+            0 0 15px #00ffff,
+            0 0 30px #0088ff;
+
+        letter-spacing: 2px;
+    }
+}
+
+
+/* ==========================
+   TITLE FLOAT ANIMATION
+   ========================== */
+
+@keyframes titleFloat {
+
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
 
         .buttons {
             display: grid;
