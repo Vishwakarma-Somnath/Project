@@ -2016,15 +2016,8 @@ video {
     --tw-ring-color: rgb(30 64 175 / var(--tw-ring-opacity));
   }
 }
-/* Mobile only - SOMNATH_VISHWAKARMA responsive fix */
 @media (max-width: 639px) {
-  .relative.ml-4.md\:ml-12 h1 {
-    font-size: 18px !important;
-    line-height: 1.2;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+  .mobile-hide-vishwakarma {
+    display: none;
   }
 }
