@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Feedback Admin</title>
   <link rel="stylesheet" href="feedback.css">
+
   <style>
     .admin-panel {
       max-width: 900px;
@@ -36,7 +37,8 @@
 
     .admin-actions button,
     #loginBtn,
-    #logoutBtn {
+    #logoutBtn,
+    #forgotPasswordBtn {
       padding: 10px 16px;
       border: 0;
       border-radius: 6px;
@@ -63,35 +65,78 @@
       padding: 12px;
       border: 1px solid #ccd3dd;
       border-radius: 6px;
+      box-sizing: border-box;
+      width: 100%;
     }
 
     #loginBtn {
       background: #1788ae;
       color: white;
     }
+
+    #forgotPasswordBtn {
+      background: #f0f4f8;
+      color: #1788ae;
+      border: 1px solid #1788ae;
+    }
+
+    #loginStatus {
+      max-width: 400px;
+      overflow-wrap: anywhere;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
+
 <body>
   <main class="admin-panel">
     <h1>Feedback Admin Panel</h1>
 
     <section id="loginSection">
       <h2>Admin Login</h2>
+
       <form id="loginForm">
         <label for="adminEmail">Admin Email</label>
-        <input id="adminEmail" type="email" required>
+        <input
+          id="adminEmail"
+          type="email"
+          autocomplete="username"
+          placeholder="Enter admin email"
+          required
+        >
 
         <label for="adminPassword">Password</label>
-        <input id="adminPassword" type="password" required>
+        <input
+          id="adminPassword"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter password"
+          required
+        >
 
-        <button id="loginBtn" type="submit">Login</button>
+        <button id="loginBtn" type="submit">
+          Login
+        </button>
+
+        <button id="forgotPasswordBtn" type="button">
+          Forgot Password?
+        </button>
       </form>
+
+      <p id="loginStatus" role="status" aria-live="polite"></p>
     </section>
 
     <section id="dashboard" hidden>
       <button id="logoutBtn" type="button">Logout</button>
+
       <h2>Pending Feedback</h2>
+
       <p id="adminStatus" role="status" aria-live="polite"></p>
+
       <div id="pendingList"></div>
     </section>
   </main>
