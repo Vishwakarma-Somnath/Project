@@ -9,32 +9,29 @@ import {
 
 import {
   collection,
+  doc,
+  getDoc,
   onSnapshot,
   query,
-  where
+  setDoc,
+  updateDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
-const approvedQuery = query(
-  collection(db, "publicFeedback"),
-  where("status", "==", "approved")
-);
-
-import {
-  getDownloadURL,
-  ref
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
 
 const loginSection = document.getElementById("loginSection");
 const loginForm = document.getElementById("loginForm");
 const dashboard = document.getElementById("dashboard");
 const pendingList = document.getElementById("pendingList");
 const adminStatus = document.getElementById("adminStatus");
+const logoutBtn = document.getElementById("logoutBtn");
 
 let unsubscribePending = null;
 let busy = false;
 
 function showStatus(message) {
-  adminStatus.textContent = message;
+  if (adminStatus) {
+    adminStatus.textContent = message;
+  }
 }
 
 function stopPendingListener() {
@@ -44,138 +41,195 @@ function stopPendingListener() {
   }
 }
 
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+// Check HTML elements
+if (
+  !loginSection ||
+  !loginForm ||
+  !dashboard ||
+  !pendingList ||
+  !adminStatus ||
+  !logoutBtn
+) {
+  console.error("Admin HTML is missing a required element ID.");
+  showStatus("Admin panel HTML error. Check element IDs.");
+} else {
 
-  const email = document.getElementById("adminEmail").value.trim();
-  const password = document.getElementById("adminPassword").value;
+  // ADMIN LOGIN
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (error) {
-    console.error("Admin login failed:", error);
-    showStatus("Login failed. Check your email and password.");
-  }
-});
+    const email =
+      document.getElementById("adminEmail")?.value.trim();
+    const password =
+      document.getElementById("adminPassword")?.value;
 
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error(error);
-    showStatus("Could not log out. Please try again.");
-  }
-});
+    if (!email || !password) {
+      showStatus("Enter your email and password.");
+      return;
+    }
 
-onAuthStateChanged(auth, (user) => {
-  stopPendingListener();
-  pendingList.replaceChildren();
+    showStatus("Logging in...");
 
-  if (!user) {
-    loginSection.hidden = false;
-    dashboard.hidden = true;
-    return;
-  }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showStatus("Login successful. Loading feedback...");
+    } catch (error) {
+      console.error("Login error:", error.code, error.message);
 
-  loginSection.hidden = true;
-  dashboard.hidden = false;
+      showStatus(
+        error.code === "auth/invalid-credential"
+          ? "Incorrect email or password."
+          : `Login failed: ${error.code || error.message}`
+      );
+    }
+  });
 
-  // Firestore Rules must independently verify that this user is admin.
-  const pendingQuery = query(
-    collection(db, "feedbackPrivate")
-  );
+  // LOGOUT
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      showStatus("Logged out successfully.");
+    } catch (error) {
+      console.error("Logout error:", error);
+      showStatus("Logout failed. Please try again.");
+    }
+  });
 
-  unsubscribePending = onSnapshot(
-    pendingQuery,
-    (snapshot) => {
+  // AUTH STATE
+  onAuthStateChanged(
+    auth,
+    (user) => {
+      stopPendingListener();
       pendingList.replaceChildren();
 
-      const pending = snapshot.docs.filter(
-        (item) => item.data().status === "pending"
-      );
-
-      if (pending.length === 0) {
-        pendingList.textContent = "No pending feedback.";
+      if (!user) {
+        loginSection.hidden = false;
+        dashboard.hidden = true;
         return;
       }
 
-      pending.forEach((item) => {
-        const data = item.data();
-        const itemId = item.id;
+      loginSection.hidden = true;
+      dashboard.hidden = false;
 
-        const card = document.createElement("article");
-        card.className = "admin-item";
+      showStatus("Loading pending feedback...");
 
-        const heading = document.createElement("h3");
-        heading.textContent = data.name || "Unnamed visitor";
+      const pendingQuery = query(
+        collection(db, "feedbackPrivate")
+      );
 
-        const email = document.createElement("p");
-        email.textContent = `Email (private): ${data.email || ""}`;
+      unsubscribePending = onSnapshot(
+        pendingQuery,
+        (snapshot) => {
+          pendingList.replaceChildren();
 
-        const designation = document.createElement("p");
-        designation.textContent = `Designation: ${data.designation || ""}`;
+          const pending = snapshot.docs.filter(
+            (item) => item.data().status === "pending"
+          );
 
-        const message = document.createElement("p");
-        message.textContent = `Feedback: ${data.message || ""}`;
+          if (pending.length === 0) {
+            pendingList.textContent = "No pending feedback.";
+            showStatus("Feedback loaded successfully.");
+            return;
+          }
 
-        card.append(heading, email, designation, message);
+          pending.forEach((item) => {
+            const data = item.data();
+            const itemId = item.id;
 
-        if (data.photoPath) {
-          const photo = document.createElement("img");
-          photo.alt = "Visitor photo";
-          photo.loading = "lazy";
-          card.appendChild(photo);
+            const card = document.createElement("article");
+            card.className = "admin-item";
 
-          const { data: photoData } = supabase
-				.storage
-				.from(FEEDBACK_BUCKET)
-				.getPublicUrl(data.photoPath);
-				 photo.src = photoData.publicUrl;
-			}
+            const heading = document.createElement("h3");
+            heading.textContent = data.name || "Unnamed visitor";
 
-			const photoUrl = photoData.publicUrl;
-				.then((url) => {
-				photo.src = url;
-            })
-            .catch((error) => {
-              console.error("Could not load visitor photo:", error);
-              photo.alt = "Photo could not be loaded";
+            const email = document.createElement("p");
+            email.textContent =
+              `Email (private): ${data.email || ""}`;
+
+            const designation = document.createElement("p");
+            designation.textContent =
+              `Designation: ${data.designation || ""}`;
+
+            const message = document.createElement("p");
+            message.textContent =
+              `Feedback: ${data.message || ""}`;
+
+            card.append(heading, email, designation, message);
+
+            // LOAD PHOTO FROM SUPABASE
+            if (data.photoPath) {
+              const photo = document.createElement("img");
+              photo.alt = "Visitor photo";
+              photo.loading = "lazy";
+              photo.style.maxWidth = "180px";
+              photo.style.height = "auto";
+
+              const { data: photoData, error: photoError } =
+                supabase.storage
+                  .from(FEEDBACK_BUCKET)
+                  .getPublicUrl(data.photoPath);
+
+              if (photoError) {
+                console.error("Photo URL error:", photoError);
+                photo.alt = "Photo URL unavailable";
+              } else if (photoData?.publicUrl) {
+                photo.src = photoData.publicUrl;
+              } else {
+                photo.alt = "Photo URL unavailable";
+              }
+
+              card.appendChild(photo);
+            }
+
+            const actions = document.createElement("div");
+            actions.className = "admin-actions";
+
+            const approveButton = document.createElement("button");
+            approveButton.type = "button";
+            approveButton.className = "approve-btn";
+            approveButton.textContent = "Approve";
+
+            const rejectButton = document.createElement("button");
+            rejectButton.type = "button";
+            rejectButton.className = "reject-btn";
+            rejectButton.textContent = "Reject";
+
+            approveButton.addEventListener("click", () => {
+              reviewFeedback(itemId, "approve");
             });
+
+            rejectButton.addEventListener("click", () => {
+              reviewFeedback(itemId, "reject");
+            });
+
+            actions.append(approveButton, rejectButton);
+            card.appendChild(actions);
+            pendingList.appendChild(card);
+          });
+
+          showStatus("Pending feedback loaded.");
+        },
+        (error) => {
+          console.error(
+            "Firestore listener error:",
+            error.code,
+            error.message
+          );
+
+          showStatus(
+            `Unable to load feedback: ${error.code || error.message}`
+          );
         }
-
-        const actions = document.createElement("div");
-        actions.className = "admin-actions";
-
-        const approveButton = document.createElement("button");
-        approveButton.className = "approve-btn";
-        approveButton.textContent = "Approve";
-        approveButton.type = "button";
-
-        const rejectButton = document.createElement("button");
-        rejectButton.className = "reject-btn";
-        rejectButton.textContent = "Reject";
-        rejectButton.type = "button";
-
-        approveButton.addEventListener("click", () =>
-          reviewFeedback(itemId, "approve")
-        );
-
-        rejectButton.addEventListener("click", () =>
-          reviewFeedback(itemId, "reject")
-        );
-
-        actions.append(approveButton, rejectButton);
-        card.appendChild(actions);
-        pendingList.appendChild(card);
-      });
+      );
     },
     (error) => {
-      console.error("Pending feedback listener error:", error);
-      showStatus("Unable to load feedback. Check Firebase Rules.");
+      console.error("Authentication state error:", error);
+      showStatus("Could not verify login. Refresh and try again.");
     }
   );
-});
+}
 
+// APPROVE / REJECT FEEDBACK
 async function reviewFeedback(id, action) {
   if (busy) return;
 
@@ -193,24 +247,31 @@ async function reviewFeedback(id, action) {
     const data = privateSnapshot.data();
 
     if (data.status !== "pending") {
-      throw new Error("This feedback has already been reviewed.");
+      throw new Error("Feedback has already been reviewed.");
     }
 
     if (action === "approve") {
       if (!data.photoPath) {
-        throw new Error("The photo upload is incomplete.");
+        throw new Error("Feedback photo path is missing.");
       }
 
-      // Only this public record is exposed to website visitors.
-      const photoUrl = await getDownloadURL(
-        ref(storage, data.photoPath)
-      );
+      // Supabase Storage: no Firebase Storage required
+      const { data: photoData, error: photoError } =
+        supabase.storage
+          .from(FEEDBACK_BUCKET)
+          .getPublicUrl(data.photoPath);
 
+      if (photoError || !photoData?.publicUrl) {
+        throw new Error("Could not obtain the Supabase photo URL.");
+      }
+
+      // Publish only fields intended for public display
       await setDoc(doc(db, "publicFeedback", id), {
-        name: data.name,
-        designation: data.designation,
-        message: data.message,
-        photoUrl,
+        name: data.name || "",
+        designation: data.designation || "",
+        message: data.message || "",
+        photoUrl: photoData.publicUrl,
+        status: "approved",
         createdAt: data.createdAt || serverTimestamp(),
         reviewedAt: serverTimestamp()
       });
@@ -220,8 +281,8 @@ async function reviewFeedback(id, action) {
         reviewedAt: serverTimestamp()
       });
 
-      showStatus("Feedback approved.");
-    } else {
+      showStatus("Feedback approved and published.");
+    } else if (action === "reject") {
       await updateDoc(privateRef, {
         status: "rejected",
         reviewedAt: serverTimestamp()
@@ -230,10 +291,13 @@ async function reviewFeedback(id, action) {
       showStatus("Feedback rejected.");
     }
   } catch (error) {
-    console.error("Review action failed:", error);
-    showStatus(
-      "Review failed. Check your admin UID, Firebase Rules and photo upload."
+    console.error(
+      "Review error:",
+      error.code || "",
+      error.message
     );
+
+    showStatus(`Review failed: ${error.message}`);
   } finally {
     busy = false;
   }
