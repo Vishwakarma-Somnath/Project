@@ -315,43 +315,41 @@ if (
               message
             );
 
+            
             // --------------------------------
             // LOAD PHOTO FROM SUPABASE
             // --------------------------------
 
+            const photo = document.createElement("img");
+            photo.alt = "Visitor photo";
+            photo.loading = "lazy";
+            photo.style.maxWidth = "180px";
+            photo.style.height = "auto";
+            photo.style.display = "block";
+            photo.style.margin = "10px 0";
+
             if (data.photoPath) {
-              const photo =
-                document.createElement("img");
-
-              photo.alt = "Visitor photo";
-              photo.loading = "lazy";
-              photo.style.maxWidth = "180px";
-              photo.style.height = "auto";
-
-              const {
-                data: photoData,
-                error: photoError
-              } = supabase.storage
+              const { data: photoData } = supabase.storage
                 .from(FEEDBACK_BUCKET)
                 .getPublicUrl(data.photoPath);
 
-              if (
-                !photoError &&
-                photoData?.publicUrl
-              ) {
-                photo.src = photoData.publicUrl;
+              photo.src = photoData.publicUrl;
 
-                photo.onerror = () => {
-                  photo.alt =
-                    "Photo could not be loaded";
-                };
-              } else {
-                photo.alt =
-                  "Photo URL unavailable";
-              }
+              photo.onerror = () => {
+                console.error(
+                  "Photo failed to load:",
+                  photo.src
+                );
+                photo.alt = "Photo could not be loaded. Check Supabase bucket access.";
+              };
 
               card.appendChild(photo);
+            } else {
+              const noPhoto = document.createElement("p");
+              noPhoto.textContent = "Photo path is missing.";
+              card.appendChild(noPhoto);
             }
+
 
             // --------------------------------
             // APPROVE / REJECT BUTTONS
