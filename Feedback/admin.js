@@ -68,21 +68,30 @@ if (
       return;
     }
 
+    
     showStatus("Logging in...");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      showStatus("Login successful. Loading feedback...");
+   await signInWithEmailAndPassword(auth, email, password);
+    showStatus("Login successful. Loading feedback...");
     } catch (error) {
-      console.error("Login error:", error.code, error.message);
+  console.error("Login error:", error.code, error.message);
 
-      showStatus(
-        error.code === "auth/invalid-credential"
-          ? "Incorrect email or password."
-          : `Login failed: ${error.code || error.message}`
-      );
-    }
-  });
+  if (error.code === "auth/too-many-requests") {
+    showStatus(
+      "Too many login attempts. Please wait and try again later."
+    );
+  } else if (
+    error.code === "auth/invalid-credential" ||
+    error.code === "auth/wrong-password" ||
+    error.code === "auth/user-not-found"
+  ) {
+    showStatus("Incorrect email or password.");
+  } else {
+    showStatus(`Login failed: ${error.code || error.message}`);
+  }
+}
+});
 
   // LOGOUT
   logoutBtn.addEventListener("click", async () => {
