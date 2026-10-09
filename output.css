@@ -2046,7 +2046,7 @@ body {
   max-width: 650px;
   margin: 0 auto 50px;
   padding: 28px;
-  background: #fff;
+  background: #000000;
   border-radius: 14px;
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
 }
@@ -2136,7 +2136,7 @@ h1, h2 {
 .feedback-card {
   min-width: 0;
   padding: 22px;
-  background: #fff;
+  background: #000000;
   border-radius: 12px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
 }
@@ -2154,7 +2154,7 @@ h1, h2 {
   flex-shrink: 0;
   border-radius: 50%;
   object-fit: cover;
-  background: #e7edf3;
+  background: #000000;
 }
 
 .feedback-person h3 {
