@@ -2021,3 +2021,170 @@ video {
     display: none;
   }
 }
+
+
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 30px 16px;
+  font-family: Arial, sans-serif;
+  color: #222;
+  background: #000000;
+}
+
+.feedback-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.feedback-form-card {
+  max-width: 650px;
+  margin: 0 auto 50px;
+  padding: 28px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+}
+
+h1, h2 {
+  margin-top: 0;
+}
+
+.feedback-form-card > p,
+.public-feedback > p {
+  color: #666;
+  line-height: 1.6;
+}
+
+#feedbackForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#feedbackForm label {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#feedbackForm input,
+#feedbackForm textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccd3dd;
+  border-radius: 7px;
+  font: inherit;
+  background: #fff;
+}
+
+#feedbackForm input:focus,
+#feedbackForm textarea:focus {
+  outline: 2px solid #1788ae;
+  border-color: #1788ae;
+}
+
+#feedbackForm textarea {
+  resize: vertical;
+}
+
+#submitBtn {
+  margin-top: 12px;
+  padding: 13px;
+  border: 0;
+  border-radius: 7px;
+  background: #1788ae;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.privacy-note {
+  margin-top: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+}
+
+#formStatus {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.public-feedback {
+  margin-top: 35px;
+}
+
+.feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 22px;
+}
+
+.feedback-card {
+  min-width: 0;
+  padding: 22px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.feedback-person {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+.feedback-person img {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #e7edf3;
+}
+
+.feedback-person h3 {
+  margin: 0 0 5px;
+  overflow-wrap: anywhere;
+}
+
+.feedback-person p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.feedback-message {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 18px 12px;
+  }
+
+  .feedback-form-card {
+    padding: 20px 16px;
+  }
+
+  .feedback-grid {
+    grid-template-columns: 1fr;
+  }
+}
