@@ -8,7 +8,7 @@ import { getAuth } from
   "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "project-394856854290",
+  apiKey: "AIzaSyDzQIbGuX7KyKinO-Grdw8CqjTZx3Xz900",
   authDomain: "project-feedback-b09de.firebaseapp.com",
   projectId: "project-feedback-b09de",
   messagingSenderId: "394856854290",
