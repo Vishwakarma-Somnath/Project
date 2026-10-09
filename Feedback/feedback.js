@@ -159,6 +159,9 @@ if (form && submitBtn) {
 if (feedbackList) {
   const approvedCollection = collection(db, "publicFeedback");
 
+  console.log("Firebase project ID:", db.app.options.projectId);
+  console.log("Reading collection: publicFeedback");
+
   onSnapshot(
     approvedCollection,
     (snapshot) => {
