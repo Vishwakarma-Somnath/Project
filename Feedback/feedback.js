@@ -93,19 +93,27 @@ if (form && submitBtn) {
       // This path matches the current Firestore Rules.
       const extension = photo.name.split(".").pop().toLowerCase();
 
-      uploadedPhotoPath = `feedbackPhotos/${feedbackRef.id}`;
+      
+const uploadedPhotoPath = `feedbackPhotos/${feedbackRef.id}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from(FEEDBACK_BUCKET)
-        .upload(uploadedPhotoPath, photo, {
-          contentType: photo.type,
-          cacheControl: "3600",
-          upsert: false
-        });
+const { data, error: uploadError } = await supabase.storage
+  .from(FEEDBACK_BUCKET)
+  .upload(uploadedPhotoPath, photo, {
+    contentType: photo.type,
+    cacheControl: "3600",
+    upsert: false
+  });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+if (uploadError) {
+  console.error("Supabase upload failed:", {
+    message: uploadError.message,
+    name: uploadError.name
+  });
+  throw uploadError;
+}
+
+console.log("Photo uploaded successfully:", data);
+
 
       // 3. Get the public URL from Supabase.
       const { data: publicUrlData } = supabase.storage
