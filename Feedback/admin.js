@@ -1,4 +1,3 @@
-
 import { auth, db } from "./firebase-config.js";
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
 
