@@ -311,3 +311,19 @@ async function reviewFeedback(id, action) {
     busy = false;
   }
 }
+async function resetAdminPassword() {
+  const email = document.getElementById("adminEmail").value.trim();
+
+  if (!email) {
+    showStatus("Please enter your admin email first.");
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showStatus("Password reset email sent. Check your inbox.");
+  } catch (error) {
+    console.error("Password reset error:", error.code, error.message);
+    showStatus("Could not send reset email: " + error.code);
+  }
+}
