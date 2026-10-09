@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback Admin</title>
+  <link rel="stylesheet" href="feedback.css">
+  <style>
+    .admin-panel {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .admin-item {
+      padding: 20px;
+      margin: 16px 0;
+      background: white;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-item img {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .admin-actions button,
+    #loginBtn,
+    #logoutBtn {
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .approve-btn {
+      background: #147d45;
+      color: white;
+    }
+
+    .reject-btn {
+      background: #b42318;
+      color: white;
+    }
+
+    #loginForm {
+      display: grid;
+      gap: 12px;
+      max-width: 400px;
+    }
+
+    #loginForm input {
+      padding: 12px;
+      border: 1px solid #ccd3dd;
+      border-radius: 6px;
+    }
+
+    #loginBtn {
+      background: #1788ae;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <main class="admin-panel">
+    <h1>Feedback Admin Panel</h1>
+
+    <section id="loginSection">
+      <h2>Admin Login</h2>
+      <form id="loginForm">
+        <label for="adminEmail">Admin Email</label>
+        <input id="adminEmail" type="email" required>
+
+        <label for="adminPassword">Password</label>
+        <input id="adminPassword" type="password" required>
+
+        <button id="loginBtn" type="submit">Login</button>
+      </form>
+    </section>
+
+    <section id="dashboard" hidden>
+      <button id="logoutBtn" type="button">Logout</button>
+      <h2>Pending Feedback</h2>
+      <p id="adminStatus" role="status" aria-live="polite"></p>
+      <div id="pendingList"></div>
+    </section>
+  </main>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
