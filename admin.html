@@ -157,30 +157,30 @@
 
         /* BUTTONS */
         .btn{
-    position: relative;
-    width: 100%;
-    height: 45px;
-    background: transparent;
-    border-radius: 40px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    border: 2px solid #e46033;
-    overflow: hidden;
-    z-index: 1;    
-}
+            position: relative;
+            width: 100%;
+            height: 45px;
+            background: transparent;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            border: 2px solid #e46033;
+            overflow: hidden;
+            z-index: 1;    
+        }
 
-.btn::before{
-    content: "";
-    position: absolute;
-    height: 300%;
-    width: 100%;
-    background: linear-gradient(#25252b, #e46033, #25252b, #e46033);
-    top: -100%;
-    left: 0;
-    z-index: -1;
-    transition: .5s;
-}
+            .btn::before{
+            content: "";
+            position: absolute;
+            height: 300%;
+            width: 100%;
+            background: linear-gradient(#25252b, #e46033, #25252b, #e46033);
+            top: -100%;
+            left: 0;
+            z-index: -1;
+            transition: .5s;
+        }
 
         .btn:hover {
             top: 0;
@@ -472,7 +472,7 @@
                     <i class="bx bxs-lock-alt"></i>
                 </div>
 
-                <div class="input-box animation">
+                <div class="input-box animation" style="--D:3; --S:24">
                     <button
                         class="btn"
                         id="loginBtn"
