@@ -333,6 +333,7 @@ function loadFeedback() {
 // =====================================
 // CREATE FEEDBACK CARD
 // =====================================
+
 function createFeedbackCard(item) {
     const card = createElement("div", "feedback-admin-card");
 
@@ -346,30 +347,25 @@ function createFeedbackCard(item) {
         overflow-wrap: anywhere;
     `;
 
-    // Feedback name
-    const title = createElement(
-        "h3",
-        "",
-        item.name || "Unknown"
-    );
-
-    // Visitor Email
-    const email = createElement(
-    "p",
-    "",
-    "Email: " + (item.email || "Not provided")
-);
-
-email.style.cssText = `
-    margin: 8px 0;
-    overflow-wrap: anywhere;
-    color: #1788ae;
-`;
-
+    // Name
+    const title = createElement("h3", "", item.name || "Unknown");
     title.style.cssText = `
         font-weight: bold;
         font-size: 18px;
         margin: 0 0 10px;
+        color: #222;
+    `;
+
+    // Email
+    const email = createElement(
+        "p",
+        "",
+        "Email: " + (item.email || "Not provided")
+    );
+    email.style.cssText = `
+        margin: 8px 0;
+        overflow-wrap: anywhere;
+        color: #1788ae;
     `;
 
     // Designation
@@ -378,15 +374,28 @@ email.style.cssText = `
         "",
         "Designation: " + (item.designation || "Not provided")
     );
+    designation.style.color = "#222";
+    designation.style.margin = "8px 0";
 
     // Department
     const department = createElement(
         "p",
         "",
-        "Department: " + (item.department || "Not provided")        
+        "Department: " + (item.department || "Not provided")
     );
+    department.style.cssText = `
+        color: #222;
+        margin: 8px 0;
+    `;
 
+    // Feedback message
+    const message = createElement(
+        "p",
+        "",
+        item.message || "No feedback message"
+    );
     message.style.cssText = `
+        color: #222;
         white-space: pre-wrap;
         overflow-wrap: anywhere;
         margin: 10px 0;
@@ -398,31 +407,30 @@ email.style.cssText = `
         "",
         "Status: " + (item.status || "pending")
     );
+    status.style.cssText = `
+        color: #222;
+        font-weight: bold;
+        margin: 8px 0;
+    `;
 
-    status.style.fontWeight = "bold";
-
-    // LEFT SIDE: Text details
+    // Text details
     const details = createElement("div", "feedback-details");
-
     details.style.cssText = `
         flex: 1;
         min-width: 0;
     `;
 
     details.append(
-    title,
-    email,
-    designation,
-    department
-    message,
-    status
-);
-
-    // MAIN ROW: Details on left, photo on right
-    const contentRow = createElement(
-        "div",
-        "feedback-content-row"
+        title,
+        email,
+        designation,
+        department,
+        message,
+        status
     );
+
+    // Content row: details left, photo right
+    const contentRow = createElement("div", "feedback-content-row");
 
     contentRow.style.cssText = `
         display: flex;
@@ -435,7 +443,7 @@ email.style.cssText = `
 
     contentRow.appendChild(details);
 
-    // Get photo URL from Supabase or older records
+    // Get photo URL
     let photoUrl = item.photoUrl || "";
 
     if (item.photoPath) {
@@ -446,7 +454,7 @@ email.style.cssText = `
         photoUrl = data?.publicUrl || photoUrl;
     }
 
-    // RIGHT SIDE: Photo
+    // Photo
     if (photoUrl) {
         const image = document.createElement("img");
 
@@ -458,10 +466,10 @@ email.style.cssText = `
             display: block;
             width: 200px;
             height: 200px;
-            flex: 0 0 130px;
+            flex: 0 0 200px;
             object-fit: cover;
             border-radius: 8px;
-            margin: 20px;
+            margin: 0;
         `;
 
         contentRow.appendChild(image);
@@ -469,7 +477,7 @@ email.style.cssText = `
 
     card.appendChild(contentRow);
 
-    // ACTION BUTTONS
+    // Action buttons
     const buttonContainer = createElement("div", "");
 
     buttonContainer.style.cssText = `
@@ -479,21 +487,15 @@ email.style.cssText = `
         margin-top: 15px;
     `;
 
-    // Approve and Reject only for pending feedback
+    // Approve and Reject
     if (item.status === "pending" || !item.status) {
-        const approveBtn = createActionButton(
-            "Approve",
-            "#198754"
-        );
+        const approveBtn = createActionButton("Approve", "#198754");
 
         approveBtn.addEventListener("click", () => {
             approveFeedback(item.id);
         });
 
-        const rejectBtn = createActionButton(
-            "Reject",
-            "#dc3545"
-        );
+        const rejectBtn = createActionButton("Reject", "#dc3545");
 
         rejectBtn.addEventListener("click", () => {
             rejectFeedback(item.id);
@@ -502,11 +504,8 @@ email.style.cssText = `
         buttonContainer.append(approveBtn, rejectBtn);
     }
 
-    // Delete button
-    const deleteBtn = createActionButton(
-        "Delete",
-        "#6c757d"
-    );
+    // Delete
+    const deleteBtn = createActionButton("Delete", "#6c757d");
 
     deleteBtn.addEventListener("click", () => {
         deleteFeedback(item.id);
