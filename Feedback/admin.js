@@ -266,70 +266,78 @@ function createElement(tag, className, text = "") {
 // =====================================
 // LOAD FEEDBACK
 // =====================================
-
 function loadFeedback() {
+    console.log("STEP 1: loadFeedback() started");
+
     if (feedbackUnsubscribe) {
         feedbackUnsubscribe();
         feedbackUnsubscribe = null;
     }
 
     if (!pendingList) {
-        console.error("HTML element #pendingList was not found.");
+        console.error("ERROR: #pendingList element not found");
+        showAdminMessage("HTML error: pendingList not found.", true);
         return;
     }
 
     pendingList.replaceChildren();
+    showAdminMessage("Connecting to Firestore...");
 
-    showAdminMessage("Loading feedback...");
+    console.log("STEP 2: Current user UID:", auth.currentUser?.uid);
+    console.log("STEP 3: Firestore database:", db);
 
-    feedbackUnsubscribe = onSnapshot(
-        collection(db, "feedbackPrivate"),
+    try {
+        feedbackUnsubscribe = onSnapshot(
+            collection(db, "feedbackPrivate"),
 
-        (snapshot) => {
-            pendingList.replaceChildren();
-
-            if (snapshot.empty) {
-                showAdminMessage("No feedback found.");
-                return;
-            }
-
-            const feedbackItems = snapshot.docs.map((item) => ({
-                id: item.id,
-                ...item.data()
-            }));
-
-            // Pending feedback appears first.
-            feedbackItems.sort((a, b) => {
-                const priority = {
-                    pending: 0,
-                    approved: 1,
-                    rejected: 2
-                };
-
-                return (priority[a.status] ?? 3) -
-                       (priority[b.status] ?? 3);
-            });
-
-            feedbackItems.forEach((item) => {
-                pendingList.appendChild(
-                    createFeedbackCard(item)
+            (snapshot) => {
+                console.log(
+                    "STEP 4: Firestore response received. Documents:",
+                    snapshot.size
                 );
-            });
 
-            showAdminMessage(
-                `Loaded ${feedbackItems.length} feedback record(s).`
-            );
-        },
+                pendingList.replaceChildren();
 
-        (error) => {
-            console.error("Feedback loading error:", error);
+                if (snapshot.empty) {
+                    showAdminMessage(
+                        "Connected, but feedbackPrivate has no documents."
+                    );
+                    return;
+                }
 
-            showAdminMessage(
-                "Unable to load feedback: " + error.message,
-                true
-            );
-        }
-    );
+                snapshot.forEach((documentSnapshot) => {
+                    const item = {
+                        id: documentSnapshot.id,
+                        ...documentSnapshot.data()
+                    };
+
+                    console.log("Feedback document:", item.id, item);
+
+                    pendingList.appendChild(createFeedbackCard(item));
+                });
+
+                showAdminMessage(
+                    `Loaded ${snapshot.size} feedback record(s).`
+                );
+            },
+
+            (error) => {
+                console.error("STEP 5: Firestore listener error:", error);
+
+                showAdminMessage(
+                    "Firestore error: " + error.code + " - " + error.message,
+                    true
+                );
+            }
+        );
+
+        console.log("STEP 6: Firestore listener registered");
+
+    } catch (error) {
+        console.error("STEP 7: Synchronous error:", error);
+
+        showAdminMessage("Error: " + error.message, true);
+    }
 }
 
 // =====================================
