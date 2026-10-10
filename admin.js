@@ -379,11 +379,11 @@ email.style.cssText = `
         "Designation: " + (item.designation || "Not provided")
     );
 
-    // Feedback message
-    const message = createElement(
+    // Department
+    const department = createElement(
         "p",
         "",
-        item.message || ""
+        "Department: " + (item.department || "Not provided")        
     );
 
     message.style.cssText = `
@@ -413,6 +413,7 @@ email.style.cssText = `
     title,
     email,
     designation,
+    department
     message,
     status
 );
@@ -572,6 +573,7 @@ async function approveFeedback(id) {
         await setDoc(doc(db, "publicFeedback", id), {
             name: data.name || "",
             designation: data.designation || "",
+            department: data.department || "",
             message: data.message || "",
             photoUrl,
             photoPath: data.photoPath || "",
