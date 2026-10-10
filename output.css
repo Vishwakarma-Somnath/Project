@@ -2026,7 +2026,7 @@ video {
 .feedback-container {
   width: 100%;
   max-width: 1000px;
-  margin: top: 10vh;
+    margin-left: -190px
 }
 
 .feedback-form-card {
@@ -2063,6 +2063,7 @@ h1, h2 {
 #feedbackForm input,
 #feedbackForm textarea {
   width: 100%;
+  hight: 0px;
   padding: 12px;
   border: 1px solid #ccd3dd;
   border-radius: 7px;
@@ -2107,25 +2108,6 @@ h1, h2 {
 #formStatus {
   font-size: 14px;
   overflow-wrap: anywhere;
-}
-
-.public-feedback {
-  margin-top: 35px;
-}
-
-.feedback-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin-top: 22px;
-}
-
-.feedback-card {
-  min-width: 0;
-  padding: 22px;
-  background: #000000;
-  border-radius: 12px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
 }
 
 .feedback-person {
