@@ -125,16 +125,6 @@ activityEvents.forEach((eventName) => {
 // closing/reloading the page. Browser shutdown
 // may prevent this asynchronous request finishing.
 
-window.addEventListener("pagehide", () => {
-    stopInactivityTimer();
-
-    if (auth.currentUser) {
-        void signOut(auth).catch((error) => {
-            console.error("Page-exit logout failed:", error);
-        });
-    }
-});
-
 // =====================================
 // ADMIN LOGIN
 // =====================================
@@ -713,53 +703,60 @@ async function deleteFeedback(id) {
  // =====================================
  // FIREBASE AUTH STATE
  // =====================================
+onAuthStateChanged(
+    auth,
+    (user) => {
+        isSigningOut = false;
+        stopInactivityTimer();
 
-onAuthStateChanged(auth, (user) => {
-    isSigningOut = false;
-    stopInactivityTimer();
+        console.log("Firebase auth state:", user ? "Logged in" : "Logged out");
 
-    if (user) {
-        // Hide login section
-        if (loginSection) {
+        if (user) {
+            if (!loginSection || !dashboard) {
+                console.error("Login section or dashboard element is missing.");
+                return;
+            }
+
             loginSection.hidden = true;
             loginSection.style.display = "none";
-        }
 
-        // Show admin dashboard
-        if (dashboard) {
             dashboard.hidden = false;
             dashboard.style.display = "block";
+
+            console.log("Dashboard visibility:", {
+                hidden: dashboard.hidden,
+                display: getComputedStyle(dashboard).display
+            });
+
+            resetInactivityTimer();
+            loadFeedback();
+
+        } else {
+            if (feedbackUnsubscribe) {
+                feedbackUnsubscribe();
+                feedbackUnsubscribe = null;
+            }
+
+            if (loginSection) {
+                loginSection.hidden = false;
+                loginSection.style.display = "block";
+            }
+
+            if (dashboard) {
+                dashboard.hidden = true;
+                dashboard.style.display = "none";
+            }
+
+            if (pendingList) {
+                pendingList.replaceChildren();
+            }
+
+            showLoginMessage("Please log in to continue.");
         }
-
-        console.log("Login successful. Dashboard is visible.");
-
-        resetInactivityTimer();
-        loadFeedback();
-        showAdminMessage("Admin logged in.");
-
-    } else {
-        // Stop listening to Firestore
-        if (feedbackUnsubscribe) {
-            feedbackUnsubscribe();
-            feedbackUnsubscribe = null;
-        }
-
-        // Show login form
-        if (loginSection) {
-            loginSection.hidden = false;
-            loginSection.style.display = "block";
-        }
-
-        // Hide dashboard
-        if (dashboard) {
-            dashboard.hidden = true;
-            dashboard.style.display = "none";
-        }
-
-        if (pendingList) {
-            pendingList.replaceChildren();
-        }
-
-        showLoginMessage("Please log in to continue.");
+    },
+    (error) => {
+        console.error("Firebase auth state error:", error);
+        showLoginMessage("Authentication error: " + error.message, true);
     }
-});
+);
+
