@@ -53,10 +53,11 @@ if (form && submitBtn) {
     const name = form.elements.name.value.trim();
     const email = form.elements.email.value.trim();
     const designation = form.elements.designation.value.trim();
+    const department = form.elements.department.value.trim();
     const message = form.elements.message.value.trim();
     const photo = form.elements.photo.files[0];
 
-    if (!name || !email || !designation || !message || !photo) {
+    if (!name || !email || !designation || !department || !message || !photo) {
       setStatus("Please fill in every field and select a photo.", true);
       return;
     }
@@ -84,6 +85,7 @@ if (form && submitBtn) {
           name,
           email,
           designation,
+          department,
           message,
           status: "pending",
           photoPath: "",
@@ -236,7 +238,12 @@ if (feedbackList) {
           "text-right text-[#459bd5] text-base md:text-lg";
         designation.textContent = data.designation || "";
 
-        details.append(message, name, designation);
+                const department = document.createElement("h5");
+        department.className =
+          "text-right text-[#459bd5] text-base md:text-lg";
+        department.textContent = data.department || "";
+
+        details.append(message, name, designation, department);
         card.append(img, details);
         slide.appendChild(card);
 
