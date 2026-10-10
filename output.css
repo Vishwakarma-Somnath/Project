@@ -2070,7 +2070,7 @@ h1, h2 {
 #feedbackForm input,
 #feedbackForm textarea {
   width: 100%;
-  hight: 0px;
+  height: 100px;
   padding: 12px;
   border: 1px solid #000000;
   border-radius: 7px;
