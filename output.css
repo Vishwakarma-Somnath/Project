@@ -2032,7 +2032,7 @@ body {
   margin: 0;
   padding: 30px 16px;
   font-family: Arial, sans-serif;
-  color: #222;
+  color: none;
   background:none;
   top: (10vh);
 }
