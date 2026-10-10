@@ -159,9 +159,9 @@ console.log("Photo uploaded successfully:", data);
 
       // Keep any existing private document for admin review.
       setStatus(
-        "Submission failed. Please try again later.",
-        true
-      );
+          "Submission failed: " + (error.code || error.message || "Unknown error"),
+  true
+);
     } finally {
       submitBtn.disabled = false;
     }
