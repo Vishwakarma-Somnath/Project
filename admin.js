@@ -6,7 +6,7 @@ import {
     signInWithEmailAndPassword,
     sendPasswordResetEmail,
     signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 import {
     collection,
@@ -17,7 +17,7 @@ import {
     updateDoc,
     deleteDoc,
     serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 // =====================================
 // HTML ELEMENTS
