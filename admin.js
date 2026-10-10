@@ -89,7 +89,7 @@ function resetInactivityTimer() {
             await signOut(auth);
 
             alert(
-                "You have been logged out because of 20 seconds of inactivity."
+                "You have been logged out Successfully."
             );
         } catch (error) {
             console.error("Auto logout failed:", error);
