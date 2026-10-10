@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif , bold;
+            font-family: 'Poppins', sans-serif;
             color: #fff;
         }
 
@@ -347,6 +347,35 @@
 
         [hidden] {
             display: none !important;
+        }
+
+        /* Fix Admin Email and Password input text */
+        #adminEmail,
+        #adminPassword {
+            color: #ffffff !important;
+            background-color: transparent !important;
+            caret-color: #e46033;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* Fix Chrome autofill and pasted text background */
+        #adminEmail:-webkit-autofill,
+        #adminPassword:-webkit-autofill,
+        #adminEmail:-webkit-autofill:hover,
+        #adminPassword:-webkit-autofill:hover,
+        #adminEmail:-webkit-autofill:focus,
+        #adminPassword:-webkit-autofill:focus {
+            -webkit-text-fill-color: #ffffff !important;
+            -webkit-box-shadow: 0 0 0 1000px #25252b inset !important;
+            caret-color: #e46033;
+            transition: background-color 9999s ease-in-out 0s;
+        }
+
+        /* Keep input text visible while selecting */
+        #adminEmail::selection,
+        #adminPassword::selection {
+            background: #e46033;
+            color: #ffffff;
         }
 
         /* MOBILE RESPONSIVE */
