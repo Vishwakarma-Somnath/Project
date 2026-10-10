@@ -363,6 +363,20 @@ function createFeedbackCard(item) {
         item.name || "Unknown"
     );
 
+    // Visitor Email
+    const email = createElement(
+    "p",
+    "",
+    "Email: " + (item.email || "Not provided")
+);
+
+email.style.cssText = `
+    margin: 8px 0;
+    overflow-wrap: anywhere;
+    color: #1788ae;
+`;
+```
+
     title.style.cssText = `
         font-weight: bold;
         font-size: 18px;
@@ -406,7 +420,7 @@ function createFeedbackCard(item) {
         min-width: 0;
     `;
 
-    details.append(title, designation, message, status);
+    details.append(title,email,designation,message,status);
 
     // MAIN ROW: Details on left, photo on right
     const contentRow = createElement(
