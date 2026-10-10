@@ -420,7 +420,13 @@ email.style.cssText = `
         min-width: 0;
     `;
 
-    details.append(title,email,designation,message,status);
+    details.append(
+    title,
+    email,
+    designation,
+    message,
+    status
+);
 
     // MAIN ROW: Details on left, photo on right
     const contentRow = createElement(
