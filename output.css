@@ -2039,7 +2039,7 @@ video {
   margin: 0 auto 50px;
   padding: 28px;
   background: none;
-  border-radius: 14px;
+  border-radius: 0;
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
 }
 
