@@ -2,27 +2,26 @@ import { auth, db } from "./firebase-config.js";
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
 
 import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  collection,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+    collection,
+    doc,
+    getDoc,
+    onSnapshot,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ------------------------------------
+// =====================================
 // HTML ELEMENTS
-// ------------------------------------
+// =====================================
 
 const loginSection = document.getElementById("loginSection");
 const loginForm = document.getElementById("loginForm");
@@ -33,402 +32,670 @@ const logoutBtn = document.getElementById("logoutBtn");
 const loginStatus = document.getElementById("loginStatus");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
-let unsubscribePending = null;
-let busy = false;
+// =====================================
+// AUTO LOGOUT SETTINGS
+// =====================================
 
-// ------------------------------------
-// STATUS MESSAGES
-// ------------------------------------
+const INACTIVITY_LIMIT = 20 * 1000; // 20 seconds
 
-function showStatus(message) {
-  if (adminStatus) adminStatus.textContent = message;
+let inactivityTimer = null;
+let feedbackUnsubscribe = null;
+let isSigningOut = false;
+
+// =====================================
+// STATUS MESSAGE
+// =====================================
+
+function showLoginMessage(message, isError = false) {
+    if (!loginStatus) return;
+
+    loginStatus.textContent = message;
+    loginStatus.style.color = isError ? "red" : "green";
 }
 
-function showLoginStatus(message) {
-  if (loginStatus) loginStatus.textContent = message;
+function showAdminMessage(message, isError = false) {
+    if (!adminStatus) return;
+
+    adminStatus.textContent = message;
+    adminStatus.style.color = isError ? "red" : "green";
 }
 
-function stopPendingListener() {
-  if (unsubscribePending) {
-    unsubscribePending();
-    unsubscribePending = null;
-  }
+// =====================================
+// STOP AUTO LOGOUT TIMER
+// =====================================
+
+function stopInactivityTimer() {
+    if (inactivityTimer !== null) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
 }
 
-// ------------------------------------
+// =====================================
+// RESET AUTO LOGOUT TIMER
+// =====================================
+
+function resetInactivityTimer() {
+    stopInactivityTimer();
+
+    if (!auth.currentUser || isSigningOut) return;
+
+    inactivityTimer = setTimeout(async () => {
+        if (!auth.currentUser || isSigningOut) return;
+
+        isSigningOut = true;
+
+        try {
+            await signOut(auth);
+
+            alert(
+                "You have been logged out because of 20 seconds of inactivity."
+            );
+        } catch (error) {
+            console.error("Auto logout failed:", error);
+            isSigningOut = false;
+        }
+    }, INACTIVITY_LIMIT);
+}
+
+// =====================================
+// USER ACTIVITY EVENTS
+// =====================================
+
+const activityEvents = [
+    "mousemove",
+    "mousedown",
+    "keydown",
+    "scroll",
+    "click",
+    "touchstart"
+];
+
+activityEvents.forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+        resetInactivityTimer();
+    }, { passive: true });
+});
+
+// =====================================
+// PAGE EXIT LOGOUT
+// =====================================
+
+// Best-effort logout when navigating away or
+// closing/reloading the page. Browser shutdown
+// may prevent this asynchronous request finishing.
+
+window.addEventListener("pagehide", () => {
+    stopInactivityTimer();
+
+    if (auth.currentUser) {
+        void signOut(auth).catch((error) => {
+            console.error("Page-exit logout failed:", error);
+        });
+    }
+});
+
+// =====================================
 // ADMIN LOGIN
-// ------------------------------------
+// =====================================
 
-if (
-  !loginSection ||
-  !loginForm ||
-  !dashboard ||
-  !pendingList ||
-  !adminStatus ||
-  !logoutBtn
-) {
-  console.error("Admin HTML is missing a required element ID.");
-} else {
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+if (loginForm) {
+    loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-    const email = document.getElementById("adminEmail")?.value.trim();
-    const password = document.getElementById("adminPassword")?.value;
-    const loginBtn = document.getElementById("loginBtn");
-
-    if (!email || !password) {
-      showLoginStatus("Enter your email and password.");
-      return;
-    }
-
-    if (loginBtn) loginBtn.disabled = true;
-    showLoginStatus("Logging in...");
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      showLoginStatus("Login successful. Loading feedback...");
-    } catch (error) {
-      console.error("Login error:", error.code, error.message);
-
-      if (error.code === "auth/too-many-requests") {
-        showLoginStatus("Too many attempts. Please wait.");
-      } else if (
-        error.code === "auth/invalid-credential" ||
-        error.code === "auth/wrong-password" ||
-        error.code === "auth/user-not-found"
-      ) {
-        showLoginStatus("Incorrect email or password.");
-      } else {
-        showLoginStatus(`Login failed: ${error.code || error.message}`);
-      }
-    } finally {
-      if (loginBtn) loginBtn.disabled = false;
-    }
-  });
-
-  // ------------------------------------
-  // FORGOT PASSWORD
-  // ------------------------------------
-
-  if (forgotPasswordBtn) {
-    forgotPasswordBtn.addEventListener("click", async () => {
-      const email = document.getElementById("adminEmail")?.value.trim();
-
-      if (!email) {
-        showLoginStatus("Please enter your admin email first.");
-        document.getElementById("adminEmail")?.focus();
-        return;
-      }
-
-      forgotPasswordBtn.disabled = true;
-      showLoginStatus("Sending password reset email...");
-
-      try {
-        await sendPasswordResetEmail(auth, email);
-        showLoginStatus(
-          "If the account is eligible, check your inbox and Spam folder."
+        const emailInput = loginForm.querySelector(
+            'input[type="email"]'
         );
-      } catch (error) {
-        console.error("Password reset error:", error);
-        showLoginStatus("Could not send reset email. Check Firebase settings.");
-      } finally {
-        forgotPasswordBtn.disabled = false;
-      }
-    });
-  }
 
-  // ------------------------------------
-  // LOGOUT
-  // ------------------------------------
+        const passwordInput = loginForm.querySelector(
+            'input[type="password"]'
+        );
 
-  logoutBtn.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      showLoginStatus("Logged out successfully.");
-    } catch (error) {
-      console.error("Logout error:", error);
-      showStatus("Logout failed. Please try again.");
-    }
-  });
+        const email = emailInput?.value.trim();
+        const password = passwordInput?.value;
 
-  // ------------------------------------
-  // AUTH STATE AND FEEDBACK LIST
-  // ------------------------------------
-
-  onAuthStateChanged(auth, (user) => {
-    stopPendingListener();
-    pendingList.replaceChildren();
-
-    if (!user) {
-      loginSection.hidden = false;
-      dashboard.hidden = true;
-      return;
-    }
-
-    loginSection.hidden = true;
-    dashboard.hidden = false;
-    showStatus("Loading feedback...");
-
-    // Firestore Rules must restrict this collection to admins.
-    const feedbackQuery = query(collection(db, "feedbackPrivate"));
-
-    unsubscribePending = onSnapshot(
-      feedbackQuery,
-      (snapshot) => {
-        pendingList.replaceChildren();
-
-        if (snapshot.empty) {
-          pendingList.textContent = "No feedback found.";
-          showStatus("Feedback loaded successfully.");
-          return;
+        if (!email || !password) {
+            showLoginMessage(
+                "Please enter your email and password.",
+                true
+            );
+            return;
         }
 
-        // Show pending, approved and rejected feedback.
-        snapshot.docs.forEach((item) => {
-          const data = item.data();
-          const itemId = item.id;
-          const status = data.status || "unknown";
+        try {
+            showLoginMessage("Logging in...");
 
-          const card = document.createElement("article");
-          card.className = "admin-item";
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
 
-          const heading = document.createElement("h3");
-          heading.textContent = data.name || "Unnamed visitor";
+            showLoginMessage("Login successful.");
+        } catch (error) {
+            console.error("Login error:", error);
 
-          const statusText = document.createElement("p");
-          statusText.textContent = `Status: ${status.toUpperCase()}`;
+            showLoginMessage(
+                "Login failed: " + error.message,
+                true
+            );
+        }
+    });
+}
 
-          const email = document.createElement("p");
-          email.textContent = `Email (private): ${data.email || ""}`;
+// =====================================
+// FORGOT PASSWORD
+// =====================================
 
-          const designation = document.createElement("p");
-          designation.textContent = `Designation: ${data.designation || ""}`;
+if (forgotPasswordBtn) {
+    forgotPasswordBtn.addEventListener("click", async () => {
+        const emailInput = loginForm?.querySelector(
+            'input[type="email"]'
+        );
 
-          const message = document.createElement("p");
-          message.textContent = `Feedback: ${data.message || ""}`;
+        const email = emailInput?.value.trim();
 
-          card.append(heading, statusText, email, designation, message);
+        if (!email) {
+            showLoginMessage(
+                "Please enter your email first.",
+                true
+            );
+            emailInput?.focus();
+            return;
+        }
 
-          // ------------------------------------
-          // SUPABASE PHOTO
-          // ------------------------------------
+        try {
+            await sendPasswordResetEmail(auth, email);
 
-          if (data.photoPath) {
-            const photo = document.createElement("img");
-            photo.alt = "Visitor photo";
-            photo.loading = "lazy";
-            photo.style.maxWidth = "180px";
-            photo.style.height = "auto";
-            photo.style.display = "block";
-            photo.style.margin = "10px 0";
+            showLoginMessage(
+                "Password reset email sent. Please check your inbox."
+            );
+        } catch (error) {
+            console.error("Password reset error:", error);
 
-            const { data: photoData } = supabase.storage
-              .from(FEEDBACK_BUCKET)
-              .getPublicUrl(data.photoPath);
+            showLoginMessage(
+                "Unable to send reset email: " + error.message,
+                true
+            );
+        }
+    });
+}
 
-            photo.src = photoData.publicUrl;
+// =====================================
+// MANUAL LOGOUT
+// =====================================
 
-            photo.onerror = () => {
-              photo.alt = "Photo could not be loaded.";
-            };
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+        try {
+            stopInactivityTimer();
+            isSigningOut = true;
 
-            card.appendChild(photo);
-          } else {
-            const noPhoto = document.createElement("p");
-            noPhoto.textContent = "Photo path is missing.";
-            card.appendChild(noPhoto);
-          }
+            await signOut(auth);
 
-          const actions = document.createElement("div");
-          actions.className = "admin-actions";
+            showLoginMessage("You have been logged out.");
+        } catch (error) {
+            console.error("Logout error:", error);
 
-          // ------------------------------------
-          // APPROVE / REJECT ONLY IF PENDING
-          // ------------------------------------
+            showAdminMessage(
+                "Logout failed: " + error.message,
+                true
+            );
 
-          if (status === "pending") {
-            const approveButton = document.createElement("button");
-            approveButton.type = "button";
-            approveButton.className = "approve-btn";
-            approveButton.textContent = "Approve";
+            isSigningOut = false;
+        }
+    });
+}
 
-            approveButton.addEventListener("click", () => {
-              reviewFeedback(itemId, "approve");
+// =====================================
+// HELPER: CREATE ELEMENT
+// =====================================
+
+function createElement(tag, className, text = "") {
+    const element = document.createElement(tag);
+
+    if (className) {
+        element.className = className;
+    }
+
+    element.textContent = text;
+
+    return element;
+}
+
+// =====================================
+// LOAD FEEDBACK
+// =====================================
+
+function loadFeedback() {
+    if (feedbackUnsubscribe) {
+        feedbackUnsubscribe();
+        feedbackUnsubscribe = null;
+    }
+
+    if (!pendingList) {
+        console.error("HTML element #pendingList was not found.");
+        return;
+    }
+
+    pendingList.replaceChildren();
+
+    showAdminMessage("Loading feedback...");
+
+    feedbackUnsubscribe = onSnapshot(
+        collection(db, "feedbackPrivate"),
+
+        (snapshot) => {
+            pendingList.replaceChildren();
+
+            if (snapshot.empty) {
+                showAdminMessage("No feedback found.");
+                return;
+            }
+
+            const feedbackItems = snapshot.docs.map((item) => ({
+                id: item.id,
+                ...item.data()
+            }));
+
+            // Pending feedback appears first.
+            feedbackItems.sort((a, b) => {
+                const priority = {
+                    pending: 0,
+                    approved: 1,
+                    rejected: 2
+                };
+
+                return (priority[a.status] ?? 3) -
+                       (priority[b.status] ?? 3);
             });
 
-            const rejectButton = document.createElement("button");
-            rejectButton.type = "button";
-            rejectButton.className = "reject-btn";
-            rejectButton.textContent = "Reject";
-
-            rejectButton.addEventListener("click", () => {
-              reviewFeedback(itemId, "reject");
+            feedbackItems.forEach((item) => {
+                pendingList.appendChild(
+                    createFeedbackCard(item)
+                );
             });
 
-            actions.append(approveButton, rejectButton);
-          }
+            showAdminMessage(
+                `Loaded ${feedbackItems.length} feedback record(s).`
+            );
+        },
 
-          // ------------------------------------
-          // DELETE BUTTON FOR ALL STATUSES
-          // ------------------------------------
+        (error) => {
+            console.error("Feedback loading error:", error);
 
-          const deleteButton = document.createElement("button");
-          deleteButton.type = "button";
-          deleteButton.className = "delete-btn";
-          deleteButton.textContent = "Delete";
+            showAdminMessage(
+                "Unable to load feedback: " + error.message,
+                true
+            );
+        }
+    );
+}
 
-          deleteButton.addEventListener("click", () => {
-            deleteFeedback(itemId);
-          });
+// =====================================
+// CREATE FEEDBACK CARD
+// =====================================
 
-          actions.appendChild(deleteButton);
-          card.appendChild(actions);
-          pendingList.appendChild(card);
+function createFeedbackCard(item) {
+    const card = createElement(
+        "div",
+        "feedback-admin-card"
+    );
+
+    card.style.cssText = `
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 16px;
+        margin: 12px 0;
+        background: #fff;
+        color: #222;
+    `;
+
+    const title = createElement(
+        "h3",
+        "",
+        item.name || "Unknown"
+    );
+
+    title.style.fontWeight = "bold";
+    title.style.fontSize = "18px";
+
+    const designation = createElement(
+        "p",
+        "",
+        "Designation: " + (item.designation || "Not provided")
+    );
+
+    const message = createElement(
+        "p",
+        "",
+        item.message || ""
+    );
+
+    message.style.whiteSpace = "pre-wrap";
+    message.style.overflowWrap = "anywhere";
+
+    const status = createElement(
+        "p",
+        "",
+        "Status: " + (item.status || "pending")
+    );
+
+    status.style.fontWeight = "bold";
+
+    card.append(title, designation, message, status);
+
+    // Load photo from Supabase.
+    if (item.photoPath) {
+        const { data, error } = supabase.storage
+            .from(FEEDBACK_BUCKET)
+            .getPublicUrl(item.photoPath);
+
+        if (!error && data?.publicUrl) {
+            const image = document.createElement("img");
+
+            image.src = data.publicUrl;
+            image.alt = "Feedback photo";
+            image.loading = "lazy";
+
+            image.style.cssText = `
+                display: block;
+                width: 130px;
+                height: 130px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin: 10px 0;
+            `;
+
+            card.appendChild(image);
+        }
+    } else if (item.photoUrl) {
+        // Compatibility with older feedback records.
+        const image = document.createElement("img");
+
+        image.src = item.photoUrl;
+        image.alt = "Feedback photo";
+        image.loading = "lazy";
+
+        image.style.cssText = `
+            display: block;
+            width: 130px;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 10px 0;
+        `;
+
+        card.appendChild(image);
+    }
+
+    const buttonContainer = createElement("div", "");
+
+    buttonContainer.style.cssText = `
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    `;
+
+    if (item.status === "pending" || !item.status) {
+        const approveBtn = createActionButton(
+            "Approve",
+            "#198754"
+        );
+
+        approveBtn.addEventListener("click", () => {
+            approveFeedback(item.id);
         });
 
-        showStatus("Feedback loaded successfully.");
-      },
-      (error) => {
-        console.error("Firestore listener error:", error.code, error.message);
-        showStatus(`Unable to load feedback: ${error.code || error.message}`);
-      }
+        const rejectBtn = createActionButton(
+            "Reject",
+            "#dc3545"
+        );
+
+        rejectBtn.addEventListener("click", () => {
+            rejectFeedback(item.id);
+        });
+
+        buttonContainer.append(approveBtn, rejectBtn);
+    }
+
+    const deleteBtn = createActionButton(
+        "Delete",
+        "#6c757d"
     );
-  }, (error) => {
-    console.error("Authentication state error:", error);
-    showLoginStatus("Could not verify login. Refresh and try again.");
-  });
+
+    deleteBtn.addEventListener("click", () => {
+        deleteFeedback(item.id);
+    });
+
+    buttonContainer.appendChild(deleteBtn);
+    card.appendChild(buttonContainer);
+
+    return card;
 }
 
-// ------------------------------------
-// APPROVE / REJECT FEEDBACK
-// ------------------------------------
+// =====================================
+// ACTION BUTTON
+// =====================================
 
-async function reviewFeedback(id, action) {
-  if (busy || !auth.currentUser) return;
-  if (action !== "approve" && action !== "reject") return;
+function createActionButton(label, backgroundColor) {
+    const button = createElement("button", "", label);
 
-  busy = true;
-  showStatus("Processing review...");
+    button.type = "button";
 
-  try {
-    const privateRef = doc(db, "feedbackPrivate", id);
-    const privateSnapshot = await getDoc(privateRef);
+    button.style.cssText = `
+        background: ${backgroundColor};
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 9px 14px;
+        cursor: pointer;
+    `;
 
-    if (!privateSnapshot.exists()) {
-      throw new Error("Feedback not found.");
-    }
-
-    const data = privateSnapshot.data();
-
-    if (data.status !== "pending") {
-      throw new Error("Feedback has already been reviewed.");
-    }
-
-    if (action === "approve") {
-      if (!data.photoPath) {
-        throw new Error("Feedback photo path is missing.");
-      }
-
-      const { data: photoData, error: photoError } = supabase.storage
-        .from(FEEDBACK_BUCKET)
-        .getPublicUrl(data.photoPath);
-
-      if (photoError || !photoData?.publicUrl) {
-        throw new Error("Could not obtain the Supabase photo URL.");
-      }
-
-      await setDoc(doc(db, "publicFeedback", id), {
-        name: data.name || "",
-        designation: data.designation || "",
-        message: data.message || "",
-        photoUrl: photoData.publicUrl,
-        status: "approved",
-        createdAt: data.createdAt || serverTimestamp(),
-        reviewedAt: serverTimestamp()
-      });
-
-      await updateDoc(privateRef, {
-        status: "approved",
-        reviewedAt: serverTimestamp()
-      });
-
-      showStatus("Feedback approved and published.");
-    } else {
-      await updateDoc(privateRef, {
-        status: "rejected",
-        reviewedAt: serverTimestamp()
-      });
-
-      showStatus("Feedback rejected.");
-    }
-  } catch (error) {
-    console.error("Review error:", error.code || "", error.message);
-    showStatus(`Review failed: ${error.message}`);
-  } finally {
-    busy = false;
-  }
+    return button;
 }
 
-// ------------------------------------
+// =====================================
+// APPROVE FEEDBACK
+// =====================================
+
+async function approveFeedback(id) {
+    if (!auth.currentUser) {
+        showAdminMessage("Please log in again.", true);
+        return;
+    }
+
+    try {
+        const privateRef = doc(db, "feedbackPrivate", id);
+        const snapshot = await getDoc(privateRef);
+
+        if (!snapshot.exists()) {
+            throw new Error("Feedback record not found.");
+        }
+
+        const data = snapshot.data();
+
+        if (data.status === "approved") {
+            showAdminMessage("This feedback is already approved.");
+            return;
+        }
+
+        const photoUrl = data.photoPath
+            ? supabase.storage
+                .from(FEEDBACK_BUCKET)
+                .getPublicUrl(data.photoPath).data.publicUrl
+            : (data.photoUrl || "");
+
+        await setDoc(doc(db, "publicFeedback", id), {
+            name: data.name || "",
+            designation: data.designation || "",
+            message: data.message || "",
+            photoUrl,
+            photoPath: data.photoPath || "",
+            status: "approved",
+            createdAt: data.createdAt || serverTimestamp(),
+            reviewedAt: serverTimestamp()
+        });
+
+        await updateDoc(privateRef, {
+            status: "approved",
+            reviewedAt: serverTimestamp()
+        });
+
+        showAdminMessage("Feedback approved successfully.");
+    } catch (error) {
+        console.error("Approve error:", error);
+
+        showAdminMessage(
+            "Unable to approve feedback: " + error.message,
+            true
+        );
+    }
+}
+
+// =====================================
+// REJECT FEEDBACK
+// =====================================
+
+async function rejectFeedback(id) {
+    if (!auth.currentUser) {
+        showAdminMessage("Please log in again.", true);
+        return;
+    }
+
+    try {
+        await updateDoc(doc(db, "feedbackPrivate", id), {
+            status: "rejected",
+            reviewedAt: serverTimestamp()
+        });
+
+        showAdminMessage("Feedback rejected.");
+    } catch (error) {
+        console.error("Reject error:", error);
+
+        showAdminMessage(
+            "Unable to reject feedback: " + error.message,
+            true
+        );
+    }
+}
+
+// =====================================
 // DELETE FEEDBACK + SUPABASE PHOTO
-// ------------------------------------
+// =====================================
 
 async function deleteFeedback(id) {
-  if (busy || !auth.currentUser) return;
-
-  const confirmed = window.confirm(
-    "Delete this feedback permanently?\n\n" +
-    "Its Firebase records and uploaded Supabase photo will be deleted."
-  );
-
-  if (!confirmed) return;
-
-  busy = true;
-  showStatus("Deleting feedback and photo...");
-
-  try {
-    const privateRef = doc(db, "feedbackPrivate", id);
-    const publicRef = doc(db, "publicFeedback", id);
-
-    const privateSnapshot = await getDoc(privateRef);
-
-    if (!privateSnapshot.exists()) {
-      throw new Error(
-        "Private feedback record not found. No records were deleted."
-      );
+    if (!auth.currentUser) {
+        showAdminMessage("Please log in again.", true);
+        return;
     }
 
-    const data = privateSnapshot.data();
-    const photoPath = data.photoPath;
+    const confirmed = window.confirm(
+        "Are you sure you want to permanently delete this feedback and its photo?"
+    );
 
-    // Delete the photo first. If this fails, keep the Firebase
-    // records so the photo path is not lost.
-    if (typeof photoPath === "string" && photoPath.trim()) {
-      const { error: storageError } = await supabase.storage
-        .from(FEEDBACK_BUCKET)
-        .remove([photoPath]);
+    if (!confirmed) return;
 
-      if (storageError) {
-        throw new Error(
-          `Supabase photo deletion failed: ${storageError.message}`
+    try {
+        showAdminMessage("Deleting feedback...");
+
+        const privateRef = doc(db, "feedbackPrivate", id);
+        const publicRef = doc(db, "publicFeedback", id);
+
+        const privateSnapshot = await getDoc(privateRef);
+        const publicSnapshot = await getDoc(publicRef);
+
+        if (!privateSnapshot.exists() && !publicSnapshot.exists()) {
+            throw new Error("Feedback record not found.");
+        }
+
+        const privateData = privateSnapshot.exists()
+            ? privateSnapshot.data()
+            : {};
+
+        const publicData = publicSnapshot.exists()
+            ? publicSnapshot.data()
+            : {};
+
+        const photoPath =
+            privateData.photoPath || publicData.photoPath || "";
+
+        // Delete the Supabase photo first.
+        if (photoPath) {
+            const { error: storageError } = await supabase.storage
+                .from(FEEDBACK_BUCKET)
+                .remove([photoPath]);
+
+            if (storageError) {
+                throw new Error(
+                    "Photo deletion failed. Firestore records were kept. " +
+                    storageError.message
+                );
+            }
+        }
+
+        // Delete the public and private Firestore records.
+        if (publicSnapshot.exists()) {
+            await deleteDoc(publicRef);
+        }
+
+        if (privateSnapshot.exists()) {
+            await deleteDoc(privateRef);
+        }
+
+        showAdminMessage(
+            "Feedback and its photo were deleted successfully."
         );
-      }
+    } catch (error) {
+        console.error("Delete error:", error);
+
+        showAdminMessage(
+            "Delete failed: " + error.message,
+            true
+        );
     }
-
-    // Remove the public record and the private record.
-    await deleteDoc(publicRef);
-    await deleteDoc(privateRef);
-
-    showStatus(
-      "Feedback deleted from Firebase and its photo removed from Supabase."
-    );
-  } catch (error) {
-    console.error("Delete error:", error.code || "", error.message);
-
-    showStatus(
-      `Delete failed: ${error.message}. Check the Firebase and Supabase records.`
-    );
-  } finally {
-    busy = false;
-  }
 }
+
+// =====================================
+// FIREBASE AUTH STATE
+// =====================================
+
+onAuthStateChanged(auth, (user) => {
+    isSigningOut = false;
+    stopInactivityTimer();
+
+    if (user) {
+        if (loginSection) {
+            loginSection.style.display = "none";
+        }
+
+        if (dashboard) {
+            dashboard.style.display = "block";
+        }
+
+        resetInactivityTimer();
+        loadFeedback();
+
+        showAdminMessage("Admin logged in.");
+    } else {
+        if (feedbackUnsubscribe) {
+            feedbackUnsubscribe();
+            feedbackUnsubscribe = null;
+        }
+
+        if (loginSection) {
+            loginSection.style.display = "block";
+        }
+
+        if (dashboard) {
+            dashboard.style.display = "none";
+        }
+
+        if (pendingList) {
+            pendingList.replaceChildren();
+        }
+
+        showLoginMessage("Please log in to continue.");
+    }
+});
