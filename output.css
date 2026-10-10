@@ -2075,8 +2075,8 @@ h1, h2 {
   border: 1px solid #000000;
   border-radius: 7px;
   font: inherit;
-  color: #ffffff;
-  background: #000000;
+  color: #000000;
+  background: #ffffff;
 }
 
 #feedbackForm input:focus,
