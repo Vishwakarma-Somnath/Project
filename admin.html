@@ -1,198 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <!-- Favicons -->
-  <link href="images/name-logo04 copy.png"  rel="icon"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Admin_Panel</title>
+    <!-- Favicon -->
+    <link href="images/name-logo04 copy.png" rel="icon">
 
-  <style>
-    .admin-panel {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 20px;
-    }
+    <title>Admin Panel | Feedback Management</title>
 
-    #loginSection {
-      max-width: 400px;
-    }
+    <!-- Boxicons -->
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
 
-    #loginForm {
-      display: grid;
-      gap: 12px;
-    }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-    #loginForm input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      border: 1px solid #ccd3dd;
-      border-radius: 6px;
-    }
+        body {
+            min-height: 100vh;
+            background: #081b29;
+            color: #fff;
+        }
 
-    #loginBtn,
-    #forgotPasswordBtn,
-    #logoutBtn,
-    .admin-actions button {
-      padding: 10px 16px;
-      border: 0;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+        /* LOGIN CONTAINER */
+        .container {
+            position: relative;
+            width: 850px;
+            max-width: calc(100% - 32px);
+            height: 520px;
+            margin: 45px auto;
+            border: 2px solid #1788ae;
+            box-shadow: 0 0 25px #1788ae;
+            overflow: hidden;
+            border-radius: 10px;
+        }
 
-    #loginBtn {
-      background: #1788ae;
-      color: white;
-    }
+        /* CURVED SHAPES */
+        .curved-shape {
+            position: absolute;
+            top: -5px;
+            right: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(45deg, #081b29, #1788ae);
+            transform: rotate(10deg) skewY(40deg);
+            transform-origin: bottom right;
+            transition: 1.5s ease;
+        }
 
-    #forgotPasswordBtn {
-      background: #f0f4f8;
-      color: #1788ae;
-      border: 1px solid #1788ae;
-    }
+        .curved-shape2 {
+            position: absolute;
+            top: 100%;
+            left: 250px;
+            width: 850px;
+            height: 700px;
+            background: #081b29;
+            border-top: 3px solid #1788ae;
+            transform: rotate(0deg) skewY(0deg);
+            transform-origin: bottom left;
+        }
 
-    #logoutBtn {
-      background: #b42318;
-      color: white;
-    }
+        /* LOGIN FORM AREA */
+        .form-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 35px 40px;
+            z-index: 2;
+        }
 
-    .admin-item {
-      padding: 20px;
-      margin: 16px 0;
-      background: white;
-      border-radius: 10px;
-      overflow-wrap: anywhere;
-    }
+        .form-box h2 {
+            font-size: 30px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-    .admin-item img {
-      width: 90px;
-      height: 90px;
-      object-fit: cover;
-      border-radius: 50%;
-    }
+        #loginForm {
+            width: 100%;
+        }
 
-@media (max-width: 480px) {
-  .admin-item img {
-    width: 85px;
-    height: 85px;
-    flex-basis: 85px;
-  }
+        .input-box {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            margin: 25px 0;
+        }
 
-  .feedback-content-row {
-    gap: 12px;
-  }
-}
+        .input-box input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            border-bottom: 2px solid #fff;
+            color: #fff;
+            font-size: 16px;
+            padding-right: 35px;
+        }
 
-    .admin-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 15px;
-    }
+        .input-box input:focus,
+        .input-box input:valid {
+            border-bottom-color: #1788ae;
+        }
 
-    .approve-btn {
-      background: #147d45;
-      color: white;
-    }
+        .input-box label {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            font-size: 15px;
+            color: #c9d5df;
+            pointer-events: none;
+            transition: 0.3s;
+        }
 
-    .reject-btn {
-      background: #b42318;
-      color: white;
-    }
+        .input-box input:focus ~ label,
+        .input-box input:valid ~ label {
+            top: -5px;
+            color: #55c8ef;
+            font-size: 12px;
+        }
 
-    #loginStatus,
-    #adminStatus {
-      overflow-wrap: anywhere;
-    }
+        .input-box i {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #c9d5df;
+        }
 
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  </style>
+        /* BUTTONS */
+        .btn {
+            width: 100%;
+            height: 45px;
+            background: #1788ae;
+            border: 2px solid #1788ae;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: transparent;
+            color: #55c8ef;
+        }
+
+        .forgot-btn {
+            display: block;
+            margin: 10px auto 0;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: #55c8ef;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .forgot-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* LOGIN STATUS */
+        #loginStatus {
+            margin-top: 15px;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+            text-align: center;
+        }
+
+        /* WELCOME AREA */
+        .info-content {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 35px;
+            text-align: right;
+            z-index: 2;
+        }
+
+        .info-content h2 {
+            font-size: 34px;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+
+        .info-content p {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-top: 15px;
+            color: #d6e4ed;
+        }
+
+        /* SIMPLE ENTRY ANIMATION */
+        .animation {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ADMIN DASHBOARD */
+        .admin-panel {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+            color: #17212b;
+            background: #f4f7fb;
+            border-radius: 12px;
+        }
+
+        .admin-panel h1,
+        .admin-panel h2 {
+            margin-bottom: 20px;
+        }
+
+        #dashboard {
+            color: #17212b;
+        }
+
+        #logoutBtn {
+            padding: 10px 18px;
+            background: #b42318;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        #adminStatus {
+            margin: 12px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .admin-item {
+            padding: 20px;
+            margin: 16px 0;
+            background: #fff;
+            color: #222;
+            border-radius: 10px;
+            overflow-wrap: anywhere;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+        }
+
+        .admin-item img {
+            width: 90px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .feedback-content-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .admin-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .admin-actions button {
+            padding: 10px 16px;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .approve-btn {
+            background: #147d45;
+            color: white;
+        }
+
+        .reject-btn {
+            background: #b42318;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 650px) {
+            .container {
+                width: 100%;
+                height: auto;
+                min-height: 600px;
+                margin: 20px auto;
+            }
+
+            .curved-shape,
+            .curved-shape2 {
+                display: none;
+            }
+
+            .form-box {
+                position: relative;
+                width: 100%;
+                height: auto;
+                min-height: 370px;
+                padding: 35px 25px 20px;
+            }
+
+            .info-content {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 15px 25px 35px;
+                text-align: center;
+            }
+
+            .info-content h2 {
+                font-size: 26px;
+            }
+
+            .info-content p {
+                font-size: 14px;
+            }
+
+            .form-box h2 {
+                font-size: 27px;
+            }
+
+            .admin-panel {
+                margin: 15px;
+                padding: 15px;
+            }
+
+            .feedback-content-row {
+                gap: 12px;
+            }
+
+            .admin-item img {
+                width: 85px;
+                height: 85px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-  <main class="admin-panel">
 
-    <h1>Feedback Administrator Panel</h1>
+    <!-- LOGIN SECTION -->
+    <main class="container" id="loginSection">
 
-    <!-- ADMIN LOGIN -->
-    <section id="loginSection">
-      <h2>Admin Login</h2>
+        <div class="curved-shape"></div>
+        <div class="curved-shape2"></div>
 
-      <form id="loginForm">
+        <!-- LOGIN FORM -->
+        <section class="form-box Login">
 
-        <label for="adminEmail">
-          Admin Email
-        </label>
+            <h2 class="animation">Admin Login</h2>
 
-        <input
-          id="adminEmail"
-          type="email"
-          placeholder="Enter admin email"
-          autocomplete="username"
-          required
-        >
+            <form id="loginForm">
 
-        <label for="adminPassword">
-          Password
-        </label>
+                <div class="input-box animation">
+                    <input
+                        id="adminEmail"
+                        type="email"
+                        placeholder=" "
+                        autocomplete="username"
+                        required
+                    >
+                    <label for="adminEmail">Admin Email</label>
+                    <i class="bx bxs-user"></i>
+                </div>
 
-        <input
-          id="adminPassword"
-          type="password"
-          placeholder="Enter password"
-          autocomplete="current-password"
-          required
-        >
+                <div class="input-box animation">
+                    <input
+                        id="adminPassword"
+                        type="password"
+                        placeholder=" "
+                        autocomplete="current-password"
+                        required
+                    >
+                    <label for="adminPassword">Password</label>
+                    <i class="bx bxs-lock-alt"></i>
+                </div>
 
-        <button id="loginBtn" type="submit">
-          Login
-        </button>
+                <div class="input-box animation">
+                    <button
+                        class="btn"
+                        id="loginBtn"
+                        type="submit"
+                    >
+                        Login
+                    </button>
+                </div>
 
-        <button
-          id="forgotPasswordBtn"
-          type="button"
-        >
-          Forgot Password?
-        </button>
+                <button
+                    class="forgot-btn"
+                    id="forgotPasswordBtn"
+                    type="button"
+                >
+                    Forgot Password?
+                </button>
 
-      </form>
+            </form>
 
-      <!-- LOGIN AND PASSWORD RESET MESSAGES -->
-      <p
-        id="loginStatus"
-        role="status"
-        aria-live="polite"
-      ></p>
-    </section>
+            <p
+                id="loginStatus"
+                role="status"
+                aria-live="polite"
+            ></p>
+
+        </section>
+
+        <!-- WELCOME MESSAGE -->
+        <section class="info-content Login">
+
+            <h2 class="animation">WELCOME BACK!</h2>
+
+            <p class="animation">
+                Welcome to the Feedback Administrator Panel.
+                Review submitted feedback, approve the entries
+                you want to publish, and manage your feedback
+                dashboard securely.
+            </p>
+
+        </section>
+
+    </main>
 
     <!-- ADMIN DASHBOARD -->
-    <section id="dashboard" hidden>
+    <section class="admin-panel" id="dashboard" hidden>
 
-      <button id="logoutBtn" type="button">
-        Logout
-      </button>
+        <h1>Feedback Administrator Panel</h1>
 
-      <h2>Pending Feedback</h2>
+        <button id="logoutBtn" type="button">
+            Logout
+        </button>
 
-      <p
-        id="adminStatus"
-        role="status"
-        aria-live="polite"
-      ></p>
+        <h2>Pending Feedback</h2>
 
-      <div id="pendingList"></div>
+        <p
+            id="adminStatus"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        <div id="pendingList"></div>
 
     </section>
 
-  </main>
-
-  <!-- KEEP THIS MODULE SCRIPT -->
-  <script type="module" src="./admin.js"></script>
+    <!-- KEEP YOUR EXISTING FIREBASE MODULE -->
+    <script type="module" src="./admin.js"></script>
 
 </body>
 </html>
