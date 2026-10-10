@@ -343,15 +343,8 @@ function loadFeedback() {
 // =====================================
 // CREATE FEEDBACK CARD
 // =====================================
-
-console.log("Firebase DB:", db);
-console.log("Firebase DB type:", db?.type);
-console.log("Firebase project:", db?.app?.options?.projectId);
 function createFeedbackCard(item) {
-    const card = createElement(
-        "div",
-        "feedback-admin-card"
-    );
+    const card = createElement("div", "feedback-admin-card");
 
     card.style.cssText = `
         border: 1px solid #ddd;
@@ -360,32 +353,43 @@ function createFeedbackCard(item) {
         margin: 12px 0;
         background: #fff;
         color: #222;
+        overflow-wrap: anywhere;
     `;
 
+    // Feedback name
     const title = createElement(
         "h3",
         "",
         item.name || "Unknown"
     );
 
-    title.style.fontWeight = "bold";
-    title.style.fontSize = "18px";
+    title.style.cssText = `
+        font-weight: bold;
+        font-size: 18px;
+        margin: 0 0 10px;
+    `;
 
+    // Designation
     const designation = createElement(
         "p",
         "",
         "Designation: " + (item.designation || "Not provided")
     );
 
+    // Feedback message
     const message = createElement(
         "p",
         "",
         item.message || ""
     );
 
-    message.style.whiteSpace = "pre-wrap";
-    message.style.overflowWrap = "anywhere";
+    message.style.cssText = `
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        margin: 10px 0;
+    `;
 
+    // Status
     const status = createElement(
         "p",
         "",
@@ -394,37 +398,49 @@ function createFeedbackCard(item) {
 
     status.style.fontWeight = "bold";
 
-    card.append(title, designation, message, status);
+    // LEFT SIDE: Text details
+    const details = createElement("div", "feedback-details");
 
-    // Load photo from Supabase.
+    details.style.cssText = `
+        flex: 1;
+        min-width: 0;
+    `;
+
+    details.append(title, designation, message, status);
+
+    // MAIN ROW: Details on left, photo on right
+    const contentRow = createElement(
+        "div",
+        "feedback-content-row"
+    );
+
+    contentRow.style.cssText = `
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        width: 100%;
+    `;
+
+    contentRow.appendChild(details);
+
+    // Get photo URL from Supabase or older records
+    let photoUrl = item.photoUrl || "";
+
     if (item.photoPath) {
-        const { data, error } = supabase.storage
+        const { data } = supabase.storage
             .from(FEEDBACK_BUCKET)
             .getPublicUrl(item.photoPath);
 
-        if (!error && data?.publicUrl) {
-            const image = document.createElement("img");
+        photoUrl = data?.publicUrl || photoUrl;
+    }
 
-            image.src = data.publicUrl;
-            image.alt = "Feedback photo";
-            image.loading = "lazy";
-
-            image.style.cssText = `
-                display: block;
-                width: 130px;
-                height: 130px;
-                object-fit: cover;
-                border-radius: 8px;
-                margin: 10px 0;
-            `;
-
-            card.appendChild(image);
-        }
-    } else if (item.photoUrl) {
-        // Compatibility with older feedback records.
+    // RIGHT SIDE: Photo
+    if (photoUrl) {
         const image = document.createElement("img");
 
-        image.src = item.photoUrl;
+        image.src = photoUrl;
         image.alt = "Feedback photo";
         image.loading = "lazy";
 
@@ -432,23 +448,28 @@ function createFeedbackCard(item) {
             display: block;
             width: 130px;
             height: 130px;
+            flex: 0 0 130px;
             object-fit: cover;
             border-radius: 8px;
-            margin: 10px 0;
+            margin: 0;
         `;
 
-        card.appendChild(image);
+        contentRow.appendChild(image);
     }
 
+    card.appendChild(contentRow);
+
+    // ACTION BUTTONS
     const buttonContainer = createElement("div", "");
 
     buttonContainer.style.cssText = `
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 15px;
     `;
 
+    // Approve and Reject only for pending feedback
     if (item.status === "pending" || !item.status) {
         const approveBtn = createActionButton(
             "Approve",
@@ -471,6 +492,7 @@ function createFeedbackCard(item) {
         buttonContainer.append(approveBtn, rejectBtn);
     }
 
+    // Delete button
     const deleteBtn = createActionButton(
         "Delete",
         "#6c757d"
