@@ -236,8 +236,8 @@
             max-width: 900px;
             margin: 30px auto;
             padding: 20px;
-            color: none;
-            background: none;
+            color: #17212b;
+            background: #f4f7fb;
             border-radius: 12px;
         }
 
@@ -377,6 +377,36 @@
                 width: 85px;
                 height: 85px;
             }
+
+            
+            /* Control login and dashboard visibility */
+            #loginSection[hidden],
+            #dashboard[hidden] {
+                display: none !important;
+            }
+
+            /* Dashboard appearance */
+            #dashboard {
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 1000px;
+                margin: 30px auto;
+                padding: 25px;
+                background: #f4f7fb;
+                color: #17212b;
+                border-radius: 12px;
+            }
+
+            #dashboard h1,
+            #dashboard h2 {
+                color: #17212b;
+                visibility: visible;
+            }
+
+            #dashboard #adminStatus {
+                overflow-wrap: anywhere;
+            }
+
         }
     </style>
 </head>

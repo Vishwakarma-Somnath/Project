@@ -709,38 +709,50 @@ async function deleteFeedback(id) {
     }
 }
 
-// =====================================
-// FIREBASE AUTH STATE
-// =====================================
+
+ // =====================================
+ // FIREBASE AUTH STATE
+ // =====================================
 
 onAuthStateChanged(auth, (user) => {
     isSigningOut = false;
     stopInactivityTimer();
 
     if (user) {
+        // Hide login section
         if (loginSection) {
+            loginSection.hidden = true;
             loginSection.style.display = "none";
         }
 
+        // Show admin dashboard
         if (dashboard) {
+            dashboard.hidden = false;
             dashboard.style.display = "block";
         }
 
+        console.log("Login successful. Dashboard is visible.");
+
         resetInactivityTimer();
         loadFeedback();
-
         showAdminMessage("Admin logged in.");
+
     } else {
+        // Stop listening to Firestore
         if (feedbackUnsubscribe) {
             feedbackUnsubscribe();
             feedbackUnsubscribe = null;
         }
 
+        // Show login form
         if (loginSection) {
+            loginSection.hidden = false;
             loginSection.style.display = "block";
         }
 
+        // Hide dashboard
         if (dashboard) {
+            dashboard.hidden = true;
             dashboard.style.display = "none";
         }
 
