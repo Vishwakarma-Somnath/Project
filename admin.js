@@ -2,26 +2,26 @@ import { auth, db } from "./firebase-config.js";
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
 
 import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  collection,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  setDoc,
-  updateDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+    collection,
+    doc,
+    getDoc,
+    onSnapshot,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ------------------------------------
+// =====================================
 // HTML ELEMENTS
-// ------------------------------------
+// =====================================
 
 const loginSection = document.getElementById("loginSection");
 const loginForm = document.getElementById("loginForm");
@@ -32,507 +32,681 @@ const logoutBtn = document.getElementById("logoutBtn");
 const loginStatus = document.getElementById("loginStatus");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
-let unsubscribePending = null;
-let busy = false;
+// =====================================
+// AUTO LOGOUT SETTINGS
+// =====================================
 
-// ------------------------------------
-// STATUS MESSAGES
-// ------------------------------------
+const INACTIVITY_LIMIT = 30 * 1000; // 30 seconds
 
-function showStatus(message) {
-  if (adminStatus) {
-    adminStatus.textContent = message;
-  }
-}
+let inactivityTimer = null;
+let feedbackUnsubscribe = null;
+let isSigningOut = false;
 
-function showLoginStatus(message) {
-  if (loginStatus) {
+// =====================================
+// STATUS MESSAGE
+// =====================================
+
+function showLoginMessage(message, isError = false) {
+    if (!loginStatus) return;
+
     loginStatus.textContent = message;
-  }
+    loginStatus.style.color = isError ? "red" : "green";
 }
 
-function stopPendingListener() {
-  if (unsubscribePending) {
-    unsubscribePending();
-    unsubscribePending = null;
-  }
+function showAdminMessage(message, isError = false) {
+    if (!adminStatus) return;
+
+    adminStatus.textContent = message;
+    adminStatus.style.color = isError ? "red" : "green";
 }
 
-// ------------------------------------
-// CHECK REQUIRED HTML ELEMENTS
-// ------------------------------------
+// =====================================
+// STOP AUTO LOGOUT TIMER
+// =====================================
 
-if (
-  !loginSection ||
-  !loginForm ||
-  !dashboard ||
-  !pendingList ||
-  !adminStatus ||
-  !logoutBtn
-) {
-  console.error(
-    "Admin HTML is missing a required element ID."
-  );
-} else {
-
-  // ------------------------------------
-  // ADMIN LOGIN
-  // ------------------------------------
-
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const email = document
-      .getElementById("adminEmail")
-      ?.value.trim();
-
-    const password = document
-      .getElementById("adminPassword")
-      ?.value;
-
-    if (!email || !password) {
-      showLoginStatus("Enter your email and password.");
-      return;
+function stopInactivityTimer() {
+    if (inactivityTimer !== null) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
     }
+}
 
-    const loginBtn = document.getElementById("loginBtn");
+// =====================================
+// RESET AUTO LOGOUT TIMER
+// =====================================
 
-    if (loginBtn) loginBtn.disabled = true;
+function resetInactivityTimer() {
+    stopInactivityTimer();
 
-    showLoginStatus("Logging in...");
+    if (!auth.currentUser || isSigningOut) return;
 
-    try {
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    inactivityTimer = setTimeout(async () => {
+        if (!auth.currentUser || isSigningOut) return;
 
-      showLoginStatus(
-        "Login successful. Loading feedback..."
-      );
-
-    } catch (error) {
-      console.error(
-        "Login error:",
-        error.code,
-        error.message
-      );
-
-      if (error.code === "auth/too-many-requests") {
-        showLoginStatus(
-          "Too many attempts. Please wait before trying again."
-        );
-      } else if (
-        error.code === "auth/invalid-credential" ||
-        error.code === "auth/wrong-password" ||
-        error.code === "auth/user-not-found"
-      ) {
-        showLoginStatus(
-          "Incorrect email or password."
-        );
-      } else {
-        showLoginStatus(
-          `Login failed: ${error.code || error.message}`
-        );
-      }
-
-    } finally {
-      if (loginBtn) loginBtn.disabled = false;
-    }
-  });
-
-  // ------------------------------------
-  // FORGOT PASSWORD
-  // ------------------------------------
-
-  if (forgotPasswordBtn) {
-    forgotPasswordBtn.addEventListener(
-      "click",
-      async () => {
-        const email = document
-          .getElementById("adminEmail")
-          ?.value.trim();
-
-        if (!email) {
-          showLoginStatus(
-            "Please enter your admin email first."
-          );
-
-          document
-            .getElementById("adminEmail")
-            ?.focus();
-
-          return;
-        }
-
-        forgotPasswordBtn.disabled = true;
-
-        showLoginStatus(
-          "Sending password reset email..."
-        );
+        isSigningOut = true;
 
         try {
-          await sendPasswordResetEmail(auth, email);
+            await signOut(auth);
 
-          showLoginStatus(
-            "If the account is eligible, check your inbox and Spam folder for the reset email."
-          );
-
+            alert(
+                "You have been logged out because of 20 seconds of inactivity."
+            );
         } catch (error) {
-          console.error(
-            "Password reset error:",
-            error.code,
-            error.message
-          );
-
-          if (
-            error.code === "auth/too-many-requests"
-          ) {
-            showLoginStatus(
-              "Too many attempts. Please wait before trying again."
-            );
-          } else {
-            showLoginStatus(
-              "Could not send reset email. Check Firebase settings and try later."
-            );
-          }
-
-        } finally {
-          forgotPasswordBtn.disabled = false;
+            console.error("Auto logout failed:", error);
+            isSigningOut = false;
         }
-      }
-    );
-  }
+    }, INACTIVITY_LIMIT);
+}
 
-  // ------------------------------------
-  // ADMIN LOGOUT
-  // ------------------------------------
+// =====================================
+// USER ACTIVITY EVENTS
+// =====================================
 
-  logoutBtn.addEventListener("click", async () => {
+const activityEvents = [
+    "mousemove",
+    "mousedown",
+    "keydown",
+    "scroll",
+    "click",
+    "touchstart"
+];
+
+activityEvents.forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+        resetInactivityTimer();
+    }, { passive: true });
+});
+
+// =====================================
+// PAGE EXIT LOGOUT
+// =====================================
+
+// Best-effort logout when navigating away or
+// closing/reloading the page. Browser shutdown
+// may prevent this asynchronous request finishing.
+
+window.addEventListener("pagehide", () => {
+    stopInactivityTimer();
+
+    if (auth.currentUser) {
+        void signOut(auth).catch((error) => {
+            console.error("Page-exit logout failed:", error);
+        });
+    }
+});
+
+// =====================================
+// ADMIN LOGIN
+// =====================================
+
+if (loginForm) {
+    loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const emailInput = loginForm.querySelector(
+            'input[type="email"]'
+        );
+
+        const passwordInput = loginForm.querySelector(
+            'input[type="password"]'
+        );
+
+        const email = emailInput?.value.trim();
+        const password = passwordInput?.value;
+
+        if (!email || !password) {
+            showLoginMessage(
+                "Please enter your email and password.",
+                true
+            );
+            return;
+        }
+
+        try {
+            showLoginMessage("Logging in...");
+
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+            showLoginMessage("Login successful.");
+        } catch (error) {
+            console.error("Login error:", error);
+
+            showLoginMessage(
+                "Login failed: " + error.message,
+                true
+            );
+        }
+    });
+}
+
+// =====================================
+// FORGOT PASSWORD
+// =====================================
+
+if (forgotPasswordBtn) {
+    forgotPasswordBtn.addEventListener("click", async () => {
+        const emailInput = loginForm?.querySelector(
+            'input[type="email"]'
+        );
+
+        const email = emailInput?.value.trim();
+
+        if (!email) {
+            showLoginMessage(
+                "Please enter your email first.",
+                true
+            );
+            emailInput?.focus();
+            return;
+        }
+
+        try {
+            await sendPasswordResetEmail(auth, email);
+
+            showLoginMessage(
+                "Password reset email sent. Please check your inbox."
+            );
+        } catch (error) {
+            console.error("Password reset error:", error);
+
+            showLoginMessage(
+                "Unable to send reset email: " + error.message,
+                true
+            );
+        }
+    });
+}
+
+// =====================================
+// MANUAL LOGOUT
+// =====================================
+
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+        try {
+            stopInactivityTimer();
+            isSigningOut = true;
+
+            await signOut(auth);
+
+            showLoginMessage("You have been logged out.");
+        } catch (error) {
+            console.error("Logout error:", error);
+
+            showAdminMessage(
+                "Logout failed: " + error.message,
+                true
+            );
+
+            isSigningOut = false;
+        }
+    });
+}
+
+// =====================================
+// HELPER: CREATE ELEMENT
+// =====================================
+
+function createElement(tag, className, text = "") {
+    const element = document.createElement(tag);
+
+    if (className) {
+        element.className = className;
+    }
+
+    element.textContent = text;
+
+    return element;
+}
+
+// =====================================
+// LOAD FEEDBACK
+// =====================================
+function loadFeedback() {
+    console.log("STEP 1: loadFeedback() started");
+
+    if (feedbackUnsubscribe) {
+        feedbackUnsubscribe();
+        feedbackUnsubscribe = null;
+    }
+
+    if (!pendingList) {
+        console.error("ERROR: #pendingList element not found");
+        showAdminMessage("HTML error: pendingList not found.", true);
+        return;
+    }
+
+    pendingList.replaceChildren();
+    showAdminMessage("Connecting to Firestore...");
+
+    console.log("STEP 2: Current user UID:", auth.currentUser?.uid);
+    console.log("STEP 3: Firestore database:", db);
+
     try {
-      await signOut(auth);
-      showLoginStatus("Logged out successfully.");
+        feedbackUnsubscribe = onSnapshot(
+            collection(db, "feedbackPrivate"),
+
+            (snapshot) => {
+                console.log(
+                    "STEP 4: Firestore response received. Documents:",
+                    snapshot.size
+                );
+
+                pendingList.replaceChildren();
+
+                if (snapshot.empty) {
+                    showAdminMessage(
+                        "Connected, but feedbackPrivate has no documents."
+                    );
+                    return;
+                }
+
+                snapshot.forEach((documentSnapshot) => {
+                    const item = {
+                        id: documentSnapshot.id,
+                        ...documentSnapshot.data()
+                    };
+
+                    console.log("Feedback document:", item.id, item);
+
+                    pendingList.appendChild(createFeedbackCard(item));
+                });
+
+                showAdminMessage(
+                    `Loaded ${snapshot.size} feedback record(s).`
+                );
+            },
+
+            (error) => {
+                console.error("STEP 5: Firestore listener error:", error);
+
+                showAdminMessage(
+                    "Firestore error: " + error.code + " - " + error.message,
+                    true
+                );
+            }
+        );
+
+        console.log("STEP 6: Firestore listener registered");
 
     } catch (error) {
-      console.error(
-        "Logout error:",
-        error.code,
-        error.message
-      );
+        console.error("STEP 7: Synchronous error:", error);
 
-      showStatus("Logout failed. Please try again.");
+        showAdminMessage("Error: " + error.message, true);
     }
-  });
+}
 
-  // ------------------------------------
-  // FIREBASE AUTH STATE
-  // ------------------------------------
+// =====================================
+// CREATE FEEDBACK CARD
+// =====================================
 
-  onAuthStateChanged(
-    auth,
+console.log("Firebase DB:", db);
+console.log("Firebase DB type:", db?.type);
+console.log("Firebase project:", db?.app?.options?.projectId);
+function createFeedbackCard(item) {
+    const card = createElement(
+        "div",
+        "feedback-admin-card"
+    );
 
-    (user) => {
-      stopPendingListener();
-      pendingList.replaceChildren();
+    card.style.cssText = `
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 16px;
+        margin: 12px 0;
+        background: #fff;
+        color: #222;
+    `;
 
-      if (!user) {
-        loginSection.hidden = false;
-        dashboard.hidden = true;
+    const title = createElement(
+        "h3",
+        "",
+        item.name || "Unknown"
+    );
+
+    title.style.fontWeight = "bold";
+    title.style.fontSize = "18px";
+
+    const designation = createElement(
+        "p",
+        "",
+        "Designation: " + (item.designation || "Not provided")
+    );
+
+    const message = createElement(
+        "p",
+        "",
+        item.message || ""
+    );
+
+    message.style.whiteSpace = "pre-wrap";
+    message.style.overflowWrap = "anywhere";
+
+    const status = createElement(
+        "p",
+        "",
+        "Status: " + (item.status || "pending")
+    );
+
+    status.style.fontWeight = "bold";
+
+    card.append(title, designation, message, status);
+
+    // Load photo from Supabase.
+    if (item.photoPath) {
+        const { data, error } = supabase.storage
+            .from(FEEDBACK_BUCKET)
+            .getPublicUrl(item.photoPath);
+
+        if (!error && data?.publicUrl) {
+            const image = document.createElement("img");
+
+            image.src = data.publicUrl;
+            image.alt = "Feedback photo";
+            image.loading = "lazy";
+
+            image.style.cssText = `
+                display: block;
+                width: 130px;
+                height: 130px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin: 10px 0;
+            `;
+
+            card.appendChild(image);
+        }
+    } else if (item.photoUrl) {
+        // Compatibility with older feedback records.
+        const image = document.createElement("img");
+
+        image.src = item.photoUrl;
+        image.alt = "Feedback photo";
+        image.loading = "lazy";
+
+        image.style.cssText = `
+            display: block;
+            width: 130px;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 10px 0;
+        `;
+
+        card.appendChild(image);
+    }
+
+    const buttonContainer = createElement("div", "");
+
+    buttonContainer.style.cssText = `
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    `;
+
+    if (item.status === "pending" || !item.status) {
+        const approveBtn = createActionButton(
+            "Approve",
+            "#198754"
+        );
+
+        approveBtn.addEventListener("click", () => {
+            approveFeedback(item.id);
+        });
+
+        const rejectBtn = createActionButton(
+            "Reject",
+            "#dc3545"
+        );
+
+        rejectBtn.addEventListener("click", () => {
+            rejectFeedback(item.id);
+        });
+
+        buttonContainer.append(approveBtn, rejectBtn);
+    }
+
+    const deleteBtn = createActionButton(
+        "Delete",
+        "#6c757d"
+    );
+
+    deleteBtn.addEventListener("click", () => {
+        deleteFeedback(item.id);
+    });
+
+    buttonContainer.appendChild(deleteBtn);
+    card.appendChild(buttonContainer);
+
+    return card;
+}
+
+// =====================================
+// ACTION BUTTON
+// =====================================
+
+function createActionButton(label, backgroundColor) {
+    const button = createElement("button", "", label);
+
+    button.type = "button";
+
+    button.style.cssText = `
+        background: ${backgroundColor};
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 9px 14px;
+        cursor: pointer;
+    `;
+
+    return button;
+}
+
+// =====================================
+// APPROVE FEEDBACK
+// =====================================
+
+async function approveFeedback(id) {
+    if (!auth.currentUser) {
+        showAdminMessage("Please log in again.", true);
         return;
-      }
+    }
 
-      loginSection.hidden = true;
-      dashboard.hidden = false;
+    try {
+        const privateRef = doc(db, "feedbackPrivate", id);
+        const snapshot = await getDoc(privateRef);
 
-      showStatus("Loading pending feedback...");
+        if (!snapshot.exists()) {
+            throw new Error("Feedback record not found.");
+        }
 
-      // Only admin-authorized users should be allowed
-      // to read feedbackPrivate. Enforce this in Firestore Rules.
-      const pendingQuery = query(
-        collection(db, "feedbackPrivate")
-      );
+        const data = snapshot.data();
 
-      unsubscribePending = onSnapshot(
-        pendingQuery,
-
-        (snapshot) => {
-          pendingList.replaceChildren();
-
-          const pending = snapshot.docs.filter(
-            (item) =>
-              item.data().status === "pending"
-          );
-
-          if (pending.length === 0) {
-            pendingList.textContent =
-              "No pending feedback.";
-
-            showStatus(
-              "Feedback loaded successfully."
-            );
-
+        if (data.status === "approved") {
+            showAdminMessage("This feedback is already approved.");
             return;
-          }
+        }
 
-          pending.forEach((item) => {
-            const data = item.data();
-            const itemId = item.id;
-
-            const card =
-              document.createElement("article");
-
-            card.className = "admin-item";
-
-            const heading =
-              document.createElement("h3");
-
-            heading.textContent =
-              data.name || "Unnamed visitor";
-
-            const email =
-              document.createElement("p");
-
-            email.textContent =
-              `Email (private): ${data.email || ""}`;
-
-            const designation =
-              document.createElement("p");
-
-            designation.textContent =
-              `Designation: ${data.designation || ""}`;
-
-            const message =
-              document.createElement("p");
-
-            message.textContent =
-              `Feedback: ${data.message || ""}`;
-
-            card.append(
-              heading,
-              email,
-              designation,
-              message
-            );
-
-            
-            // --------------------------------
-            // LOAD PHOTO FROM SUPABASE
-            // --------------------------------
-
-            const photo = document.createElement("img");
-            photo.alt = "Visitor photo";
-            photo.loading = "lazy";
-            photo.style.maxWidth = "180px";
-            photo.style.height = "auto";
-            photo.style.display = "block";
-            photo.style.margin = "10px 0";
-
-            if (data.photoPath) {
-              const { data: photoData } = supabase.storage
+        const photoUrl = data.photoPath
+            ? supabase.storage
                 .from(FEEDBACK_BUCKET)
-                .getPublicUrl(data.photoPath);
+                .getPublicUrl(data.photoPath).data.publicUrl
+            : (data.photoUrl || "");
 
-              photo.src = photoData.publicUrl;
+        await setDoc(doc(db, "publicFeedback", id), {
+            name: data.name || "",
+            designation: data.designation || "",
+            message: data.message || "",
+            photoUrl,
+            photoPath: data.photoPath || "",
+            status: "approved",
+            createdAt: data.createdAt || serverTimestamp(),
+            reviewedAt: serverTimestamp()
+        });
 
-              photo.onerror = () => {
-                console.error(
-                  "Photo failed to load:",
-                  photo.src
+        await updateDoc(privateRef, {
+            status: "approved",
+            reviewedAt: serverTimestamp()
+        });
+
+        showAdminMessage("Feedback approved successfully.");
+    } catch (error) {
+        console.error("Approve error:", error);
+
+        showAdminMessage(
+            "Unable to approve feedback: " + error.message,
+            true
+        );
+    }
+}
+
+// =====================================
+// REJECT FEEDBACK
+// =====================================
+
+async function rejectFeedback(id) {
+    if (!auth.currentUser) {
+        showAdminMessage("Please log in again.", true);
+        return;
+    }
+
+    try {
+        await updateDoc(doc(db, "feedbackPrivate", id), {
+            status: "rejected",
+            reviewedAt: serverTimestamp()
+        });
+
+        showAdminMessage("Feedback rejected.");
+    } catch (error) {
+        console.error("Reject error:", error);
+
+        showAdminMessage(
+            "Unable to reject feedback: " + error.message,
+            true
+        );
+    }
+}
+
+// =====================================
+// DELETE FEEDBACK + SUPABASE PHOTO
+// =====================================
+
+async function deleteFeedback(id) {
+    if (!auth.currentUser) {
+        showAdminMessage("Please log in again.", true);
+        return;
+    }
+
+    const confirmed = window.confirm(
+        "Are you sure you want to permanently delete this feedback and its photo?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+        showAdminMessage("Deleting feedback...");
+
+        const privateRef = doc(db, "feedbackPrivate", id);
+        const publicRef = doc(db, "publicFeedback", id);
+
+        const privateSnapshot = await getDoc(privateRef);
+        const publicSnapshot = await getDoc(publicRef);
+
+        if (!privateSnapshot.exists() && !publicSnapshot.exists()) {
+            throw new Error("Feedback record not found.");
+        }
+
+        const privateData = privateSnapshot.exists()
+            ? privateSnapshot.data()
+            : {};
+
+        const publicData = publicSnapshot.exists()
+            ? publicSnapshot.data()
+            : {};
+
+        const photoPath =
+            privateData.photoPath || publicData.photoPath || "";
+
+        // Delete the Supabase photo first.
+        if (photoPath) {
+            const { error: storageError } = await supabase.storage
+                .from(FEEDBACK_BUCKET)
+                .remove([photoPath]);
+
+            if (storageError) {
+                throw new Error(
+                    "Photo deletion failed. Firestore records were kept. " +
+                    storageError.message
                 );
-                photo.alt = "Photo could not be loaded. Check Supabase bucket access.";
-              };
-
-              card.appendChild(photo);
-            } else {
-              const noPhoto = document.createElement("p");
-              noPhoto.textContent = "Photo path is missing.";
-              card.appendChild(noPhoto);
             }
-
-
-            // --------------------------------
-            // APPROVE / REJECT BUTTONS
-            // --------------------------------
-
-            const actions =
-              document.createElement("div");
-
-            actions.className = "admin-actions";
-
-            const approveButton =
-              document.createElement("button");
-
-            approveButton.type = "button";
-            approveButton.className = "approve-btn";
-            approveButton.textContent = "Approve";
-
-            const rejectButton =
-              document.createElement("button");
-
-            rejectButton.type = "button";
-            rejectButton.className = "reject-btn";
-            rejectButton.textContent = "Reject";
-
-            approveButton.addEventListener(
-              "click",
-              () => reviewFeedback(itemId, "approve")
-            );
-
-            rejectButton.addEventListener(
-              "click",
-              () => reviewFeedback(itemId, "reject")
-            );
-
-            actions.append(
-              approveButton,
-              rejectButton
-            );
-
-            card.appendChild(actions);
-            pendingList.appendChild(card);
-          });
-
-          showStatus("Pending feedback loaded.");
-        },
-
-        (error) => {
-          console.error(
-            "Firestore listener error:",
-            error.code,
-            error.message
-          );
-
-          showStatus(
-            `Unable to load feedback: ${
-              error.code || error.message
-            }`
-          );
         }
-      );
-    },
 
-    (error) => {
-      console.error(
-        "Authentication state error:",
-        error
-      );
+        // Delete the public and private Firestore records.
+        if (publicSnapshot.exists()) {
+            await deleteDoc(publicRef);
+        }
 
-      showLoginStatus(
-        "Could not verify login. Refresh and try again."
-      );
+        if (privateSnapshot.exists()) {
+            await deleteDoc(privateRef);
+        }
+
+        showAdminMessage(
+            "Feedback and its photo were deleted successfully."
+        );
+    } catch (error) {
+        console.error("Delete error:", error);
+
+        showAdminMessage(
+            "Delete failed: " + error.message,
+            true
+        );
     }
-  );
 }
 
-// ------------------------------------
-// APPROVE / REJECT FEEDBACK
-// ------------------------------------
+// =====================================
+// FIREBASE AUTH STATE
+// =====================================
 
-async function reviewFeedback(id, action) {
-  if (busy) return;
+onAuthStateChanged(auth, (user) => {
+    isSigningOut = false;
+    stopInactivityTimer();
 
-  if (
-    action !== "approve" &&
-    action !== "reject"
-  ) {
-    return;
-  }
-
-  busy = true;
-  showStatus("Processing review...");
-
-  try {
-    const privateRef = doc(
-      db,
-      "feedbackPrivate",
-      id
-    );
-
-    const privateSnapshot =
-      await getDoc(privateRef);
-
-    if (!privateSnapshot.exists()) {
-      throw new Error("Feedback not found.");
-    }
-
-    const data = privateSnapshot.data();
-
-    if (data.status !== "pending") {
-      throw new Error(
-        "Feedback has already been reviewed."
-      );
-    }
-
-    if (action === "approve") {
-      if (!data.photoPath) {
-        throw new Error(
-          "Feedback photo path is missing."
-        );
-      }
-
-      // Supabase Storage public bucket URL.
-      const {
-        data: photoData,
-        error: photoError
-      } = supabase.storage
-        .from(FEEDBACK_BUCKET)
-        .getPublicUrl(data.photoPath);
-
-      if (
-        photoError ||
-        !photoData?.publicUrl
-      ) {
-        throw new Error(
-          "Could not obtain the Supabase photo URL."
-        );
-      }
-
-      // Publish only the fields needed by visitors.
-      await setDoc(
-        doc(db, "publicFeedback", id),
-        {
-          name: data.name || "",
-          designation: data.designation || "",
-          message: data.message || "",
-          photoUrl: photoData.publicUrl,
-          status: "approved",
-          createdAt:
-            data.createdAt || serverTimestamp(),
-          reviewedAt: serverTimestamp()
+    if (user) {
+        if (loginSection) {
+            loginSection.style.display = "none";
         }
-      );
 
-      await updateDoc(privateRef, {
-        status: "approved",
-        reviewedAt: serverTimestamp()
-      });
+        if (dashboard) {
+            dashboard.style.display = "block";
+        }
 
-      showStatus(
-        "Feedback approved and published."
-      );
+        resetInactivityTimer();
+        loadFeedback();
 
+        showAdminMessage("Admin logged in.");
     } else {
-      await updateDoc(privateRef, {
-        status: "rejected",
-        reviewedAt: serverTimestamp()
-      });
+        if (feedbackUnsubscribe) {
+            feedbackUnsubscribe();
+            feedbackUnsubscribe = null;
+        }
 
-      showStatus("Feedback rejected.");
+        if (loginSection) {
+            loginSection.style.display = "block";
+        }
+
+        if (dashboard) {
+            dashboard.style.display = "none";
+        }
+
+        if (pendingList) {
+            pendingList.replaceChildren();
+        }
+
+        showLoginMessage("Please log in to continue.");
     }
-
-  } catch (error) {
-    console.error(
-      "Review error:",
-      error.code || "",
-      error.message
-    );
-
-    showStatus(
-      `Review failed: ${error.message}`
-    );
-
-  } finally {
-    busy = false;
-  }
-}
+});
