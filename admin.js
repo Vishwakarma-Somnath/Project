@@ -375,7 +375,6 @@ email.style.cssText = `
     overflow-wrap: anywhere;
     color: #1788ae;
 `;
-```
 
     title.style.cssText = `
         font-weight: bold;
