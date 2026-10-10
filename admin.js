@@ -451,7 +451,7 @@ function createFeedbackCard(item) {
             flex: 0 0 130px;
             object-fit: cover;
             border-radius: 8px;
-            margin: 0;
+            margin: 20px 0;
         `;
 
         contentRow.appendChild(image);
