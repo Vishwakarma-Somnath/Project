@@ -136,7 +136,7 @@ body{
 }
 
 .btn{
-    position: relative;
+position: relative;
     width: 100%;
     height: 45px;
     background: transparent;
@@ -146,7 +146,7 @@ body{
     font-weight: 600;
     border: 2px solid #e46033;
     overflow: hidden;
-    z-index: 1;    
+    z-index: 1;     
 }
 
 .btn::before{
@@ -161,9 +161,11 @@ body{
     transition: .5s;
 }
 
-.btn:hover:before{
+
+.btn:hover::before {
     top: 0;
 }
+
 
 .regi-link{
     font-size: 14px;
