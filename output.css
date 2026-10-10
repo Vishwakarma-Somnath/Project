@@ -2023,15 +2023,10 @@ video {
 }
 
 
-
-* {
-  box-sizing: border-box;
-}
-
 .feedback-container {
   width: 100%;
   max-width: 1000px;
-  margin: auto;
+  margin: top: 10vh;
 }
 
 .feedback-form-card {
@@ -2049,7 +2044,7 @@ h1, h2 {
 
 .feedback-form-card > p,
 .public-feedback > p {
-  color: #666;
+  color: #fefefe;
   line-height: 1.6;
 }
 
