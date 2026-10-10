@@ -2058,7 +2058,7 @@ h1, h2 {
 #feedbackForm {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 #feedbackForm label {
