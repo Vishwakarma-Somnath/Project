@@ -2028,15 +2028,6 @@ video {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  padding: 30px 16px;
-  font-family: Arial, sans-serif;
-  color: none;
-  background:none;
-  top: (10vh);
-}
-
 .feedback-container {
   width: 100%;
   max-width: 1000px;
