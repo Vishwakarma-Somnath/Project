@@ -111,6 +111,18 @@
             padding-right: 35px;
         }
 
+        .btn::before{
+            content: "";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(#25252b, #e46033, #25252b, #e46033);
+            top: -100%;
+            left: 0;
+            z-index: -1;
+            transition: .5s;
+        }
+
         .input-box input:focus,
         .input-box input:valid {
             border-bottom-color: #e46033;
@@ -152,23 +164,9 @@
             border-radius: 40px;
             cursor: pointer;
             font-size: 16px;
-            overflow: hidden;
             font-weight: 600;
             color: #e46033;
             transition: 0.3s;
-            z-index: 1;
-        }
-
-        .btn::before{
-            content: "";
-            position: absolute;
-            height: 300%;
-            width: 100%;
-            background: linear-gradient(#25252b, #e46033, #25252b, #e46033);
-            top: -100%;
-            left: 0;
-            z-index: -1;
-            transition: .5s;
         }
 
         .btn:hover {
