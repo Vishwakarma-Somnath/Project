@@ -2151,7 +2151,7 @@ h1, h2 {
   flex-shrink: 0;
   border-radius: 50%;
   object-fit: cover;
-  background: #000000;
+  background: #ffffff;
 }
 
 .feedback-person h3 {
