@@ -163,7 +163,7 @@ console.log("Photo uploaded successfully:", data);
   });
 }
 
-// Load publicly approved feedback.
+// Load publicly approved feedback into the existing Swiper.
 if (feedbackList) {
   const approvedCollection = collection(db, "publicFeedback");
 
@@ -173,29 +173,37 @@ if (feedbackList) {
   onSnapshot(
     approvedCollection,
     (snapshot) => {
-      feedbackList.replaceChildren();
+
+      // Remove only previously generated Firebase slides.
+      // Existing manual testimonials remain unchanged.
+      feedbackList
+        .querySelectorAll(".firebase-feedback-slide")
+        .forEach((slide) => slide.remove());
 
       const approvedItems = snapshot.docs.filter(
         (item) => item.data().status === "approved"
       );
 
       if (approvedItems.length === 0) {
-        const emptyMessage = document.createElement("p");
-        emptyMessage.textContent = "No approved feedback yet.";
-        feedbackList.appendChild(emptyMessage);
-        return;
+        console.log("No approved Firebase feedback found.");
       }
 
       approvedItems.forEach((item) => {
         const data = item.data();
 
-        const card = document.createElement("article");
-        card.className = "feedback-card";
+        // Create a Swiper slide.
+        const slide = document.createElement("div");
+        slide.className = "swiper-slide px-4 firebase-feedback-slide";
 
-        const person = document.createElement("div");
-        person.className = "feedback-person";
+        const card = document.createElement("div");
+        card.className =
+          "flex flex-col md:flex-row max-w-[800px] items-center rounded-lg p-9 shadow-[0_0px_50px_rgba(59,130,246,0.6)] cursor-grab";
 
+        // Visitor photo.
         const img = document.createElement("img");
+        img.className =
+          "shrink-0 w-[120px] h-[120px] md:w-[180px] md:h-[180px] rounded-full drop-shadow-[0_0px_80px_rgba(59,130,246,1)]";
+
         img.alt = `${data.name || "Visitor"} photo`;
         img.loading = "lazy";
         img.referrerPolicy = "no-referrer";
@@ -206,30 +214,41 @@ if (feedbackList) {
           img.hidden = true;
         }
 
+        // Feedback details.
         const details = document.createElement("div");
+        details.className =
+          "testimonial-text ml-6 text-left pt-6 md:pt-16 relative min-w-0";
 
-        const personName = document.createElement("h3");
-        personName.textContent = data.name || "Visitor";
+        const message = document.createElement("p");
+        message.className = "text-sm md:text-base mb-2";
+        message.textContent = `“${data.message || ""}”`;
 
-        const role = document.createElement("p");
-        role.textContent = data.designation || "";
+        const name = document.createElement("h2");
+        name.className =
+          "text-right text-[#459bd5] font-bold text-2xl md:text-4xl break-words";
+        name.textContent = data.name || "Visitor";
 
-        details.append(personName, role);
-        person.append(img, details);
+        const designation = document.createElement("h5");
+        designation.className =
+          "text-right text-[#459bd5] text-base md:text-lg";
+        designation.textContent = data.designation || "";
 
-        const feedback = document.createElement("p");
-        feedback.className = "feedback-message";
-        feedback.textContent = data.message || "";
+        details.append(message, name, designation);
+        card.append(img, details);
+        slide.appendChild(card);
 
-        card.append(person, feedback);
-        feedbackList.appendChild(card);
+        // Add the Firebase slide without removing existing testimonials.
+        feedbackList.appendChild(slide);
       });
+
+      // Refresh Swiper after Firebase slides are added.
+      const swiperElement = feedbackList.closest(".swiper");
+      if (swiperElement && swiperElement.swiper) {
+        swiperElement.swiper.update();
+      }
     },
     (error) => {
       console.error("Could not load public feedback:", error);
-
-      feedbackList.textContent =
-        "Feedback could not be loaded right now.";
     }
   );
 }
