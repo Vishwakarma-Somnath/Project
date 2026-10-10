@@ -16,6 +16,9 @@ const statusBox = document.getElementById("formStatus");
 const submitBtn = document.getElementById("submitBtn");
 const feedbackList = document.getElementById("feedbackList");
 
+const slide = document.createElement("div");
+slide.className = "swiper-slide px-4 firebase-feedback-slide";
+
 const MAX_SIZE = 2 * 1024 * 1024;
 
 const allowedTypes = {
