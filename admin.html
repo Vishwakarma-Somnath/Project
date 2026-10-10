@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Feedback Admin</title>
+
+  <link rel="stylesheet" href="feedback.css">
+
+  <style>
+    .admin-panel {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    #loginSection {
+      max-width: 400px;
+    }
+
+    #loginForm {
+      display: grid;
+      gap: 12px;
+    }
+
+    #loginForm input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #ccd3dd;
+      border-radius: 6px;
+    }
+
+    #loginBtn,
+    #forgotPasswordBtn,
+    #logoutBtn,
+    .admin-actions button {
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #loginBtn {
+      background: #1788ae;
+      color: white;
+    }
+
+    #forgotPasswordBtn {
+      background: #f0f4f8;
+      color: #1788ae;
+      border: 1px solid #1788ae;
+    }
+
+    #logoutBtn {
+      background: #b42318;
+      color: white;
+    }
+
+    .admin-item {
+      padding: 20px;
+      margin: 16px 0;
+      background: white;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-item img {
+      display: block;
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-top: 10px;
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .approve-btn {
+      background: #147d45;
+      color: white;
+    }
+
+    .reject-btn {
+      background: #b42318;
+      color: white;
+    }
+
+    #loginStatus,
+    #adminStatus {
+      overflow-wrap: anywhere;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="admin-panel">
+
+    <h1>Feedback Admin Panel</h1>
+
+    <!-- ADMIN LOGIN -->
+    <section id="loginSection">
+      <h2>Admin Login</h2>
+
+      <form id="loginForm">
+
+        <label for="adminEmail">
+          Admin Email
+        </label>
+
+        <input
+          id="adminEmail"
+          type="email"
+          placeholder="Enter admin email"
+          autocomplete="username"
+          required
+        >
+
+        <label for="adminPassword">
+          Password
+        </label>
+
+        <input
+          id="adminPassword"
+          type="password"
+          placeholder="Enter password"
+          autocomplete="current-password"
+          required
+        >
+
+        <button id="loginBtn" type="submit">
+          Login
+        </button>
+
+        <button
+          id="forgotPasswordBtn"
+          type="button"
+        >
+          Forgot Password?
+        </button>
+
+      </form>
+
+      <!-- LOGIN AND PASSWORD RESET MESSAGES -->
+      <p
+        id="loginStatus"
+        role="status"
+        aria-live="polite"
+      ></p>
+    </section>
+
+    <!-- ADMIN DASHBOARD -->
+    <section id="dashboard" hidden>
+
+      <button id="logoutBtn" type="button">
+        Logout
+      </button>
+
+      <h2>Pending Feedback</h2>
+
+      <p
+        id="adminStatus"
+        role="status"
+        aria-live="polite"
+      ></p>
+
+      <div id="pendingList"></div>
+
+    </section>
+
+  </main>
+
+  <!-- KEEP THIS MODULE SCRIPT -->
+  <script type="module" src="./admin.js"></script>
+
+</body>
+</html>
