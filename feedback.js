@@ -99,7 +99,7 @@ if (form && submitBtn) {
       const extension = photo.name.split(".").pop().toLowerCase();
 
       
-const uploadedPhotoPath = `feedbackPhotos/${feedbackRef.id}`;
+uploadedPhotoPath = `feedbackPhotos/${feedbackRef.id}`;
 
 const { data, error: uploadError } = await supabase.storage
   .from(FEEDBACK_BUCKET)
