@@ -2026,11 +2026,11 @@ video {
 .feedback-container {
   width: 100%;
   max-width: 1000px;
-    margin-left: -190px
+    margin-left: -240px
 }
 
 .feedback-form-card {
-  max-width: 650px;
+  max-width: 500px;
   margin: 0 auto 50px;
   padding: 28px;
   background: none;
@@ -2039,7 +2039,7 @@ video {
 }
 
 h1, h2 {
-  margin-top: 0;
+  margin-top: 10px;
 }
 
 .feedback-form-card > p,
@@ -2051,7 +2051,7 @@ h1, h2 {
 #feedbackForm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 3px;
 }
 
 #feedbackForm label {
