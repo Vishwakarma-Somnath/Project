@@ -36,7 +36,7 @@ const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 // AUTO LOGOUT SETTINGS
 // =====================================
 
-const INACTIVITY_LIMIT = 20 * 1000; // 20 seconds
+const INACTIVITY_LIMIT = 30 * 1000; // 30 seconds
 
 let inactivityTimer = null;
 let feedbackUnsubscribe = null;
