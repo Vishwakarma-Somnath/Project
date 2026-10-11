@@ -54,7 +54,18 @@
             background: linear-gradient(45deg, #000000, #e46033);
             transform: rotate(10deg) skewY(40deg);
             transform-origin: bottom right;
-            transition: 1.5s ease;
+            animation: curvedShapeEntry 1.5s ease-out forwards;
+        }
+
+        @keyframes curvedShapeEntry {
+            from {
+                opacity: 0;
+                transform: translateX(100px) rotate(10deg) skewY(40deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(10deg) skewY(40deg);
+            }
         }
 
         .curved-shape2 {
@@ -237,22 +248,43 @@
 
         /* SIMPLE ENTRY ANIMATION */
         .animation {
-            animation: fadeIn 0.8s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
                 opacity: 0;
-                transform: translateY(15px);
+                animation: fadeIn 0.8s ease forwards;
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .form-box h2.animation {
+                animation-delay: 0.2s;
             }
-        }
+
+            .form-box .input-box:nth-of-type(1) {
+                animation-delay: 0.4s;
+            }
+
+            .form-box .input-box:nth-of-type(2) {
+                animation-delay: 0.6s;
+            }
+
+            .form-box .input-box:nth-of-type(3) {
+                animation-delay: 0.8s;
+            }
+
+            .forgot-btn {
+                animation: fadeIn 0.8s ease 1s forwards;
+                opacity: 0;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
 		
-				        /* WELCOME BACK! */
+	  /* WELCOME BACK! */
         .info-content02 {
             position: absolute;
             top: 10%;
