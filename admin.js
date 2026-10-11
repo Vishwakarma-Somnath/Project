@@ -701,17 +701,25 @@ async function deleteFeedback(id) {
             }
         );
 
+        
         if (functionError) {
-            console.error(
-                "Edge Function error:",
-                functionError
-            );
+            console.error("Edge Function error:", functionError);
+            console.error("Edge Function error context:", functionError.context);
+
+            if (functionError.context) {
+                try {
+                    const responseBody = await functionError.context.clone().text();
+                    console.error("Edge Function response body:", responseBody);
+                } catch (e) {
+                    console.error("Could not read response body:", e);
+                }
+            }
 
             throw new Error(
-                "Secure photo deletion failed: " +
-                functionError.message
+                "Secure photo deletion failed: " + functionError.message
             );
         }
+
 
         if (
             !deleteResult ||
