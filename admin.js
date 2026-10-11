@@ -663,6 +663,11 @@ async function deleteFeedback(id) {
 
         const photoPath =
             privateData.photoPath || publicData.photoPath || "";
+            console.log("FEEDBACK ID:", id);
+            console.log("SUPABASE BUCKET:", FEEDBACK_BUCKET);
+            console.log("PRIVATE PHOTO PATH:", privateData.photoPath);
+            console.log("PUBLIC PHOTO PATH:", publicData.photoPath);
+            console.log("FINAL PHOTO PATH:", photoPath);
 
         
         // Delete the Supabase photo first.
@@ -701,7 +706,7 @@ async function deleteFeedback(id) {
         }
 
         console.log("Supabase photo deleted successfully.");
-        
+
                 // Delete the public and private Firestore records.
         if (publicSnapshot.exists()) {
             await deleteDoc(publicRef);
