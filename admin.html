@@ -44,7 +44,7 @@
             border-radius: 12px;
         }
 
-        /* CURVED SHAPES */
+        /* CURVED SHAPE 1 */
         .curved-shape {
             position: absolute;
             top: -5px;
@@ -55,6 +55,21 @@
             transform: rotate(10deg) skewY(40deg);
             transform-origin: bottom right;
             animation: curvedShapeEntry 1.5s ease-out forwards;
+            z-index: 0;
+        }
+
+        /* CURVED SHAPE 3 - OPPOSITE SIDE */
+        .curved-shape3 {
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(135deg, #000000, #e46033);
+            transform: rotate(-10deg) skewY(-40deg);
+            transform-origin: bottom left;
+            animation: curvedShape3Entry 1.5s ease-out forwards;
+            z-index: 1;
         }
 
         @keyframes curvedShapeEntry {
@@ -66,43 +81,18 @@
                 opacity: 1;
                 transform: translateX(0) rotate(10deg) skewY(40deg);
             }
-        }
-
-                /* CURVED SHAPE 3 - OPPOSITE 180 DEGREE */
-        .curved-shape3 {
-            position: absolute;
-            top: -5px;
-            right: 0;
-            width: 850px;
-            height: 600px;
-            background: linear-gradient(45deg, #000000, #e46033);
-            transform: rotate(190deg) skewY(40deg);
-            transform-origin: bottom right;
-            animation: curvedShape3Entry 1.5s ease-out forwards;
         }
 
         @keyframes curvedShape3Entry {
             from {
                 opacity: 0;
-                transform: translateX(-100px) rotate(190deg) skewY(40deg);
+                transform: translateX(-100px) rotate(-10deg) skewY(-40deg);
             }
             to {
                 opacity: 1;
-                transform: translateX(0) rotate(190deg) skewY(40deg);
+                transform: translateX(0) rotate(-10deg) skewY(-40deg);
             }
         }
-
-        @keyframes curvedShapeEntry {
-            from {
-                opacity: 0;
-                transform: translateX(100px) rotate(10deg) skewY(40deg);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) rotate(10deg) skewY(40deg);
-            }
-        }
-
 
         .curved-shape2 {
             position: absolute;
