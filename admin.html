@@ -68,6 +68,42 @@
             }
         }
 
+                /* CURVED SHAPE 3 - OPPOSITE 180 DEGREE */
+        .curved-shape3 {
+            position: absolute;
+            top: -5px;
+            right: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(45deg, #000000, #e46033);
+            transform: rotate(190deg) skewY(40deg);
+            transform-origin: bottom right;
+            animation: curvedShape3Entry 1.5s ease-out forwards;
+        }
+
+        @keyframes curvedShape3Entry {
+            from {
+                opacity: 0;
+                transform: translateX(-100px) rotate(190deg) skewY(40deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(190deg) skewY(40deg);
+            }
+        }
+
+        @keyframes curvedShapeEntry {
+            from {
+                opacity: 0;
+                transform: translateX(100px) rotate(10deg) skewY(40deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(10deg) skewY(40deg);
+            }
+        }
+
+
         .curved-shape2 {
             position: absolute;
             top: 100%;
@@ -622,7 +658,8 @@
     <main class="container" id="loginSection">
         
         <div class="curved-shape"></div>
-        <div class="curved-shape2"></div> 
+        <div class="curved-shape2"></div>
+        <div class="curved-shape3"></div> 
 
     <!-- LOGIN FORM -->
         <section class="form-box Login">
