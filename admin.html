@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'algerian',normal, sans-serif;
         }
 
         body{
@@ -218,8 +218,8 @@
             position: absolute;
             top: 0;
             right: 0;
-            width: 50%;
-            height: 70%;
+            width: 70%;
+            height: 40%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -227,19 +227,12 @@
             text-align: right;
             z-index: 2;
         }
-
+		
         .info-content h2 {
             font-size: 34px;
             color: #ffffff;
             line-height: 1.3;
             text-transform: uppercase;
-        }
-
-        .info-content p {
-            font-size: 16px;
-            line-height: 1.7;
-            margin-top: 15px;
-            color: #d6e4ed;
         }
 
         /* SIMPLE ENTRY ANIMATION */
@@ -258,7 +251,29 @@
                 transform: translateY(0);
             }
         }
-
+		
+				        /* WELCOME BACK! */
+        .info-content02 {
+            position: absolute;
+            top: 10%;
+            right: 0;
+            width: 35%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 35px;
+            text-align: right;
+            z-index: 2;
+        }	
+		
+		        .info-content p {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-top: 15px;
+            color: #ffffff;
+        }
+				
         /* ADMIN DASHBOARD */
         .admin-panel {
             width: calc(100% - 40px);
@@ -543,7 +558,8 @@
         <section class="info-content Login">
 
             <h2 class="animation">WELCOME BACK!</h2>
-
+		</section>
+		<section class="info-content02 Login">
             <p class="animation">
                 Welcome to the Feedback Administrator Panel.
                 Review submitted feedback, approve the entries
