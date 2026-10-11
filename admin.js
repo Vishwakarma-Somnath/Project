@@ -628,6 +628,7 @@ async function rejectFeedback(id) {
 // DELETE FEEDBACK + SUPABASE PHOTO
 // =====================================
 
+
 async function deleteFeedback(id) {
     if (!auth.currentUser) {
         showAdminMessage("Please log in again.", true);
@@ -663,14 +664,12 @@ async function deleteFeedback(id) {
 
         const photoPath =
             privateData.photoPath || publicData.photoPath || "";
-            console.log("FEEDBACK ID:", id);
-            console.log("SUPABASE BUCKET:", FEEDBACK_BUCKET);
-            console.log("PRIVATE PHOTO PATH:", privateData.photoPath);
-            console.log("PUBLIC PHOTO PATH:", publicData.photoPath);
-            console.log("FINAL PHOTO PATH:", photoPath);
 
-        
-        // Delete the Supabase photo first.
+        console.log("FEEDBACK ID:", id);
+        console.log("SUPABASE BUCKET:", FEEDBACK_BUCKET);
+        console.log("FINAL PHOTO PATH:", photoPath);
+
+        // Delete the Supabase photo through the secure Edge Function.
         if (!photoPath) {
             throw new Error(
                 "Photo path is missing in Firestore. " +
@@ -678,36 +677,64 @@ async function deleteFeedback(id) {
             );
         }
 
-        console.log("Supabase bucket:", FEEDBACK_BUCKET);
-        console.log("Supabase photo path:", photoPath);
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            throw new Error("Please log in again.");
+        }
+
+        // Get a fresh Firebase ID token.
+        const firebaseToken = await currentUser.getIdToken();
 
         const {
-            data: removedFiles,
-            error: storageError
-        } = await supabase.storage
-            .from(FEEDBACK_BUCKET)
-            .remove([photoPath]);
+            data: deleteResult,
+            error: functionError
+        } = await supabase.functions.invoke(
+            "admin-delete-feedback-photo",
+            {
+                body: {
+                    photoPath: photoPath
+                },
+                headers: {
+                    Authorization: `Bearer ${firebaseToken}`
+                }
+            }
+        );
 
-        if (storageError) {
-            console.error("Supabase photo deletion error:", storageError);
+        if (functionError) {
+            console.error(
+                "Edge Function error:",
+                functionError
+            );
 
             throw new Error(
-                "Photo deletion failed: " + storageError.message
+                "Secure photo deletion failed: " +
+                functionError.message
             );
         }
 
-        console.log("Supabase remove response:", removedFiles);
+        if (
+            !deleteResult ||
+            deleteResult.success !== true ||
+            deleteResult.deleted !== true
+        ) {
+            console.error(
+                "Unexpected deletion response:",
+                deleteResult
+            );
 
-        if (!removedFiles || removedFiles.length === 0) {
             throw new Error(
-                "Supabase did not confirm deletion. Check the exact " +
-                "photo path and whether the file exists in the bucket."
+                deleteResult?.error ||
+                "Supabase did not confirm photo deletion."
             );
         }
 
-        console.log("Supabase photo deleted successfully.");
+        console.log(
+            "Supabase photo deleted successfully:",
+            deleteResult.photoPath
+        );
 
-                // Delete the public and private Firestore records.
+        // Delete the public and private Firestore records.
         if (publicSnapshot.exists()) {
             await deleteDoc(publicRef);
         }
@@ -719,6 +746,7 @@ async function deleteFeedback(id) {
         showAdminMessage(
             "Feedback and its photo were deleted successfully."
         );
+
     } catch (error) {
         console.error("Delete error:", error);
 
