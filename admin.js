@@ -166,7 +166,7 @@ if (loginForm) {
             console.error("Login error:", error);
 
             showLoginMessage(
-                "Login failed: " + error.message,
+                "Login failed: "Please check your email and password.",
                 true
             );
         }
