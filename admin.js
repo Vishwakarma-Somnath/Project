@@ -664,21 +664,45 @@ async function deleteFeedback(id) {
         const photoPath =
             privateData.photoPath || publicData.photoPath || "";
 
+        
         // Delete the Supabase photo first.
-        if (photoPath) {
-            const { error: storageError } = await supabase.storage
-                .from(FEEDBACK_BUCKET)
-                .remove([photoPath]);
-
-            if (storageError) {
-                throw new Error(
-                    "Photo deletion failed. Firestore records were kept. " +
-                    storageError.message
-                );
-            }
+        if (!photoPath) {
+            throw new Error(
+                "Photo path is missing in Firestore. " +
+                "Cannot safely delete the image."
+            );
         }
 
-        // Delete the public and private Firestore records.
+        console.log("Supabase bucket:", FEEDBACK_BUCKET);
+        console.log("Supabase photo path:", photoPath);
+
+        const {
+            data: removedFiles,
+            error: storageError
+        } = await supabase.storage
+            .from(FEEDBACK_BUCKET)
+            .remove([photoPath]);
+
+        if (storageError) {
+            console.error("Supabase photo deletion error:", storageError);
+
+            throw new Error(
+                "Photo deletion failed: " + storageError.message
+            );
+        }
+
+        console.log("Supabase remove response:", removedFiles);
+
+        if (!removedFiles || removedFiles.length === 0) {
+            throw new Error(
+                "Supabase did not confirm deletion. Check the exact " +
+                "photo path and whether the file exists in the bucket."
+            );
+        }
+
+        console.log("Supabase photo deleted successfully.");
+        
+                // Delete the public and private Firestore records.
         if (publicSnapshot.exists()) {
             await deleteDoc(publicRef);
         }
@@ -699,7 +723,6 @@ async function deleteFeedback(id) {
         );
     }
 }
-
 
  // =====================================
  // FIREBASE AUTH STATE
