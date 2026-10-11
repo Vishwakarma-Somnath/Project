@@ -255,32 +255,46 @@ if (forgotPasswordBtn) {
     });
 }
 
-// =====================================
-// MANUAL LOGOUT
-// =====================================
+
+ // =====================================
+ // MANUAL LOGOUT
+ // =====================================
 
 if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
         try {
+            // Stop inactivity timer
             stopInactivityTimer();
+
+            // Mark logout in progress
             isSigningOut = true;
 
+            // Hide inactivity ring immediately
+            const ring = document.getElementById("inactivityRing");
+
+            if (ring) {
+                ring.hidden = true;
+            }
+
+            // Firebase logout
             await signOut(auth);
 
+            // Show logout message
             showLoginMessage("You have been logged out.");
+
         } catch (error) {
             console.error("Logout error:", error);
 
             showAdminMessage(
-                "Logout failed: " + error.message,
+                "Logout failed: " + (error.message || "Unknown error"),
                 true
             );
 
+            // Allow further activity if logout fails
             isSigningOut = false;
         }
     });
 }
-
 // =====================================
 // HELPER: CREATE ELEMENT
 // =====================================
