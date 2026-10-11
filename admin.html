@@ -400,6 +400,89 @@
             color: #ffffff;
         }
 
+        /* Inactivity Countdown Ring */
+        .inactivity-ring {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 105px;
+            height: 105px;
+            z-index: 9999;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .inactivity-ring[hidden] {
+            display: none !important;
+        }
+
+        .inactivity-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg,
+        .ring-progress {
+            fill: none;
+            stroke-width: 7;
+        }
+
+        .ring-bg {
+            stroke: #e5e7eb;
+        }
+
+        .ring-progress {
+            stroke: #16a34a;
+            stroke-linecap: round;
+            stroke-dasharray: 282.743;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.4s linear,
+                        stroke 0.3s ease;
+        }
+
+        .inactivity-ring-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #111827;
+            pointer-events: none;
+        }
+
+        #inactivityTime {
+            font-size: 19px;
+            font-weight: 700;
+            font-family: Arial, sans-serif;
+        }
+
+        .inactivity-ring-content small {
+            margin-top: 3px;
+            font-size: 10px;
+            font-family: Arial, sans-serif;
+            color: #6b7280;
+        }
+
+        @media (max-width: 600px) {
+            .inactivity-ring {
+                width: 85px;
+                height: 85px;
+                right: 14px;
+                bottom: 14px;
+            }
+
+            #inactivityTime {
+                font-size: 16px;
+            }
+
+            .inactivity-ring-content small {
+                font-size: 9px;
+            }
+        }
+
         /* MOBILE RESPONSIVE */
         @media (max-width: 650px) {
             .container {
@@ -592,6 +675,25 @@
 
     <!-- KEEP YOUR EXISTING FIREBASE MODULE -->
     <script type="module" src="./admin.js"></script>
+
+    <!-- Inactivity Countdown Ring -->
+<div id="inactivityRing" class="inactivity-ring" hidden>
+    <svg class="inactivity-svg" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
+        <circle
+            id="inactivityProgress"
+            class="ring-progress"
+            cx="50"
+            cy="50"
+            r="45">
+        </circle>
+    </svg>
+
+    <div class="inactivity-ring-content">
+        <span id="inactivityTime">00:00</span>
+        <small>Auto Logout</small>
+    </div>
+</div>
 
 </body>
 </html>

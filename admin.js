@@ -39,6 +39,7 @@ const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 const INACTIVITY_LIMIT = 2 * 60 * 1000; // 2 minutes
 
 let inactivityTimer = null;
+let inactivityCountdownInterval = null;
 let feedbackUnsubscribe = null;
 let isSigningOut = false;
 
@@ -65,9 +66,14 @@ function showAdminMessage(message, isError = false) {
 // =====================================
 
 function stopInactivityTimer() {
-    if (inactivityTimer !== null) {
+    if (inactivityTimer) {
         clearTimeout(inactivityTimer);
         inactivityTimer = null;
+    }
+
+    if (inactivityCountdownInterval) {
+        clearInterval(inactivityCountdownInterval);
+        inactivityCountdownInterval = null;
     }
 }
 
@@ -80,15 +86,55 @@ function resetInactivityTimer() {
 
     if (!auth.currentUser || isSigningOut) return;
 
+    const ring = document.getElementById("inactivityRing");
+    const progress = document.getElementById("inactivityProgress");
+    const timeDisplay = document.getElementById("inactivityTime");
+
+    const circumference = 2 * Math.PI * 45;
+    const deadline = Date.now() + INACTIVITY_LIMIT;
+
+    if (ring) ring.hidden = false;
+
+    function updateCountdown() {
+        const remaining = Math.max(0, deadline - Date.now());
+        const fraction = remaining / INACTIVITY_LIMIT;
+        const totalSeconds = Math.ceil(remaining / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        if (timeDisplay) {
+            timeDisplay.textContent =
+                String(minutes).padStart(2, "0") + ":" +
+                String(seconds).padStart(2, "0");
+        }
+
+        if (progress) {
+            progress.style.strokeDashoffset =
+                circumference * (1 - fraction);
+
+            if (fraction <= 0.2) {
+                progress.style.stroke = "#dc2626";
+            } else if (fraction <= 0.5) {
+                progress.style.stroke = "#f59e0b";
+            } else {
+                progress.style.stroke = "#16a34a";
+            }
+        }
+    }
+
+    updateCountdown();
+    inactivityCountdownInterval = setInterval(updateCountdown, 250);
+
     inactivityTimer = setTimeout(async () => {
         if (!auth.currentUser || isSigningOut) return;
 
         isSigningOut = true;
+        stopInactivityTimer();
 
         try {
             await signOut(auth);
 
-        // Silent logout: no popup or OK button
+            if (ring) ring.hidden = true;
         } catch (error) {
             console.error("Auto logout failed:", error);
             isSigningOut = false;
