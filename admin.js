@@ -88,9 +88,7 @@ function resetInactivityTimer() {
         try {
             await signOut(auth);
 
-            alert(
-                "You have been logged out Successfully."
-            );
+        // Silent logout: no popup or OK button
         } catch (error) {
             console.error("Auto logout failed:", error);
             isSigningOut = false;
