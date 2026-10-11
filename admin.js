@@ -36,7 +36,7 @@ const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 // AUTO LOGOUT SETTINGS
 // =====================================
 
-const INACTIVITY_LIMIT = 30 * 1000; // 30 seconds
+const INACTIVITY_limit = 2 * 60 * 1000; // 2 minutes
 
 let inactivityTimer = null;
 let feedbackUnsubscribe = null;
@@ -75,6 +75,7 @@ function stopInactivityTimer() {
 // RESET AUTO LOGOUT TIMER
 // =====================================
 
+
 function resetInactivityTimer() {
     stopInactivityTimer();
 
@@ -88,15 +89,14 @@ function resetInactivityTimer() {
         try {
             await signOut(auth);
 
-            alert(
-                "You have been logged out Successfully."
-            );
+            // Silent logout: no popup or OK button
         } catch (error) {
             console.error("Auto logout failed:", error);
             isSigningOut = false;
         }
     }, INACTIVITY_LIMIT);
 }
+
 
 // =====================================
 // USER ACTIVITY EVENTS
@@ -223,7 +223,7 @@ if (logoutBtn) {
 
             await signOut(auth);
 
-            showLoginMessage("You have been logged out.");
+            showLoginMessage("Session expired. Please login again.");
         } catch (error) {
             console.error("Logout error:", error);
 
