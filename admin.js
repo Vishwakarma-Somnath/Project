@@ -143,12 +143,6 @@ function resetInactivityTimer() {
             } else {
                 progress.style.stroke = "#16a34a";
             }
-            // Stop hone par timer ring hide karein
-            const ring = document.getElementById("inactivityRing");
-
-            if (ring) {
-                ring.hidden = true;
-            }
         }
     }
 
