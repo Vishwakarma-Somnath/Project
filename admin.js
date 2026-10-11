@@ -77,6 +77,30 @@ function stopInactivityTimer() {
     }
 }
 
+
+ // =====================================
+ // STOP AUTO LOGOUT TIMER
+ // =====================================
+
+function stopInactivityTimer() {
+    if (inactivityTimer !== null) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
+
+    if (inactivityCountdownInterval !== null) {
+        clearInterval(inactivityCountdownInterval);
+        inactivityCountdownInterval = null;
+    }
+
+    // Timer ring ko turant hide karein
+    const ring = document.getElementById("inactivityRing");
+
+    if (ring) {
+        ring.hidden = true;
+    }
+}
+
 // =====================================
 // RESET AUTO LOGOUT TIMER
 // =====================================
@@ -119,6 +143,12 @@ function resetInactivityTimer() {
             } else {
                 progress.style.stroke = "#16a34a";
             }
+            // Stop hone par timer ring hide karein
+            const ring = document.getElementById("inactivityRing");
+
+            if (ring) {
+                ring.hidden = true;
+            }
         }
     }
 
@@ -133,11 +163,13 @@ function resetInactivityTimer() {
 
         try {
             await signOut(auth);
-
-            if (ring) ring.hidden = true;
         } catch (error) {
             console.error("Auto logout failed:", error);
             isSigningOut = false;
+
+            if (auth.currentUser) {
+                resetInactivityTimer();
+            }
         }
     }, INACTIVITY_LIMIT);
 }
