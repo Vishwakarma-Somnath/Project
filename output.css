@@ -2457,3 +2457,11 @@ h1, h2 {
     transform: translateY(0);
   }
 }
+#feedbackForm[hidden] {
+    display: none !important;
+}
+
+#feedbackWelcome[hidden],
+#feedbackSuccess[hidden] {
+    display: none !important;
+}

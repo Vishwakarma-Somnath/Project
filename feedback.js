@@ -18,6 +18,21 @@ const feedbackList = document.getElementById("feedbackList");
 const feedbackWelcome = document.getElementById("feedbackWelcome");
 const feedbackSuccess = document.getElementById("feedbackSuccess");
 
+const FEEDBACK_SUBMITTED_KEY = "feedbackSubmitted";
+
+if (localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true") {
+    form.hidden = true;
+
+    if (feedbackWelcome) {
+        feedbackWelcome.hidden = false;
+    }
+
+    if (feedbackSuccess) {
+        feedbackSuccess.hidden = false;
+    }
+
+  }
+
 const slide = document.createElement("div");
 slide.className = "swiper-slide px-4 firebase-feedback-slide";
 
@@ -140,25 +155,28 @@ console.log("Photo uploaded successfully:", data);
         }
       );
 
-      // After successful feedback submission
-      form.reset();
+      // Successful submission only
+        form.reset();
 
-      // Hide the feedback form
-      form.hidden = true;
+      // Remember successful submission in this browser
+        localStorage.setItem("feedbackSubmitted", "true");
 
-      // Show the welcome image
-      if (feedbackWelcome) {
-          feedbackWelcome.hidden = false;
-      }
+      // Hide feedback form
+        form.hidden = true;
+        form.style.display = "none";
 
-      // Show the thank-you animation/message
-      if (feedbackSuccess) {
-          feedbackSuccess.hidden = false;
-      }
+      // Show thank-you content
+        if (feedbackWelcome) {
+            feedbackWelcome.hidden = false;
+        }
 
-      setStatus(
-          "Thank you! Your feedback has been submitted for admin approval."
-      );
+        if (feedbackSuccess) {
+            feedbackSuccess.hidden = false;
+        }
+
+        setStatus(
+            "Thank you! Your feedback has been submitted for admin approval."
+        );
 
     } catch (error) {
       console.error("Feedback submission error:", error);
