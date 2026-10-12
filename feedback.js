@@ -1,4 +1,5 @@
 import { db } from "./firebase-config.js";
+
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
 
 import {
@@ -17,7 +18,7 @@ const submitBtn = document.getElementById("submitBtn");
 const feedbackList = document.getElementById("feedbackList");
 const feedbackWelcome = document.getElementById("feedbackWelcome");
 const feedbackSuccess = document.getElementById("feedbackSuccess");
-
+const ADMIN_UID = "0R9UuWTXFdhUgr9fV7rKmec9Usi2";
 const FEEDBACK_SUBMITTED_KEY = "feedbackSubmitted";
 
 if (localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true") {
@@ -158,14 +159,15 @@ console.log("Photo uploaded successfully:", data);
       // Successful submission only
         form.reset();
 
-      // Remember successful submission in this browser
-        localStorage.setItem("feedbackSubmitted", "true");
+        const isAdmin = auth.currentUser?.uid === ADMIN_UID;
 
-      // Hide feedback form
+        // Only restrict normal visitors
+        if (!isAdmin) {
+            localStorage.setItem(FEEDBACK_SUBMITTED_KEY, "true");
+        }
+
         form.hidden = true;
-        form.style.display = "none";
 
-      // Show thank-you content
         if (feedbackWelcome) {
             feedbackWelcome.hidden = false;
         }
