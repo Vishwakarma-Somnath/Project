@@ -130,6 +130,7 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
 // UPDATE COUNTDOWN
 // =====================================
 
+
 function updateCountdown() {
     if (!auth.currentUser || isSigningOut || !inactivityDeadline) {
         return;
@@ -140,34 +141,26 @@ function updateCountdown() {
         inactivityDeadline - Date.now()
     );
 
-    const remainingSeconds = remainingMs / 1000;
+    const totalSeconds = Math.ceil(remainingMs / 1000);
 
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    // Display countdown in HTML
+    const timeElement = document.getElementById("inactivityTime");
+
+    if (timeElement) {
+        timeElement.textContent =
+            `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    // Update circular countdown
     updateInactivityRing(
-        remainingSeconds,
+        remainingMs / 1000,
         INACTIVITY_LIMIT / 1000
     );
-
-    // Do not stop the timer here.
-    // Automatic logout must remain active.
 }
 
-// =====================================
-// STOP INACTIVITY TIMER
-// =====================================
-
-function stopInactivityTimer() {
-    if (inactivityTimer !== null) {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-    }
-
-    if (inactivityCountdownInterval !== null) {
-        clearInterval(inactivityCountdownInterval);
-        inactivityCountdownInterval = null;
-    }
-
-    inactivityDeadline = 0;
-}
 
 // =====================================
 // RESET / START INACTIVITY TIMER
