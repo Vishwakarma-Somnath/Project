@@ -315,6 +315,12 @@ if (forgotPasswordBtn) {
  // =====================================
 
 if (logoutBtn) {
+            if (logoutBtn) {
+            logoutBtn.style.display = "block";
+            logoutBtn.style.position = "static";
+            logoutBtn.style.margin = "0 auto 0 0";
+            logoutBtn.style.float = "none";
+        }
     logoutBtn.addEventListener("click", async () => {
         try {
             // Stop inactivity timer
@@ -944,7 +950,7 @@ onAuthStateChanged(
             loginSection.style.display = "none";
 
             dashboard.hidden = false;
-            dashboard.style.display = "block";
+            dashboard.style.display = "flex";
 
             console.log("Dashboard visibility:", {
                 hidden: dashboard.hidden,
