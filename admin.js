@@ -142,16 +142,18 @@ function updateCountdown() {
     // The timeout must remain active so automatic logout can run.
 }
 
-function resetInactivityTimer() {
-    inactivityDeadline = 0;    
-    stopInactivityTimer();
+    function stopInactivityTimer() {
         if (inactivityTimer !== null) {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-    }
+            clearTimeout(inactivityTimer);
+            inactivityTimer = null;
+        }
+
         if (inactivityCountdownInterval !== null) {
             clearInterval(inactivityCountdownInterval);
             inactivityCountdownInterval = null;
+        }
+
+        inactivityDeadline = 0;
     }    
 
     if (!auth.currentUser || isSigningOut) {
