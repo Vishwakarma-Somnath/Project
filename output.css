@@ -2235,7 +2235,7 @@ h1, h2 {
 
 .feedback-image img {
     width: 100%;
-    max-width: 450px;
+    max-width: 620px;
     height: 520px;
     object-fit: cover;
     display: block;

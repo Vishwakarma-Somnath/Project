@@ -246,7 +246,7 @@ console.log("Photo uploaded successfully:", data);
               if (statusBox) {
                   statusBox.textContent = "";
               }
-          }, 30000);
+          }, 10000);
       }
 
         setStatus(
