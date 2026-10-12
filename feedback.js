@@ -1,4 +1,4 @@
-import { db } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
@@ -17,42 +17,53 @@ const form = document.getElementById("feedbackForm");
 const statusBox = document.getElementById("formStatus");
 const submitBtn = document.getElementById("submitBtn");
 const feedbackList = document.getElementById("feedbackList");
+
 const feedbackWelcome = document.getElementById("feedbackWelcome");
 const feedbackSuccess = document.getElementById("feedbackSuccess");
-const ADMIN_UID = "0R9UuWTXFdhUgr9fV7rKmec9Usi2";
-const FEEDBACK_SUBMITTED_KEY = "feedbackSubmitted";
 const feedbackHeading = document.getElementById("feedbackHeading");
 const privacyNote = document.getElementById("privacyNote");
+
+const ADMIN_UID = "0R9UuWTXFdhUgr9fV7rKmec9Usi2";
+const FEEDBACK_SUBMITTED_KEY = "feedbackSubmitted";
+
+let isAdmin = false;
+let authReady = false;
 
 onAuthStateChanged(auth, (user) => {
     isAdmin = user?.uid === ADMIN_UID;
     authReady = true;
 
+    const alreadySubmitted =
+        localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true";
+
     if (isAdmin) {
-        // Admin can submit multiple times
+        // Admin can submit repeatedly
         form.hidden = false;
         form.style.display = "";
-    } else if (
-        localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true"
-    ) {
+
+        if (feedbackHeading) feedbackHeading.hidden = false;
+        if (privacyNote) privacyNote.hidden = false;
+        if (feedbackWelcome) feedbackWelcome.hidden = true;
+        if (feedbackSuccess) feedbackSuccess.hidden = true;
+
+    } else if (alreadySubmitted) {
         // Visitor has already submitted
         form.hidden = true;
 
-        if (feedbackWelcome) {
-            feedbackWelcome.hidden = false;
-        }
+        if (feedbackHeading) feedbackHeading.hidden = true;
+        if (privacyNote) privacyNote.hidden = true;
+        if (feedbackWelcome) feedbackWelcome.hidden = false;
+        if (feedbackSuccess) feedbackSuccess.hidden = false;
 
-        if (feedbackSuccess) {
-            feedbackSuccess.hidden = false;
-        }
+    } else {
+        // First-time visitor
+        form.hidden = false;
+        form.style.display = "";
 
-        if (feedbackHeading) {
-            feedbackHeading.hidden = true;
-        }
-
-        if (privacyNote) {
-            privacyNote.hidden = true;
-        }
+        if (feedbackHeading) feedbackHeading.hidden = false;
+        if (privacyNote) privacyNote.hidden = false;
+        if (feedbackWelcome) feedbackWelcome.hidden = true;
+        if (feedbackSuccess) feedbackSuccess.hidden = true;
     }
 });
 
@@ -90,6 +101,9 @@ if (form && submitBtn) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    if (!authReady) { setStatus("Please wait, loading authentication...", true);
+    return;
+  }
     const name = form.elements.name.value.trim();
     const email = form.elements.email.value.trim();
     const designation = form.elements.designation.value.trim();
@@ -180,7 +194,6 @@ console.log("Photo uploaded successfully:", data);
       // After successful submission
       form.reset();
 
-      const isAdmin = auth.currentUser?.uid === ADMIN_UID;
 
       // Hide form and heading
       form.hidden = true;
