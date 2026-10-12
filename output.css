@@ -2460,8 +2460,3 @@ h1, h2 {
 #feedbackForm[hidden] {
     display: none !important;
 }
-
-#feedbackWelcome[hidden],
-#feedbackSuccess[hidden] {
-    display: none !important;
-}
