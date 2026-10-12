@@ -142,9 +142,18 @@ console.log("Photo uploaded successfully:", data);
 
       form.reset();
 
+      if (feedbackWelcome) {
+        feedbackWelcome.hidden = true;
+      }
+
+      if (feedbackSuccess) {
+        feedbackSuccess.hidden = false;
+      }
+
       setStatus(
         "Thank you! Your feedback has been submitted for admin approval."
       );
+
     } catch (error) {
       console.error("Feedback submission error:", error);
 
