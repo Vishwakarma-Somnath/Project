@@ -54,7 +54,7 @@ function showAdminMessage(message, isError = false) {
  // AUTO LOGOUT + SOLID CIRCLE COUNTDOWN
  // =====================================
 
-const INACTIVITY_LIMIT = 45 * 1000; // 45 seconds
+const INACTIVITY_LIMIT = 2 * 60 * 1000; // 2 minutes
 
 let inactivityTimer = null;
 let inactivityCountdownInterval = null;
@@ -124,34 +124,30 @@ function updateCountdown() {
         return;
     }
 
-    const remainingMs = Math.max(0, inactivityDeadline - Date.now());
+    const remainingMs = Math.max(
+        0,
+        inactivityDeadline - Date.now()
+    );
+
     const remainingSeconds = remainingMs / 1000;
 
-    updateInactivityRing(remainingSeconds, INACTIVITY_LIMIT / 1000);
+    // Update the countdown circle
+    updateInactivityRing(
+        remainingSeconds,
+        INACTIVITY_LIMIT / 1000
+    );
 
-    if (remainingMs <= 0) {
-        stopInactivityTimer();
-    }
-}
-
-function stopInactivityTimer() {
-    if (inactivityTimer !== null) {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-    }
-
-    if (inactivityCountdownInterval !== null) {
-        clearInterval(inactivityCountdownInterval);
-        inactivityCountdownInterval = null;
-    }
-
-    inactivityDeadline = 0;
+    // IMPORTANT:
+    // Do not call stopInactivityTimer() here.
+    // The timeout must remain active so automatic logout can run.
 }
 
 function resetInactivityTimer() {
     stopInactivityTimer();
 
-    if (!auth.currentUser || isSigningOut) return;
+    if (!auth.currentUser || isSigningOut) {
+        return;
+    }
 
     if (inactivityRing) {
         inactivityRing.hidden = false;
@@ -159,28 +155,40 @@ function resetInactivityTimer() {
 
     inactivityDeadline = Date.now() + INACTIVITY_LIMIT;
 
-    // Start with a full green circle
-    updateInactivityRing(INACTIVITY_LIMIT / 1000, INACTIVITY_LIMIT / 1000);
+    // Reset the circle to full
+    updateInactivityRing(
+        INACTIVITY_LIMIT / 1000,
+        INACTIVITY_LIMIT / 1000
+    );
 
+    // Start countdown updates
     updateCountdown();
 
-    inactivityCountdownInterval = setInterval(updateCountdown, 100);
+    inactivityCountdownInterval = setInterval(
+        updateCountdown,
+        250
+    );
 
+    // Automatic logout after 2 minutes of inactivity
     inactivityTimer = setTimeout(async () => {
-        if (!auth.currentUser || isSigningOut) return;
+        if (!auth.currentUser || isSigningOut) {
+            return;
+        }
 
         isSigningOut = true;
-        stopInactivityTimer();
 
         if (inactivityRing) {
             inactivityRing.hidden = true;
         }
 
+        stopInactivityTimer();
+
         try {
             await signOut(auth);
-            showLoginMessage("You have been logged out due to inactivity.");
+            // No alert or confirmation popup
         } catch (error) {
             console.error("Auto logout failed:", error);
+
             isSigningOut = false;
 
             if (auth.currentUser) {
@@ -189,7 +197,6 @@ function resetInactivityTimer() {
         }
     }, INACTIVITY_LIMIT);
 }
-
 
 // =====================================
 // USER ACTIVITY EVENTS
