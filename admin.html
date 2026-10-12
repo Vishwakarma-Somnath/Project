@@ -474,84 +474,69 @@
             color: #ffffff;
         }
 
-/* Inactivity Timer Ring */
-.inactivity-ring {
-    position: fixed;
-    right: 25px;
-    bottom: 25px;
+        /* Inactivity Countdown Ring */
+        .inactivity-ring {
+            position: fixed;
+            left: 80%;
+            top: 110px;
+            width: 64px;
+            height: 64px;
+            z-index: 9999;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+        }
 
-    width: 100px;
-    height: 100px;
+        .inactivity-ring[hidden] {
+            display: none !important;
+        }
 
-    border-radius: 50%;
-    overflow: hidden;
+        .inactivity-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+        .ring-bg,
+        .ring-progress {
+            fill: none;
+            stroke-width: 90;
+        }
 
-    background: transparent;
-}
+        .ring-bg {
+            stroke: #e5e7eb;
+        }
 
-/* SVG Circle */
-.inactivity-svg {
-    position: absolute;
-    inset: 0;
+        .ring-progress {
+            stroke: #16a34a;
+            stroke-dasharray: 282.743;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.4s linear;
+        }
 
-    width: 100%;
-    height: 100%;
+        .inactivity-ring-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: #111827;
+            pointer-events: none;
+        }
 
-    display: block;
-    transform: rotate(-90deg);
-}
+        #inactivityTime {
+            font-size: 12px;
+            font-weight: 700;
+            font-family: Arial, sans-serif;
+        }
 
-/* Background Ring */
-.ring-bg {
-    fill: none;
-    stroke: #e5e7eb;
-    stroke-width: 7;
-}
-
-/* Progress Ring */
-.ring-progress {
-    fill: none;
-    stroke: #22c55e;
-    stroke-width: 7;
-    stroke-linecap: round;
-
-    stroke-dasharray: 283;
-    stroke-dashoffset: 0;
-
-    transition: stroke-dashoffset 0.3s linear;
-}
-
-/* Timer Text */
-.inactivity-ring-content {
-    position: relative;
-    z-index: 2;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    width: 100%;
-    height: 100%;
-
-    border-radius: 50%;
-    background: transparent;
-}
-
-.inactivity-ring-content span {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-}
-
-.inactivity-ring-content small {
-    font-size: 10px;
-    color: #374151;
-}
+        .inactivity-ring-content small {
+            margin-top: 3px;
+            font-size: 6px;
+            font-family: Arial, sans-serif;
+            color: #6b7280;
+        }
 
         @media (max-width: 600px) {
             .inactivity-ring {
