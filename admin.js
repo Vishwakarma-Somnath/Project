@@ -1,3 +1,8 @@
+
+// =====================================
+// FIREBASE & SUPABASE IMPORTS
+// =====================================
+
 import { auth, db } from "./firebase-config.js";
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
 
@@ -32,9 +37,9 @@ const logoutBtn = document.getElementById("logoutBtn");
 const loginStatus = document.getElementById("loginStatus");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
- // =====================================
- // STATUS MESSAGE FUNCTIONS
- // =====================================
+// =====================================
+// STATUS MESSAGE FUNCTIONS
+// =====================================
 
 function showLoginMessage(message, isError = false) {
     if (!loginStatus) return;
@@ -50,9 +55,9 @@ function showAdminMessage(message, isError = false) {
     adminStatus.style.color = isError ? "#dc2626" : "#15803d";
 }
 
- // =====================================
- // AUTO LOGOUT + SOLID CIRCLE COUNTDOWN
- // =====================================
+// =====================================
+// AUTO LOGOUT + SOLID CIRCLE COUNTDOWN
+// =====================================
 
 const INACTIVITY_LIMIT = 2 * 60 * 1000; // 2 minutes
 
@@ -69,6 +74,10 @@ const CIRCLE_RADIUS = 44;
 const CIRCLE_CX = 50;
 const CIRCLE_CY = 50;
 
+// =====================================
+// UPDATE COUNTDOWN CIRCLE
+// =====================================
+
 function updateInactivityRing(remainingSeconds, totalSeconds) {
     if (!inactivityFill || totalSeconds <= 0) return;
 
@@ -81,7 +90,6 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
     const cx = CIRCLE_CX;
     const cy = CIRCLE_CY;
 
-    // No green fill when countdown finishes
     if (progress <= 0) {
         inactivityFill.setAttribute("d", "");
         return;
@@ -98,8 +106,7 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
         return;
     }
 
-    // Remaining solid green sector.
-    // As time decreases, the endpoint moves anticlockwise.
+    // Remaining solid green sector
     const angle = 2 * Math.PI * progress;
 
     const startX = cx;
@@ -119,6 +126,10 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
     );
 }
 
+// =====================================
+// UPDATE COUNTDOWN
+// =====================================
+
 function updateCountdown() {
     if (!auth.currentUser || isSigningOut || !inactivityDeadline) {
         return;
@@ -131,32 +142,45 @@ function updateCountdown() {
 
     const remainingSeconds = remainingMs / 1000;
 
-    // Update the countdown circle
     updateInactivityRing(
         remainingSeconds,
         INACTIVITY_LIMIT / 1000
     );
 
-    // IMPORTANT:
-    // Do not call stopInactivityTimer() here.
-    // The timeout must remain active so automatic logout can run.
+    // Do not stop the timer here.
+    // Automatic logout must remain active.
 }
 
+// =====================================
+// STOP INACTIVITY TIMER
+// =====================================
+
 function stopInactivityTimer() {
-        if (inactivityTimer !== null) {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = null;
-        }
+    if (inactivityTimer !== null) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
 
-        if (inactivityCountdownInterval !== null) {
-            clearInterval(inactivityCountdownInterval);
-            inactivityCountdownInterval = null;
-        }
+    if (inactivityCountdownInterval !== null) {
+        clearInterval(inactivityCountdownInterval);
+        inactivityCountdownInterval = null;
+    }
 
-        inactivityDeadline = 0;
-    }    
+    inactivityDeadline = 0;
+}
+
+// =====================================
+// RESET / START INACTIVITY TIMER
+// FIXED: ILLEGAL RETURN STATEMENT
+// =====================================
+
+function resetInactivityTimer() {
+    stopInactivityTimer();
 
     if (!auth.currentUser || isSigningOut) {
+        if (inactivityRing) {
+            inactivityRing.hidden = true;
+        }
         return;
     }
 
@@ -166,7 +190,7 @@ function stopInactivityTimer() {
 
     inactivityDeadline = Date.now() + INACTIVITY_LIMIT;
 
-    // Reset the circle to full
+    // Reset circle to full
     updateInactivityRing(
         INACTIVITY_LIMIT / 1000,
         INACTIVITY_LIMIT / 1000
@@ -180,9 +204,10 @@ function stopInactivityTimer() {
         250
     );
 
-    // Automatic logout after 2 minutes of inactivity
+    // Automatic logout after 2 minutes
     inactivityTimer = setTimeout(async () => {
         if (!auth.currentUser || isSigningOut) {
+            stopInactivityTimer();
             return;
         }
 
@@ -207,6 +232,7 @@ function stopInactivityTimer() {
             }
         }
     }, INACTIVITY_LIMIT);
+}
 
 // =====================================
 // USER ACTIVITY EVENTS
@@ -222,18 +248,22 @@ const activityEvents = [
 ];
 
 activityEvents.forEach((eventName) => {
-    document.addEventListener(eventName, () => {
-        resetInactivityTimer();
-    }, { passive: true });
+    document.addEventListener(
+        eventName,
+        () => {
+            resetInactivityTimer();
+        },
+        { passive: true }
+    );
 });
 
 // =====================================
 // PAGE EXIT LOGOUT
 // =====================================
 
-// Best-effort logout when navigating away or
-// closing/reloading the page. Browser shutdown
-// may prevent this asynchronous request finishing.
+// No page-exit signOut handler is added here.
+// The existing Firebase authentication state
+// handles login and logout UI changes.
 
 // =====================================
 // ADMIN LOGIN
@@ -261,7 +291,7 @@ if (loginForm) {
             );
             return;
         }
-        
+
         try {
             showLoginMessage("Logging in...");
 
@@ -271,12 +301,19 @@ if (loginForm) {
                 password
             );
 
-            console.log("Login successful:", userCredential.user.uid);
+            console.log(
+                "Login successful:",
+                userCredential.user.uid
+            );
 
             showLoginMessage("Login successful.");
 
         } catch (error) {
-            console.error("Login error:", error.code, error.message);
+            console.error(
+                "Login error:",
+                error.code,
+                error.message
+            );
 
             showLoginMessage(
                 error.code === "auth/invalid-credential"
@@ -326,10 +363,9 @@ if (forgotPasswordBtn) {
     });
 }
 
-
-/* =====================================
-   MANUAL LOGOUT
-===================================== */
+// =====================================
+// MANUAL LOGOUT
+// =====================================
 
 if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
@@ -337,12 +373,10 @@ if (logoutBtn) {
             stopInactivityTimer();
             isSigningOut = true;
 
-            // Hide inactivity countdown
             if (inactivityRing) {
                 inactivityRing.hidden = true;
             }
 
-            // Sign out from Firebase
             await signOut(auth);
 
             showLoginMessage("You have been logged out.");
@@ -357,28 +391,28 @@ if (logoutBtn) {
                 (error.message || "Unknown error"),
                 true
             );
+
+            if (auth.currentUser) {
+                resetInactivityTimer();
+            }
         }
     });
 }
 
-/* =====================================
-   KEYBOARD SHORTCUT FOR ADMIN LOGOUT
-   Press F4 to logout
-===================================== */
+// =====================================
+// KEYBOARD SHORTCUT: F4 LOGOUT
+// =====================================
 
 document.addEventListener("keydown", async (event) => {
-    // F4 key दबाने पर logout
     if (event.key === "F4") {
         event.preventDefault();
 
-        // केवल Dashboard खुला होने पर logout करें
-        const dashboard = document.getElementById("dashboard");
+        const currentDashboard = document.getElementById("dashboard");
 
-        if (!dashboard || dashboard.hidden) {
+        if (!currentDashboard || currentDashboard.hidden) {
             return;
         }
 
-        // पहले से logout प्रक्रिया चल रही हो तो दोबारा न चलाएँ
         if (isSigningOut) {
             return;
         }
@@ -387,11 +421,8 @@ document.addEventListener("keydown", async (event) => {
             stopInactivityTimer();
             isSigningOut = true;
 
-            // Hide inactivity ring immediately
-            const ring = document.getElementById("inactivityRing");
-
-            if (ring) {
-                ring.hidden = true;
+            if (inactivityRing) {
+                inactivityRing.hidden = true;
             }
 
             await signOut(auth);
@@ -400,7 +431,12 @@ document.addEventListener("keydown", async (event) => {
 
         } catch (error) {
             console.error("Keyboard logout failed:", error);
+
             isSigningOut = false;
+
+            if (auth.currentUser) {
+                resetInactivityTimer();
+            }
         }
     }
 });
@@ -424,6 +460,7 @@ function createElement(tag, className, text = "") {
 // =====================================
 // LOAD FEEDBACK
 // =====================================
+
 function loadFeedback() {
     console.log("STEP 1: loadFeedback() started");
 
@@ -434,14 +471,21 @@ function loadFeedback() {
 
     if (!pendingList) {
         console.error("ERROR: #pendingList element not found");
-        showAdminMessage("HTML error: pendingList not found.", true);
+        showAdminMessage(
+            "HTML error: pendingList not found.",
+            true
+        );
         return;
     }
 
     pendingList.replaceChildren();
     showAdminMessage("Connecting to Firestore...");
 
-    console.log("STEP 2: Current user UID:", auth.currentUser?.uid);
+    console.log(
+        "STEP 2: Current user UID:",
+        auth.currentUser?.uid
+    );
+
     console.log("STEP 3: Firestore database:", db);
 
     try {
@@ -469,9 +513,15 @@ function loadFeedback() {
                         ...documentSnapshot.data()
                     };
 
-                    console.log("Feedback document:", item.id, item);
+                    console.log(
+                        "Feedback document:",
+                        item.id,
+                        item
+                    );
 
-                    pendingList.appendChild(createFeedbackCard(item));
+                    pendingList.appendChild(
+                        createFeedbackCard(item)
+                    );
                 });
 
                 showAdminMessage(
@@ -480,10 +530,16 @@ function loadFeedback() {
             },
 
             (error) => {
-                console.error("STEP 5: Firestore listener error:", error);
+                console.error(
+                    "STEP 5: Firestore listener error:",
+                    error
+                );
 
                 showAdminMessage(
-                    "Firestore error: " + error.code + " - " + error.message,
+                    "Firestore error: " +
+                    error.code +
+                    " - " +
+                    error.message,
                     true
                 );
             }
@@ -494,7 +550,10 @@ function loadFeedback() {
     } catch (error) {
         console.error("STEP 7: Synchronous error:", error);
 
-        showAdminMessage("Error: " + error.message, true);
+        showAdminMessage(
+            "Error: " + error.message,
+            true
+        );
     }
 }
 
@@ -516,7 +575,12 @@ function createFeedbackCard(item) {
     `;
 
     // Name
-    const title = createElement("h3", "", item.name || "Unknown");
+    const title = createElement(
+        "h3",
+        "",
+        item.name || "Unknown"
+    );
+
     title.style.cssText = `
         font-weight: bold;
         font-size: 18px;
@@ -530,6 +594,7 @@ function createFeedbackCard(item) {
         "",
         "Email: " + (item.email || "Not provided")
     );
+
     email.style.cssText = `
         margin: 8px 0;
         overflow-wrap: anywhere;
@@ -542,6 +607,7 @@ function createFeedbackCard(item) {
         "",
         "Designation: " + (item.designation || "Not provided")
     );
+
     designation.style.color = "#222";
     designation.style.margin = "8px 0";
 
@@ -551,6 +617,7 @@ function createFeedbackCard(item) {
         "",
         "Department: " + (item.department || "Not provided")
     );
+
     department.style.cssText = `
         color: #222;
         margin: 8px 0;
@@ -562,6 +629,7 @@ function createFeedbackCard(item) {
         "",
         item.message || "No feedback message"
     );
+
     message.style.cssText = `
         color: #222;
         white-space: pre-wrap;
@@ -575,6 +643,7 @@ function createFeedbackCard(item) {
         "",
         "Status: " + (item.status || "pending")
     );
+
     status.style.cssText = `
         color: #222;
         font-weight: bold;
@@ -583,6 +652,7 @@ function createFeedbackCard(item) {
 
     // Text details
     const details = createElement("div", "feedback-details");
+
     details.style.cssText = `
         flex: 1;
         min-width: 0;
@@ -598,7 +668,10 @@ function createFeedbackCard(item) {
     );
 
     // Content row: details left, photo right
-    const contentRow = createElement("div", "feedback-content-row");
+    const contentRow = createElement(
+        "div",
+        "feedback-content-row"
+    );
 
     contentRow.style.cssText = `
         display: flex;
@@ -657,13 +730,19 @@ function createFeedbackCard(item) {
 
     // Approve and Reject
     if (item.status === "pending" || !item.status) {
-        const approveBtn = createActionButton("Approve", "#198754");
+        const approveBtn = createActionButton(
+            "Approve",
+            "#198754"
+        );
 
         approveBtn.addEventListener("click", () => {
             approveFeedback(item.id);
         });
 
-        const rejectBtn = createActionButton("Reject", "#dc3545");
+        const rejectBtn = createActionButton(
+            "Reject",
+            "#dc3545"
+        );
 
         rejectBtn.addEventListener("click", () => {
             rejectFeedback(item.id);
@@ -673,7 +752,10 @@ function createFeedbackCard(item) {
     }
 
     // Delete
-    const deleteBtn = createActionButton("Delete", "#6c757d");
+    const deleteBtn = createActionButton(
+        "Delete",
+        "#6c757d"
+    );
 
     deleteBtn.addEventListener("click", () => {
         deleteFeedback(item.id);
@@ -727,7 +809,9 @@ async function approveFeedback(id) {
         const data = snapshot.data();
 
         if (data.status === "approved") {
-            showAdminMessage("This feedback is already approved.");
+            showAdminMessage(
+                "This feedback is already approved."
+            );
             return;
         }
 
@@ -754,7 +838,10 @@ async function approveFeedback(id) {
             reviewedAt: serverTimestamp()
         });
 
-        showAdminMessage("Feedback approved successfully.");
+        showAdminMessage(
+            "Feedback approved successfully."
+        );
+
     } catch (error) {
         console.error("Approve error:", error);
 
@@ -782,6 +869,7 @@ async function rejectFeedback(id) {
         });
 
         showAdminMessage("Feedback rejected.");
+
     } catch (error) {
         console.error("Reject error:", error);
 
@@ -795,7 +883,6 @@ async function rejectFeedback(id) {
 // =====================================
 // DELETE FEEDBACK + SUPABASE PHOTO
 // =====================================
-
 
 async function deleteFeedback(id) {
     if (!auth.currentUser) {
@@ -837,7 +924,7 @@ async function deleteFeedback(id) {
         console.log("SUPABASE BUCKET:", FEEDBACK_BUCKET);
         console.log("FINAL PHOTO PATH:", photoPath);
 
-        // Delete the Supabase photo through the secure Edge Function.
+        // Delete the Supabase photo through the secure Edge Function
         if (!photoPath) {
             throw new Error(
                 "Photo path is missing in Firestore. " +
@@ -851,7 +938,7 @@ async function deleteFeedback(id) {
             throw new Error("Please log in again.");
         }
 
-        // Get a fresh Firebase ID token.
+        // Get a fresh Firebase ID token
         const firebaseToken = await currentUser.getIdToken();
 
         const {
@@ -869,25 +956,40 @@ async function deleteFeedback(id) {
             }
         );
 
-        
         if (functionError) {
-            console.error("Edge Function error:", functionError);
-            console.error("Edge Function error context:", functionError.context);
+            console.error(
+                "Edge Function error:",
+                functionError
+            );
+
+            console.error(
+                "Edge Function error context:",
+                functionError.context
+            );
 
             if (functionError.context) {
                 try {
-                    const responseBody = await functionError.context.clone().text();
-                    console.error("Edge Function response body:", responseBody);
+                    const responseBody =
+                        await functionError.context.clone().text();
+
+                    console.error(
+                        "Edge Function response body:",
+                        responseBody
+                    );
+
                 } catch (e) {
-                    console.error("Could not read response body:", e);
+                    console.error(
+                        "Could not read response body:",
+                        e
+                    );
                 }
             }
 
             throw new Error(
-                "Secure photo deletion failed: " + functionError.message
+                "Secure photo deletion failed: " +
+                functionError.message
             );
         }
-
 
         if (
             !deleteResult ||
@@ -910,7 +1012,7 @@ async function deleteFeedback(id) {
             deleteResult.photoPath
         );
 
-        // Delete the public and private Firestore records.
+        // Delete public and private Firestore records
         if (publicSnapshot.exists()) {
             await deleteDoc(publicRef);
         }
@@ -933,20 +1035,26 @@ async function deleteFeedback(id) {
     }
 }
 
- // =====================================
- // FIREBASE AUTH STATE
- // =====================================
+// =====================================
+// FIREBASE AUTH STATE
+// =====================================
+
 onAuthStateChanged(
     auth,
     (user) => {
         isSigningOut = false;
         stopInactivityTimer();
 
-        console.log("Firebase auth state:", user ? "Logged in" : "Logged out");
+        console.log(
+            "Firebase auth state:",
+            user ? "Logged in" : "Logged out"
+        );
 
         if (user) {
             if (!loginSection || !dashboard) {
-                console.error("Login section or dashboard element is missing.");
+                console.error(
+                    "Login section or dashboard element is missing."
+                );
                 return;
             }
 
@@ -987,9 +1095,16 @@ onAuthStateChanged(
             showLoginMessage("Please log in to continue.");
         }
     },
+
     (error) => {
-        console.error("Firebase auth state error:", error);
-        showLoginMessage("Authentication error: " + error.message, true);
+        console.error(
+            "Firebase auth state error:",
+            error
+        );
+
+        showLoginMessage(
+            "Authentication error: " + error.message,
+            true
+        );
     }
 );
-
