@@ -559,7 +559,48 @@
             color: #000000;
         }
 
+        /* =========================================
+            FIXED ADMIN HEADER + SCROLLABLE FEEDBACK
+            ========================================= */
 
+            /* Dashboard ko viewport ki height mein rakhein */
+            #dashboard.admin-panel {
+                height: 100vh;
+                min-height: 0;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            /* Panel heading aur Logout button fixed rahenge */
+            #dashboard.admin-panel > h1,
+            #dashboard.admin-panel > #logoutBtn {
+                flex-shrink: 0;
+            }
+
+            /* Pending Feedback heading fixed rahegi */
+            #dashboard.admin-panel > h2 {
+                flex-shrink: 0;
+                margin-bottom: 10px;
+            }
+
+            /* Loaded feedback status fixed rahega */
+            #dashboard.admin-panel > #adminStatus {
+                flex-shrink: 0;
+                margin-bottom: 12px;
+            }
+
+            /* Sirf feedback records ki list scroll hogi */
+            #dashboard.admin-panel > #pendingList {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                overscroll-behavior: contain;
+                padding: 5px 12px 20px 5px;
+                scrollbar-width: thin;
+            }
         /* =====================================
            MOBILE RESPONSIVE
         ===================================== */
@@ -571,6 +612,17 @@
                 height: auto;
                 min-height: 600px;
                 margin: 20px auto;
+            }
+
+            #dashboard.admin-panel {
+                height: 100dvh;
+                height: 100vh;
+                padding: 16px;
+                overflow: hidden;
+            }
+
+            #dashboard.admin-panel > #pendingList {
+                padding-right: 5px;
             }
 
             .curved-shape,
