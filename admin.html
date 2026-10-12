@@ -474,56 +474,24 @@
             color: #ffffff;
         }
 
-        /* Inactivity Countdown Ring */
-        .inactivity-ring {
-            position: fixed;
-            left: 80%;
-            top: 110px;
-            width: 84px;
-            height: 84px;
-            z-index: 9999;
-            border-radius: 180%;
-            background: none;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
-        }
+        /* Inactivity Countdown Ring */#inactivityTimer {
 
-        .inactivity-ring[hidden] {
-            display: none !important;
-        }
-
-        .inactivity-svg {
-            width: 100%;
-            height: 100%;
-            transform: rotate(-90deg);
-        }
-
-        .ring-bg,
-        .ring-progress {
-            fill: none;
-            stroke-width: 90;
-        }
-
-        .ring-bg {
-            stroke: none;
-        }
-
-        .ring-progress {
-            stroke: green;
-            stroke-dasharray: 282.743;
-            stroke-dashoffset: 0;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 0.4s linear;
-        }
-
-        .inactivity-ring-content {
-            position: absolute;
-            inset: 0;
+        #inactivityRing {
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            color: #111827;
-            pointer-events: none;
+        }
+
+        #inactivityRing[hidden] {
+            display: none !important;
+        }
+
+        #inactivityTimer {
+            display: block;
+            width: 80px;
+            height: 80px;
         }
 
         #inactivityTime {
@@ -752,11 +720,12 @@ S
     <script type="module" src="./admin.js"></script>
 
     <!-- Inactivity Countdown Ring -->
-<div id="inactivityRing" class="inactivity-ring" hidden>
-<svg id="inactivityTimer" viewBox="0 0 100 100">
-  <path id="inactivityFill" fill="#16a34a"></path>
-</svg>
 
+<div id="inactivityRing" hidden aria-label="Inactivity countdown">
+    <svg id="inactivityTimer" viewBox="0 0 100 100"
+         width="80" height="80" aria-hidden="true">
+        <path id="inactivityFill" fill="#16a34a"></path>
+    </svg>
     <div class="inactivity-ring-content">
         <span id="inactivityTime">00:00</span>
         <small>Auto Logout</small>

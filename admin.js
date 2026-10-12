@@ -32,101 +32,122 @@ const logoutBtn = document.getElementById("logoutBtn");
 const loginStatus = document.getElementById("loginStatus");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
-// =====================================
-// AUTO LOGOUT SETTINGS
-// =====================================
 
-const INACTIVITY_LIMIT = 45 * 1000; // 1 minute
+ // =====================================
+ // AUTO LOGOUT + SOLID CIRCLE COUNTDOWN
+ // =====================================
+
+const INACTIVITY_LIMIT = 45 * 1000; // 45 seconds
 
 let inactivityTimer = null;
 let inactivityCountdownInterval = null;
+let inactivityDeadline = 0;
 let feedbackUnsubscribe = null;
 let isSigningOut = false;
 
-// =====================================
-// STATUS MESSAGE
-// =====================================
+const inactivityRing = document.getElementById("inactivityRing");
+const inactivityFill = document.getElementById("inactivityFill");
 
-function showLoginMessage(message, isError = false) {
-    if (!loginStatus) return;
+const CIRCLE_RADIUS = 44;
+const CIRCLE_CX = 50;
+const CIRCLE_CY = 50;
 
-    loginStatus.textContent = message;
-    loginStatus.style.color = isError ? "red" : "green";
+function updateInactivityRing(remainingSeconds, totalSeconds) {
+    if (!inactivityFill || totalSeconds <= 0) return;
+
+    const progress = Math.max(
+        0,
+        Math.min(1, remainingSeconds / totalSeconds)
+    );
+
+    const radius = CIRCLE_RADIUS;
+    const cx = CIRCLE_CX;
+    const cy = CIRCLE_CY;
+
+    // No green fill when countdown finishes
+    if (progress <= 0) {
+        inactivityFill.setAttribute("d", "");
+        return;
+    }
+
+    // Full solid circle at the start
+    if (progress >= 1) {
+        inactivityFill.setAttribute(
+            "d",
+            `M ${cx} ${cy - radius}
+             A ${radius} ${radius} 0 1 1 ${cx} ${cy + radius}
+             A ${radius} ${radius} 0 1 1 ${cx} ${cy - radius} Z`
+        );
+        return;
+    }
+
+    // Remaining solid green sector.
+    // As time decreases, the endpoint moves anticlockwise.
+    const angle = 2 * Math.PI * progress;
+
+    const startX = cx;
+    const startY = cy - radius;
+
+    const endX = cx + radius * Math.sin(angle);
+    const endY = cy - radius * Math.cos(angle);
+
+    const largeArc = progress > 0.5 ? 1 : 0;
+
+    inactivityFill.setAttribute(
+        "d",
+        `M ${cx} ${cy}
+         L ${startX} ${startY}
+         A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}
+         Z`
+    );
 }
 
-function showAdminMessage(message, isError = false) {
-    if (!adminStatus) return;
+function updateCountdown() {
+    if (!auth.currentUser || isSigningOut || !inactivityDeadline) {
+        return;
+    }
 
-    adminStatus.textContent = message;
-    adminStatus.style.color = isError ? "red" : "green";
+    const remainingMs = Math.max(0, inactivityDeadline - Date.now());
+    const remainingSeconds = remainingMs / 1000;
+
+    updateInactivityRing(remainingSeconds, INACTIVITY_LIMIT / 1000);
+
+    if (remainingMs <= 0) {
+        stopInactivityTimer();
+    }
 }
-
-// =====================================
-// STOP AUTO LOGOUT TIMER
-// =====================================
 
 function stopInactivityTimer() {
-    if (inactivityTimer) {
+    if (inactivityTimer !== null) {
         clearTimeout(inactivityTimer);
         inactivityTimer = null;
     }
 
-    if (inactivityCountdownInterval) {
+    if (inactivityCountdownInterval !== null) {
         clearInterval(inactivityCountdownInterval);
         inactivityCountdownInterval = null;
     }
-}
 
-// =====================================
-// RESET AUTO LOGOUT TIMER
-// =====================================
+    inactivityDeadline = 0;
+}
 
 function resetInactivityTimer() {
     stopInactivityTimer();
 
     if (!auth.currentUser || isSigningOut) return;
 
-    const fill = document.getElementById("inactivityFill");
+    if (inactivityRing) {
+        inactivityRing.hidden = false;
+    }
 
-        function updateInactivityRing(remainingSeconds, totalSeconds) {
-            const progress = Math.max(
-                0,
-                Math.min(1, remainingSeconds / totalSeconds)
-            );
+    inactivityDeadline = Date.now() + INACTIVITY_LIMIT;
 
-            const radius = 44;
-            const cx = 50;
-            const cy = 50;
-
-            if (progress <= 0) {
-                fill.setAttribute("d", "");
-                return;
-            }
-
-            if (progress >= 1) {
-                fill.setAttribute(
-                    "d",
-                    "M 50 50 m 0 -44 a 44 44 0 1 1 0 88 a 44 44 0 1 1 0 -88"
-                );
-                return;
-            }
-
-            // Remaining green sector
-            const angle = 2 * Math.PI * progress;
-            const startX = cx;
-            const startY = cy - radius;
-            const endX = cx + radius * Math.sin(angle);
-            const endY = cy - radius * Math.cos(angle);
-            const largeArc = progress > 0.5 ? 1 : 0;
-
-            fill.setAttribute(
-                "d",
-                `M ${cx} ${cy} L ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY} Z`
-            );
-        }
+    // Start with a full green circle
+    updateInactivityRing(INACTIVITY_LIMIT / 1000, INACTIVITY_LIMIT / 1000);
 
     updateCountdown();
-    inactivityCountdownInterval = setInterval(updateCountdown, 250);
+
+    inactivityCountdownInterval = setInterval(updateCountdown, 100);
 
     inactivityTimer = setTimeout(async () => {
         if (!auth.currentUser || isSigningOut) return;
@@ -134,16 +155,24 @@ function resetInactivityTimer() {
         isSigningOut = true;
         stopInactivityTimer();
 
+        if (inactivityRing) {
+            inactivityRing.hidden = true;
+        }
+
         try {
             await signOut(auth);
-
-            if (ring) ring.hidden = true;
+            showLoginMessage("You have been logged out due to inactivity.");
         } catch (error) {
             console.error("Auto logout failed:", error);
             isSigningOut = false;
+
+            if (auth.currentUser) {
+                resetInactivityTimer();
+            }
         }
     }, INACTIVITY_LIMIT);
 }
+
 
 // =====================================
 // USER ACTIVITY EVENTS
