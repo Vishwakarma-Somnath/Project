@@ -143,7 +143,7 @@ console.log("Photo uploaded successfully:", data);
       form.reset();
 
       if (feedbackWelcome) {
-        feedbackWelcome.hidden = true;
+        feedbackWelcome.hidden = false;
       }
 
       if (feedbackSuccess) {
