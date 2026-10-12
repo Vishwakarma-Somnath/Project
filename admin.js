@@ -323,6 +323,13 @@ document.addEventListener("keydown", async (event) => {
             stopInactivityTimer();
             isSigningOut = true;
 
+            // Hide inactivity ring immediately
+            const ring = document.getElementById("inactivityRing");
+
+            if (ring) {
+                ring.hidden = true;
+            }
+
             await signOut(auth);
 
             showLoginMessage("You have been logged out.");
