@@ -32,6 +32,23 @@ const logoutBtn = document.getElementById("logoutBtn");
 const loginStatus = document.getElementById("loginStatus");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
+ // =====================================
+ // STATUS MESSAGE FUNCTIONS
+ // =====================================
+
+function showLoginMessage(message, isError = false) {
+    if (!loginStatus) return;
+
+    loginStatus.textContent = message;
+    loginStatus.style.color = isError ? "#dc2626" : "#15803d";
+}
+
+function showAdminMessage(message, isError = false) {
+    if (!adminStatus) return;
+
+    adminStatus.textContent = message;
+    adminStatus.style.color = isError ? "#dc2626" : "#15803d";
+}
 
  // =====================================
  // AUTO LOGOUT + SOLID CIRCLE COUNTDOWN
@@ -227,22 +244,27 @@ if (loginForm) {
             );
             return;
         }
-
+        
         try {
             showLoginMessage("Logging in...");
 
-            await signInWithEmailAndPassword(
+            const userCredential = await signInWithEmailAndPassword(
                 auth,
                 email,
                 password
             );
 
+            console.log("Login successful:", userCredential.user.uid);
+
             showLoginMessage("Login successful.");
+
         } catch (error) {
-            console.error("Login error:", error);
+            console.error("Login error:", error.code, error.message);
 
             showLoginMessage(
-                "Login failed: "+"Please check your email and password.",
+                error.code === "auth/invalid-credential"
+                    ? "Email or password is incorrect."
+                    : "Login failed: " + error.message,
                 true
             );
         }
