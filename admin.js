@@ -295,6 +295,45 @@ if (logoutBtn) {
         }
     });
 }
+
+
+/* =====================================
+   KEYBOARD SHORTCUT FOR ADMIN LOGOUT
+   Press F4 to logout
+===================================== */
+
+document.addEventListener("keydown", async (event) => {
+    // F4 key दबाने पर logout
+    if (event.key === "F4") {
+        event.preventDefault();
+
+        // केवल Dashboard खुला होने पर logout करें
+        const dashboard = document.getElementById("dashboard");
+
+        if (!dashboard || dashboard.hidden) {
+            return;
+        }
+
+        // पहले से logout प्रक्रिया चल रही हो तो दोबारा न चलाएँ
+        if (isSigningOut) {
+            return;
+        }
+
+        try {
+            stopInactivityTimer();
+            isSigningOut = true;
+
+            await signOut(auth);
+
+            showLoginMessage("You have been logged out.");
+
+        } catch (error) {
+            console.error("Keyboard logout failed:", error);
+            isSigningOut = false;
+        }
+    }
+});
+
 // =====================================
 // HELPER: CREATE ELEMENT
 // =====================================
