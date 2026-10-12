@@ -474,84 +474,84 @@
             color: #ffffff;
         }
 
-        /* Inactivity Timer Ring */
-        .inactivity-ring {
-            position: fixed;
-            right: 25px;
-            bottom: 25px;
+/* Inactivity Timer Ring */
+.inactivity-ring {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
 
-            width: 100px;
-            height: 100px;
+    width: 100px;
+    height: 100px;
 
-            border-radius: 50%;
-            overflow: hidden;
+    border-radius: 50%;
+    overflow: hidden;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-            background: transparent;
-        }
+    background: transparent;
+}
 
-        /* SVG Circle */
-        .inactivity-svg {
-            position: absolute;
-            inset: 0;
+/* SVG Circle */
+.inactivity-svg {
+    position: absolute;
+    inset: 0;
 
-            width: 100%;
-            height: 100%;
+    width: 100%;
+    height: 100%;
 
-            display: block;
-            transform: rotate(-90deg);
-        }
+    display: block;
+    transform: rotate(-90deg);
+}
 
-        /* Background Ring */
-        .ring-bg {
-            fill: none;
-            stroke: #e5e7eb;
-            stroke-width: 7;
-        }
+/* Background Ring */
+.ring-bg {
+    fill: none;
+    stroke: #e5e7eb;
+    stroke-width: 7;
+}
 
-        /* Progress Ring */
-        .ring-progress {
-            fill: none;
-            stroke: #22c55e;
-            stroke-width: 7;
-            stroke-linecap: round;
+/* Progress Ring */
+.ring-progress {
+    fill: none;
+    stroke: #22c55e;
+    stroke-width: 7;
+    stroke-linecap: round;
 
-            stroke-dasharray: 283;
-            stroke-dashoffset: 0;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 0;
 
-            transition: stroke-dashoffset 0.3s linear;
-        }
+    transition: stroke-dashoffset 0.3s linear;
+}
 
-        /* Timer Text */
-        .inactivity-ring-content {
-            position: relative;
-            z-index: 2;
+/* Timer Text */
+.inactivity-ring-content {
+    position: relative;
+    z-index: 2;
 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-            width: 100%;
-            height: 100%;
+    width: 100%;
+    height: 100%;
 
-            border-radius: 50%;
-            background: transparent;
-        }
+    border-radius: 50%;
+    background: transparent;
+}
 
-        .inactivity-ring-content span {
-            font-size: 18px;
-            font-weight: 700;
-            color: #111827;
-        }
+.inactivity-ring-content span {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
 
-        .inactivity-ring-content small {
-            font-size: 10px;
-            color: #374151;
-        }
+.inactivity-ring-content small {
+    font-size: 10px;
+    color: #374151;
+}
 
         @media (max-width: 600px) {
             .inactivity-ring {
