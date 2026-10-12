@@ -310,52 +310,39 @@ if (forgotPasswordBtn) {
 }
 
 
- // =====================================
- // MANUAL LOGOUT
- // =====================================
+/* =====================================
+   MANUAL LOGOUT
+===================================== */
 
 if (logoutBtn) {
-            if (logoutBtn) {
-            logoutBtn.style.display = "block";
-            logoutBtn.style.position = "static";
-            logoutBtn.style.margin = "0 auto 0 0";
-            logoutBtn.style.float = "none";
-        }
     logoutBtn.addEventListener("click", async () => {
         try {
-            // Stop inactivity timer
             stopInactivityTimer();
-
-            // Mark logout in progress
             isSigningOut = true;
 
-            // Hide inactivity ring immediately
-            const ring = document.getElementById("inactivityRing");
-
-            if (ring) {
-                ring.hidden = true;
+            // Hide inactivity countdown
+            if (inactivityRing) {
+                inactivityRing.hidden = true;
             }
 
-            // Firebase logout
+            // Sign out from Firebase
             await signOut(auth);
 
-            // Show logout message
             showLoginMessage("You have been logged out.");
 
         } catch (error) {
             console.error("Logout error:", error);
 
+            isSigningOut = false;
+
             showAdminMessage(
-                "Logout failed: " + (error.message || "Unknown error"),
+                "Logout failed: " +
+                (error.message || "Unknown error"),
                 true
             );
-
-            // Allow further activity if logout fails
-            isSigningOut = false;
         }
     });
 }
-
 
 /* =====================================
    KEYBOARD SHORTCUT FOR ADMIN LOGOUT
