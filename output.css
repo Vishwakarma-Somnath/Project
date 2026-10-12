@@ -2023,7 +2023,7 @@ video {
 }
 
   .text-overlay {
-    overflow-wrap: anywhere;
+    overflow-wrap: downword;
 }
 
 body {
