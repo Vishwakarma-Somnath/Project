@@ -401,77 +401,107 @@
             background-repeat: no-repeat;
         }
 
-        
-/* =====================================
-   DASHBOARD HEADER
-===================================== */
+        /* Header does not scroll */
+            #dashboard .dashboard-fixed-header {
+                flex: 0 0 auto;
+                position: relative;
+                z-index: 2;
+            }
 
-#dashboard .dashboard-fixed-header {
-    position: relative;
-    z-index: 2;
-    flex: 0 0 auto;
-    width: 100%;
-    padding: 24px 30px 12px;
-    background: transparent;
+            /* This area must be allowed to shrink */
+            #dashboard .dashboard-feedback-scroll {
+                display: block;
+                flex: 1 1 0;
+                min-height: 0;
+                height: 0;
 
-    /* Clear header layout */
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-items: start;
-}
+                overflow-y: scroll;
+                overflow-x: hidden;
 
-/* Main heading remains centered */
-#dashboard .dashboard-fixed-header h1 {
-    grid-column: 1;
-    width: 100%;
-    margin: 0 0 18px;
-    color: #000;
-    font-size: 45px;
-    letter-spacing: 8px;
-    text-align: center;
-    overflow-wrap: anywhere;
-}
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior-y: contain;
+            }
 
-/* Logout button stays on the left */
-#dashboard #logoutBtn {
-    grid-column: 1;
-    justify-self: start;
+            /* Let the records expand naturally */
+            #dashboard #pendingList {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0px;
+                column-gap: 25px;  /* Left aur right cards ke beech gap */
+                row-gap: 5px;    /* Upar aur neeche cards ke beech gap */
+                width: 100%;
+                align-items: start;
+                min-height: 0;
+            }
 
-    display: block;
-    position: static;
-    margin: 0 0 12px 0;
+            /* Prevent cards from being clipped */
+            #dashboard .admin-item {
+                width: 100%;
+                max-width: none;
+                min-width: 0;
+                margin: 0;
+                padding: 20px;
+                box-sizing: border-box;
+                background: #fff;
+                color: #222;
+                border-radius: 10px;
+                box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+                overflow-wrap: anywhere;
+            }
 
-    padding: 10px 18px;
-    border: none;
-    border-radius: 6px;
-    background: #b42318;
-    color: #fff;
-    cursor: pointer;
-}
+        /* Header never scrolls with the cards */
+        #dashboard .dashboard-fixed-header {
+            position: relative;
+            z-index: 2;
 
-#dashboard #logoutBtn:hover {
-    background: #8f1b13;
-}
+            flex: 0 0 auto;
+            width: 100%;
+            padding: 24px 30px 12px;
 
-/* Pending Feedback heading */
-#dashboard .dashboard-fixed-header h2 {
-    grid-column: 1;
-    margin: 0 0 3px;
-    color: #fff;
-    font-size: 23px;
-    word-spacing: 5px;
-    letter-spacing: 8px;
-    overflow-wrap: anywhere;
-}
+            background: transparent;
+        }
 
-/* Admin status message */
-#dashboard #adminStatus {
-    grid-column: 1;
-    margin: 3px 0 0;
-    color: #f5e12e;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-}
+        #dashboard h1 {
+            margin: 0 0 0px;
+            color: #000000;
+            font-size: 45px;
+            letter-spacing: 8px;
+            text-align: center;
+            
+        }
+
+        #dashboard h2 {
+            margin: 0px 0 3px;
+            color: #fff;
+            font-size: 23px;
+            word-spacing: 5px;
+            letter-spacing: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        #logoutBtn {
+            display: inline-block;
+            right: 50;
+            margin-left: auto;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #b42318;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        #logoutBtn:hover {
+            background: #8f1b13;
+        }
+
+        #adminStatus {
+            margin: 3px 0 0;
+            color: #f5e12e !important;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
 
         /* =====================================
            7. ONLY FEEDBACK CARDS SCROLL
