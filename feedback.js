@@ -1,6 +1,7 @@
 import { db } from "./firebase-config.js";
 
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 import {
   addDoc,
@@ -23,27 +24,37 @@ const FEEDBACK_SUBMITTED_KEY = "feedbackSubmitted";
 const feedbackHeading = document.getElementById("feedbackHeading");
 const privacyNote = document.getElementById("privacyNote");
 
-if (localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true") {
-    form.hidden = true;
+onAuthStateChanged(auth, (user) => {
+    isAdmin = user?.uid === ADMIN_UID;
+    authReady = true;
 
-        // Hide heading and privacy note
-    if (feedbackHeading) {
-        feedbackHeading.hidden = true;
+    if (isAdmin) {
+        // Admin can submit multiple times
+        form.hidden = false;
+        form.style.display = "";
+    } else if (
+        localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true"
+    ) {
+        // Visitor has already submitted
+        form.hidden = true;
+
+        if (feedbackWelcome) {
+            feedbackWelcome.hidden = false;
+        }
+
+        if (feedbackSuccess) {
+            feedbackSuccess.hidden = false;
+        }
+
+        if (feedbackHeading) {
+            feedbackHeading.hidden = true;
+        }
+
+        if (privacyNote) {
+            privacyNote.hidden = true;
+        }
     }
-
-    if (privacyNote) {
-        privacyNote.hidden = true;
-    }
-
-    if (feedbackWelcome) {
-        feedbackWelcome.hidden = false;
-    }
-
-    if (feedbackSuccess) {
-        feedbackSuccess.hidden = false;
-    }
-
-  }
+});
 
 const slide = document.createElement("div");
 slide.className = "swiper-slide px-4 firebase-feedback-slide";
