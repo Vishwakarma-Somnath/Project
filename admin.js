@@ -143,7 +143,16 @@ function updateCountdown() {
 }
 
 function resetInactivityTimer() {
+    inactivityDeadline = 0;    
     stopInactivityTimer();
+        if (inactivityTimer !== null) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
+    }
+        if (inactivityCountdownInterval !== null) {
+            clearInterval(inactivityCountdownInterval);
+            inactivityCountdownInterval = null;
+    }    
 
     if (!auth.currentUser || isSigningOut) {
         return;
