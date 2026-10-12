@@ -86,41 +86,44 @@ function resetInactivityTimer() {
 
     if (!auth.currentUser || isSigningOut) return;
 
-    const ring = document.getElementById("inactivityRing");
-    const progress = document.getElementById("inactivityProgress");
-    const timeDisplay = document.getElementById("inactivityTime");
+    const fill = document.getElementById("inactivityFill");
 
-    const circumference = 2 * Math.PI * 45;
-    const deadline = Date.now() + INACTIVITY_LIMIT;
+        function updateInactivityRing(remainingSeconds, totalSeconds) {
+            const progress = Math.max(
+                0,
+                Math.min(1, remainingSeconds / totalSeconds)
+            );
 
-    if (ring) ring.hidden = false;
+            const radius = 44;
+            const cx = 50;
+            const cy = 50;
 
-    function updateCountdown() {
-        const remaining = Math.max(0, deadline - Date.now());
-        const fraction = remaining / INACTIVITY_LIMIT;
-        const totalSeconds = Math.ceil(remaining / 1000);
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-
-        if (timeDisplay) {
-            timeDisplay.textContent =
-                String(minutes).padStart(2, "0") + ":" +
-                String(seconds).padStart(2, "0");
-        }
-
-        if (progress) {
-            progress.style.strokeDashoffset =
-                circumference * (1 - fraction);
-
-            if (fraction <= 0.2) {
-                progress.style.stroke = "#dc2626";
-            } else if (fraction <= 0.5) {
-                progress.style.stroke = "#f59e0b";
-            } else {
-                progress.style.stroke = "#16a34a";
+            if (progress <= 0) {
+                fill.setAttribute("d", "");
+                return;
             }
+
+            if (progress >= 1) {
+                fill.setAttribute(
+                    "d",
+                    "M 50 50 m 0 -44 a 44 44 0 1 1 0 88 a 44 44 0 1 1 0 -88"
+                );
+                return;
+            }
+
+            // Remaining green sector
+            const angle = 2 * Math.PI * progress;
+            const startX = cx;
+            const startY = cy - radius;
+            const endX = cx + radius * Math.sin(angle);
+            const endY = cy - radius * Math.cos(angle);
+            const largeArc = progress > 0.5 ? 1 : 0;
+
+            fill.setAttribute(
+                "d",
+                `M ${cx} ${cy} L ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY} Z`
+            );
         }
-    }
 
     updateCountdown();
     inactivityCountdownInterval = setInterval(updateCountdown, 250);

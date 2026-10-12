@@ -753,16 +753,9 @@ S
 
     <!-- Inactivity Countdown Ring -->
 <div id="inactivityRing" class="inactivity-ring" hidden>
-    <svg class="inactivity-svg" viewBox="0 0 100 100">
-        
-        <circle
-            id="inactivityProgress"
-            class="ring-progress"
-            cx="50"
-            cy="50"
-            r="5">
-        </circle>
-    </svg>
+<svg id="inactivityTimer" viewBox="0 0 100 100">
+  <path id="inactivityFill" fill="#16a34a"></path>
+</svg>
 
     <div class="inactivity-ring-content">
         <span id="inactivityTime">00:00</span>
