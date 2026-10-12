@@ -166,25 +166,64 @@ console.log("Photo uploaded successfully:", data);
         }
       );
 
-      // Successful submission only
-        form.reset();
+      // After successful submission
+      form.reset();
 
-        const isAdmin = auth.currentUser?.uid === ADMIN_UID;
+      const isAdmin = auth.currentUser?.uid === ADMIN_UID;
 
-        // Only restrict normal visitors
-        if (!isAdmin) {
-            localStorage.setItem(FEEDBACK_SUBMITTED_KEY, "true");
-        }
+      // Hide form and heading
+      form.hidden = true;
 
-        form.hidden = true;
+      if (feedbackHeading) {
+          feedbackHeading.hidden = true;
+      }
 
-        if (feedbackWelcome) {
-            feedbackWelcome.hidden = false;
-        }
+      if (privacyNote) {
+          privacyNote.hidden = true;
+      }
 
-        if (feedbackSuccess) {
-            feedbackSuccess.hidden = false;
-        }
+      // Show thank-you content
+      if (feedbackWelcome) {
+          feedbackWelcome.hidden = false;
+      }
+
+      if (feedbackSuccess) {
+          feedbackSuccess.hidden = false;
+      }
+
+      // Normal visitors can submit only once in this browser
+      if (!isAdmin) {
+          localStorage.setItem("feedbackSubmitted", "true");
+      }
+
+      // Admin can submit again after 10 seconds
+      if (isAdmin) {
+          setTimeout(() => {
+              form.hidden = false;
+              form.style.display = "";
+
+              if (feedbackHeading) {
+                  feedbackHeading.hidden = false;
+              }
+
+              if (privacyNote) {
+                  privacyNote.hidden = false;
+              }
+
+              if (feedbackWelcome) {
+                  feedbackWelcome.hidden = true;
+              }
+
+              if (feedbackSuccess) {
+                  feedbackSuccess.hidden = true;
+              }
+
+              const statusBox = document.getElementById("formStatus");
+              if (statusBox) {
+                  statusBox.textContent = "";
+              }
+          }, 10000);
+      }
 
         setStatus(
             "Thank you! Your feedback has been submitted for admin approval."
