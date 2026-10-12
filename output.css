@@ -2026,6 +2026,8 @@ video {
     display: block;
     white-space: normal;
     overflow-wrap: break-word;
+    align-items: center;
+    width: 100%;
 }
 
 body {
