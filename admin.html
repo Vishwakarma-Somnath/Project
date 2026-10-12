@@ -564,43 +564,30 @@
             ========================================= */
 
             /* Dashboard ko viewport ki height mein rakhein */
+            /* Dashboard: normal page scrolling */
             #dashboard.admin-panel {
-                height: 100vh;
-                min-height: 0;
-                box-sizing: border-box;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
+                height: auto;
+                min-height: 100vh;
+                overflow: visible;
+                display: block;
             }
 
-            /* Panel heading aur Logout button fixed rahenge */
+            /* Header and status remain in normal page flow */
             #dashboard.admin-panel > h1,
-            #dashboard.admin-panel > #logoutBtn {
-                flex-shrink: 0;
-            }
-
-            /* Pending Feedback heading fixed rahegi */
-            #dashboard.admin-panel > h2 {
-                flex-shrink: 0;
-                margin-bottom: 10px;
-            }
-
-            /* Loaded feedback status fixed rahega */
+            #dashboard.admin-panel > #logoutBtn,
+            #dashboard.admin-panel > h2,
             #dashboard.admin-panel > #adminStatus {
-                flex-shrink: 0;
-                margin-bottom: 12px;
+                position: static;
             }
 
-            /* Sirf feedback records ki list scroll hogi */
+            /* Feedback list: no internal scroll lock */
             #dashboard.admin-panel > #pendingList {
-                flex: 1 1 auto;
+                height: auto;
+                max-height: none;
+                overflow: visible;
                 min-height: 0;
-                overflow-y: auto;
-                overflow-x: hidden;
-                overscroll-behavior: contain;
-                padding: 5px 12px 20px 5px;
-                scrollbar-width: thin;
             }
+
         /* =====================================
            MOBILE RESPONSIVE
         ===================================== */
