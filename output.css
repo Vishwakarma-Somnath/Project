@@ -2023,7 +2023,9 @@ video {
 }
 
   .text-overlay {
-    overflow-wrap: downword;
+    display: block;
+    white-space: normal;
+    overflow-wrap: break-word;
 }
 
 body {
