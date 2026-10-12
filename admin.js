@@ -142,7 +142,7 @@ function updateCountdown() {
     // The timeout must remain active so automatic logout can run.
 }
 
-    function stopInactivityTimer() {
+function stopInactivityTimer() {
         if (inactivityTimer !== null) {
             clearTimeout(inactivityTimer);
             inactivityTimer = null;
@@ -207,7 +207,6 @@ function updateCountdown() {
             }
         }
     }, INACTIVITY_LIMIT);
-}
 
 // =====================================
 // USER ACTIVITY EVENTS
