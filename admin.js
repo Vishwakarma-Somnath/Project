@@ -486,7 +486,7 @@ function loadFeedback() {
 // =====================================
 
 function createFeedbackCard(item) {
-    const card = createElement("div", "feedback-admin-card");
+    const card = createElement("div", "admin-item");
 
     card.style.cssText = `
         border: 1px solid #ddd;
