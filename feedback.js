@@ -20,9 +20,20 @@ const feedbackWelcome = document.getElementById("feedbackWelcome");
 const feedbackSuccess = document.getElementById("feedbackSuccess");
 const ADMIN_UID = "0R9UuWTXFdhUgr9fV7rKmec9Usi2";
 const FEEDBACK_SUBMITTED_KEY = "feedbackSubmitted";
+const feedbackHeading = document.getElementById("feedbackHeading");
+const privacyNote = document.getElementById("privacyNote");
 
 if (localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true") {
     form.hidden = true;
+
+        // Hide heading and privacy note
+    if (feedbackHeading) {
+        feedbackHeading.hidden = true;
+    }
+
+    if (privacyNote) {
+        privacyNote.hidden = true;
+    }
 
     if (feedbackWelcome) {
         feedbackWelcome.hidden = false;
