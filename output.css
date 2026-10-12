@@ -2210,3 +2210,64 @@ h1, h2 {
         object-fit: cover;
     }
 }
+
+/* Feedback section: image left, form right */
+.feedback-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 40px auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* Left image */
+.feedback-image {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feedback-image img {
+    width: 100%;
+    max-width: 450px;
+    height: 520px;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Right form */
+.feedback-container {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    max-width: 550px;
+    margin: 0 auto;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .feedback-layout {
+        flex-direction: column;
+        gap: 25px;
+        padding: 0 16px;
+    }
+
+    .feedback-image,
+    .feedback-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .feedback-image img {
+        max-width: 100%;
+        height: 280px;
+    }
+}
