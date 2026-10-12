@@ -530,33 +530,34 @@
            8. FEEDBACK CARDS
         ===================================== */
 
+        /* Feedback card ki width chhoti karein */
         .admin-item {
-            width: 100%;
-            min-height: 350px;       /* Box ki height badhayein */
-            padding: 25px;
-            padding-bottom: 360px;    /* Neeche ki taraf extra space */
-            margin: 16px 0;
+            width: 85%;
+            max-width: 850px;
+            margin: 16px auto;
+            padding: 20px;
             box-sizing: border-box;
 
             background: #ffffff;
             color: #222222;
             border-radius: 10px;
-            overflow-wrap: anywhere;
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .admin-item img {
-            width: 90px;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 50%;
+        /* Feedback content ko ek line mein rakhein */
+        .admin-item .feedback-content-row {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 15px;
+            width: 100%;
         }
 
-        .feedback-content-row {
-            display: flex;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 16px;
+        /* Text ko available space dein */
+        .admin-item .feedback-content {
+            flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
         .admin-actions {
