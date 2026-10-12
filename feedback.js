@@ -140,18 +140,24 @@ console.log("Photo uploaded successfully:", data);
         }
       );
 
+      // After successful feedback submission
       form.reset();
 
+      // Hide the feedback form
+      form.hidden = true;
+
+      // Show the welcome image
       if (feedbackWelcome) {
-        feedbackWelcome.hidden = false;
+          feedbackWelcome.hidden = false;
       }
 
+      // Show the thank-you animation/message
       if (feedbackSuccess) {
-        feedbackSuccess.hidden = false;
+          feedbackSuccess.hidden = false;
       }
 
       setStatus(
-        "Thank you! Your feedback has been submitted for admin approval."
+          "Thank you! Your feedback has been submitted for admin approval."
       );
 
     } catch (error) {
