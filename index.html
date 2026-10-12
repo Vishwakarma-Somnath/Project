@@ -2111,81 +2111,123 @@
     >
   </div>
 
-  <!-- Right Side Feedback Form -->
-  <main class="feedback-container">
+    <!-- Right Side Feedback Form -->
+    <main class="feedback-container">
 
-    <section class="feedback-form-card">
-      <h1>Share Your Feedback. Your feedback is valuable to me.</h1>
+      <section class="feedback-form-card">
 
-    <!-- Before submission -->
-    <div id="feedbackWelcome" class="feedback-welcome">
-        <img
+        <h1>Share Your Feedback. Your feedback is valuable to me.</h1>
+
+        <!-- Before Submission: Welcome Image -->
+        <div id="feedbackWelcome" class="feedback-welcome">
+          <img
             src="images/feedback-thankyou.png"
             alt="Thank you for taking the time to share feedback"
-        >
-        <p>Your thoughts and suggestions are valuable to me!</p>
-    </div>
-
-    <!-- Your existing feedback form stays here -->
-    <form id="feedbackForm">
-        <!-- Keep all your existing form fields and submit button -->
-    </form>
-
-    <!-- After successful submission -->
-    <div id="feedbackSuccess" class="feedback-success" hidden>
-        <div class="success-animation">
-            <svg viewBox="0 0 100 100" aria-hidden="true">
-                <circle class="success-circle" cx="50" cy="50" r="44"/>
-                <path class="success-check" d="M28 51 L43 66 L73 35"/>
-            </svg>
+          >
+          <p>Your thoughts and suggestions are valuable to me!</p>
         </div>
 
-        <h2>Thank You!</h2>
-        <p>Your feedback means a lot to me.</p>
-        <p>Your feedback has been submitted successfully.</p>
+        <!-- Feedback Form: Keep only ONE form -->
+        <form id="feedbackForm">
+
+          <label for="name">Full Name</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            maxlength="80"
+            placeholder="Your Full Name"
+            required
+          >
+
+          <label for="email">Email Address (Private)</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            maxlength="254"
+            placeholder="your_email@example.com"
+            required
+          >
+
+          <label for="designation">Designation</label>
+          <input
+            id="designation"
+            name="designation"
+            type="text"
+            maxlength="100"
+            placeholder="e.g. Engineer, Student"
+            required
+          >
+
+          <label for="department">Department</label>
+          <input
+            id="department"
+            name="department"
+            type="text"
+            maxlength="100"
+            placeholder="Department"
+            required
+          >
+
+          <label for="message">Your Feedback</label>
+          <textarea
+            id="message"
+            name="message"
+            rows="2"
+            maxlength="2500"
+            placeholder="Your Valuable Feedback"
+            required
+          ></textarea>
+
+          <label for="photo">Your Photo (JPG, PNG, WebP — Max 2 MB)</label>
+          <input
+            id="photo"
+            name="photo"
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            required
+          >
+
+          <p id="formStatus" role="status" aria-live="polite"></p>
+
+          <button id="submitBtn" type="submit">
+            Submit Feedback
+          </button>
+
+        </form>
+
+        <!-- After Successful Submission -->
+        <div id="feedbackSuccess" class="feedback-success" hidden>
+
+          <div class="success-animation">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="success-circle" cx="50" cy="50" r="44"></circle>
+              <path class="success-check" d="M28 51 L43 66 L73 35"></path>
+            </svg>
+          </div>
+
+          <h2>Thank You!</h2>
+          <p>Your feedback means a lot to me.</p>
+          <p>Your feedback has been submitted for admin approval.</p>
+
+        </div>
+
+        <p class="privacy-note">
+          Your feedback will appear publicly only after admin approval.
+        </p>
+
+      </section>
+
+    </main>
+
+          <p class="privacy-note">
+            Your feedback will appear publicly only after admin approval.
+          </p>
+        </section>
+      </main>
+
     </div>
-
-      <form id="feedbackForm">
-
-        <label for="name">Full Name</label>
-        <input id="name" name="name" type="text"
-          maxlength="80" placeholder="Your Full Name" required>
-
-        <label for="email">Email Address (Private)</label>
-        <input id="email" name="email" type="email"
-          maxlength="254" placeholder="your_email@example.com" required>
-
-        <label for="designation">Designation</label>
-        <input id="designation" name="designation" type="text"
-          maxlength="100" placeholder="e.g. Engineer, Student" required>
-
-        <label for="department">Department</label>
-        <input id="department" name="department" type="text"
-          maxlength="100" placeholder="Department" required>
-
-        <label for="message">Your Feedback</label>
-        <textarea id="message" name="message" rows="2"
-          maxlength="2500" placeholder="Your Valuable Feedback" required></textarea>
-
-        <label for="photo">Your Photo (JPG, PNG, WebP — Max 2 MB)</label>
-        <input id="photo" name="photo" type="file"
-          accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required>
-
-        <p id="formStatus" role="status" aria-live="polite"></p>
-
-        <button id="submitBtn" type="submit">
-          Submit Feedback
-        </button>
-
-      </form>
-
-      <p class="privacy-note">
-        Your feedback will appear publicly only after admin approval.
-      </p>
-    </section>
-  </main>
-
-</div>
 
   <!-- Testimonials Swiper: Only ONE Swiper -->
   <div class="swiper mySwiper !py-14">
