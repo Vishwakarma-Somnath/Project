@@ -148,7 +148,6 @@ if (uploadError) {
 
 console.log("Photo uploaded successfully:", data);
 
-
       // 3. Get the public URL from Supabase.
       const { data: publicUrlData } = supabase.storage
         .from(FEEDBACK_BUCKET)
