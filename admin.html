@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,12 +7,14 @@
 
     <link href="images/name-logo04 copy.png" rel="icon">
     <title>Admin Panel | Feedback Management</title>
+
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
     <style>
-        /* ==================================
-           1. GLOBAL
-        ================================== */
+        /* =====================================
+           1. GLOBAL STYLES
+        ===================================== */
+
         * {
             margin: 0;
             padding: 0;
@@ -20,28 +22,31 @@
             font-family: Algerian, sans-serif;
         }
 
-        html, body {
+        html,
+        body {
             width: 100%;
             min-height: 100%;
         }
 
         body {
             min-height: 100vh;
-            background: #25252b url("images/Wallpaper1.png")
-                center / cover no-repeat fixed;
+            background-color: #25252b;
+            background-image: url("images/Wallpaper1.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
         }
 
         [hidden] {
             display: none !important;
         }
 
-        button {
-            cursor: pointer;
-        }
 
-        /* ==================================
-           2. LOGIN PANEL
-        ================================== */
+        /* =====================================
+           2. LOGIN CONTAINER
+        ===================================== */
+
         #loginSection {
             position: relative;
             width: 850px;
@@ -54,29 +59,30 @@
             overflow: hidden;
         }
 
-        .curved-shape,
-        .curved-shape3 {
+        .curved-shape {
             position: absolute;
             top: -5px;
+            right: 0;
             width: 850px;
             height: 600px;
-            z-index: 1;
-        }
-
-        .curved-shape {
-            right: 0;
-            background: linear-gradient(45deg, #000, #e46033);
+            background: linear-gradient(45deg, #000000, #e46033);
             transform: rotate(10deg) skewY(40deg);
             transform-origin: bottom right;
             animation: curvedShapeEntry 1.5s ease-out forwards;
+            z-index: 1;
         }
 
         .curved-shape3 {
+            position: absolute;
+            top: -5px;
             left: 0;
-            background: linear-gradient(135deg, #000, #f5ff3a);
-            transform: skewY(-40deg);
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(135deg, #000000, #f5ff3a);
+            transform: rotate(0deg) skewY(-40deg);
             transform-origin: bottom right;
             animation: curvedShape3Entry 1.5s ease-out forwards;
+            z-index: 0;
         }
 
         .curved-shape2 {
@@ -85,7 +91,7 @@
             left: 250px;
             width: 850px;
             height: 700px;
-            background: #000;
+            background: #000000;
             border-top: 3px solid #e46033;
             transform-origin: bottom left;
             z-index: 1;
@@ -112,6 +118,11 @@
                 transform: translateX(0) skewY(-40deg);
             }
         }
+
+
+        /* =====================================
+           3. LOGIN FORM
+        ===================================== */
 
         .form-box {
             position: absolute;
@@ -150,9 +161,9 @@
             height: 100%;
             padding-right: 35px;
             background: transparent;
-            border: 0;
-            border-bottom: 2px solid #fff;
+            border: none;
             outline: none;
+            border-bottom: 2px solid #fff;
             color: #fff;
             font-size: 16px;
         }
@@ -206,6 +217,7 @@
             -webkit-text-fill-color: #fff !important;
             -webkit-box-shadow: 0 0 0 1000px #25252b inset !important;
             caret-color: #e46033;
+            transition: background-color 9999s ease-in-out 0s;
         }
 
         #adminEmail::selection,
@@ -214,12 +226,17 @@
             color: #fff;
         }
 
+
+        /* =====================================
+           4. LOGIN BUTTON
+        ===================================== */
+
         .btn {
             position: relative;
-            isolation: isolate;
             width: 100%;
             height: 45px;
             overflow: hidden;
+            isolation: isolate;
             border: 2px solid #e46033;
             border-radius: 40px;
             background: transparent;
@@ -227,6 +244,7 @@
             font-size: 25px;
             letter-spacing: 5px;
             text-transform: uppercase;
+            cursor: pointer;
         }
 
         .btn::before {
@@ -235,7 +253,10 @@
             inset: 0;
             height: 300%;
             background: linear-gradient(
-                #25252b, #e46033, #25252b, #e46033
+                #25252b,
+                #e46033,
+                #25252b,
+                #e46033
             );
             transform: translateY(-66.67%);
             transition: transform 0.5s ease;
@@ -255,12 +276,14 @@
             display: block;
             margin: 15px auto 0;
             padding: 8px;
-            border: 0;
             background: transparent;
+            border: none;
             color: #55c8ef;
             font-size: 20px;
             letter-spacing: 1px;
             cursor: pointer;
+            animation: fadeIn 0.8s ease 1s forwards;
+            opacity: 0;
         }
 
         .forgot-btn:hover {
@@ -274,7 +297,13 @@
             font-size: 13px;
             line-height: 1.5;
             overflow-wrap: anywhere;
+            text-align: left;
         }
+
+
+        /* =====================================
+           5. WELCOME MESSAGE
+        ===================================== */
 
         .info-content {
             position: absolute;
@@ -293,8 +322,10 @@
         .info-content h2 {
             color: #fff;
             font-size: 44px;
+            word-spacing: 1px;
             letter-spacing: 2px;
             line-height: 1.3;
+            text-transform: uppercase;
         }
 
         .info-content02 {
@@ -350,9 +381,12 @@
             }
         }
 
-        /* ==================================
-           3. FIXED DASHBOARD
-        ================================== */
+
+        /* =====================================
+           6. DASHBOARD - FIXED VIEWPORT
+           BACKGROUND + HEADER STAY IN PLACE
+        ===================================== */
+
         #dashboard.admin-panel {
             position: fixed;
             inset: 0;
@@ -363,21 +397,67 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: #25252b url("images/Wallpaper2.png")
-                center / cover no-repeat;
+            background-image: url("images/Wallpaper2.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
-        #dashboard[hidden] {
-            display: none !important;
-        }
+        /* Header does not scroll */
+            #dashboard .dashboard-fixed-header {
+                flex: 0 0 auto;
+                position: relative;
+                z-index: 2;
+            }
 
-        /* Header stays fixed; it does not scroll */
+            /* This area must be allowed to shrink */
+            #dashboard .dashboard-feedback-scroll {
+                display: block;
+                flex: 1 1 0;
+                min-height: 0;
+                height: 0;
+
+                overflow-y: scroll;
+                overflow-x: hidden;
+
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior-y: contain;
+            }
+
+            /* Let the records expand naturally */
+            #dashboard #pendingList {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 20px;
+                width: 100%;
+                align-items: start;
+                min-height: 0;
+            }
+
+            /* Prevent cards from being clipped */
+            #dashboard .admin-item {
+                width: 100%;
+                max-width: none;
+                min-width: 0;
+                margin: 0;
+                padding: 20px;
+                box-sizing: border-box;
+                background: #fff;
+                color: #222;
+                border-radius: 10px;
+                box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+                overflow-wrap: anywhere;
+            }
+
+        /* Header never scrolls with the cards */
         #dashboard .dashboard-fixed-header {
             position: relative;
             z-index: 2;
+
             flex: 0 0 auto;
             width: 100%;
             padding: 24px 30px 12px;
+
             background: transparent;
         }
 
@@ -398,11 +478,13 @@
         }
 
         #logoutBtn {
+            display: inline-block;
             padding: 10px 18px;
-            border: 0;
+            border: none;
             border-radius: 6px;
             background: #b42318;
             color: #fff;
+            cursor: pointer;
         }
 
         #logoutBtn:hover {
@@ -416,14 +498,21 @@
             overflow-wrap: anywhere;
         }
 
-        /* Only the feedback list scrolls */
+
+        /* =====================================
+           7. ONLY FEEDBACK CARDS SCROLL
+        ===================================== */
+
         #dashboard .dashboard-feedback-scroll {
             flex: 1 1 auto;
-            min-height: 0;
+            min-height: 450px;
             width: 100%;
+
             overflow-x: hidden;
             overflow-y: auto;
-            padding: 0 20px 24px;
+
+            padding: 0 30px 24px;
+
             overscroll-behavior-y: contain;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
@@ -446,76 +535,63 @@
         #dashboard #pendingList {
             width: 100%;
             min-width: 0;
-            display: flow-root;
         }
 
-        /* ==================================
-           4. FEEDBACK CARDS
-        ================================== */
-        #dashboard .admin-item {
-            width: 100%;
-            max-width: 700px; /* Desktop card width */
-            min-width: 0;
+
+        /* =====================================
+           8. FEEDBACK CARDS
+        ===================================== */
+
+        /* Feedback card ki width chhoti karein */
+        .admin-item {
+            width: 85%;
+            max-width: 850px;
             margin: 16px auto;
-            padding: 18px;
+            padding: 20px;
             box-sizing: border-box;
-            flex-shrink: 0;
-            background: #fff;
-            color: #222;
+
+            background: #ffffff;
+            color: #222222;
             border-radius: 10px;
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
-            overflow-wrap: anywhere;
         }
 
-        /* Photo and feedback information sit side-by-side */
-        #dashboard .admin-item .feedback-content-row {
+        /* Feedback content ko ek line mein rakhein */
+        .admin-item .feedback-content-row {
             display: flex;
             flex-direction: row;
             align-items: flex-start;
-            gap: 14px;
+            gap: 15px;
             width: 100%;
-            min-width: 0;
         }
 
-        #dashboard .admin-item img {
-            flex: 0 0 90px;
-            width: 90px;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        #dashboard .admin-item .feedback-content {
-            flex: 1 1 auto;
+        /* Text ko available space dein */
+        .admin-item .feedback-content {
+            flex: 1;
             min-width: 0;
             overflow-wrap: anywhere;
         }
 
-        /* Keep individual fields horizontally aligned where possible */
-        #dashboard .feedback-content > * {
-            margin-top: 0;
-            margin-bottom: 8px;
-        }
-
-        #dashboard .admin-actions {
+        .admin-actions {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 15px;
         }
 
-        #dashboard .admin-actions button {
+        .admin-actions button {
             padding: 10px 16px;
-            border: 0;
+            border: none;
             border-radius: 6px;
+            cursor: pointer;
         }
 
-        #dashboard .approve-btn {
+        .approve-btn {
             background: #147d45;
             color: #fff;
         }
 
-        #dashboard .reject-btn {
+        .reject-btn {
             background: #b42318;
             color: #fff;
         }
@@ -525,16 +601,20 @@
             cursor: not-allowed;
         }
 
-        /* ==================================
-           5. INACTIVITY COUNTDOWN
-        ================================== */
+
+        /* =====================================
+           9. INACTIVITY COUNTDOWN
+        ===================================== */
+
         #inactivityRing {
             position: fixed;
             top: 110px;
             right: 20px;
             z-index: 9999;
+
             width: 80px;
             height: 80px;
+
             display: flex;
             align-items: center;
             justify-content: center;
@@ -574,9 +654,11 @@
             font-size: 8px;
         }
 
-        /* ==================================
-           6. MOBILE
-        ================================== */
+
+        /* =====================================
+           10. MOBILE RESPONSIVE
+        ===================================== */
+
         @media (max-width: 650px) {
             #loginSection {
                 width: calc(100% - 24px);
@@ -591,6 +673,16 @@
             .curved-shape3 {
                 display: none;
             }
+
+                #dashboard #pendingList {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 16px;
+            }
+
+            #dashboard .admin-item {
+                padding: 14px;
+            }
+        }
 
             .form-box {
                 position: relative;
@@ -630,6 +722,7 @@
                 font-size: 13px;
             }
 
+            /* Dashboard remains fixed on mobile too */
             #dashboard .dashboard-fixed-header {
                 padding: 16px 14px 10px;
             }
@@ -650,24 +743,17 @@
                 padding: 0 12px 16px;
             }
 
-            #dashboard .admin-item {
-                max-width: 100%;
-                padding: 14px;
-                margin: 12px auto;
+            .admin-item {
+                padding: 15px;
             }
 
-            #dashboard .admin-item .feedback-content-row {
+            .admin-item img {
+                width: 85px;
+                height: 85px;
+            }
+
+            .feedback-content-row {
                 gap: 12px;
-            }
-
-            #dashboard .admin-item img {
-                flex-basis: 70px;
-                width: 70px;
-                height: 70px;
-            }
-
-            #dashboard .admin-actions button {
-                padding: 9px 12px;
             }
 
             #inactivityRing {
@@ -681,8 +767,12 @@
 
 <body>
 
-    <!-- ADMIN LOGIN -->
+    <!-- =====================================
+         ADMIN LOGIN
+    ===================================== -->
+
     <main class="container" id="loginSection">
+
         <div class="curved-shape"></div>
         <div class="curved-shape3"></div>
         <div class="curved-shape2"></div>
@@ -745,31 +835,49 @@
                 dashboard securely.
             </p>
         </section>
+
     </main>
 
-    <!-- ADMIN DASHBOARD -->
+
+    <!-- =====================================
+         ADMIN DASHBOARD
+    ===================================== -->
+
     <section class="admin-panel" id="dashboard" hidden>
+
+        <!-- FIXED HEADER: DOES NOT SCROLL -->
         <div class="dashboard-fixed-header">
+
             <h1>Feedback Administrator Panel</h1>
 
-            <button id="logoutBtn" type="button">Logout</button>
+            <button id="logoutBtn" type="button">
+                Logout
+            </button>
 
             <h2>Pending Feedback</h2>
 
             <p id="adminStatus" role="status" aria-live="polite"></p>
+
         </div>
 
-        <!-- Only this list scrolls -->
+        <!-- ONLY THIS AREA SCROLLS -->
         <div class="dashboard-feedback-scroll">
             <div id="pendingList"></div>
         </div>
+
     </section>
 
-    <!-- EXISTING FIREBASE / SUPABASE LOGIC -->
+
+    <!-- KEEP YOUR EXISTING FIREBASE MODULE -->
     <script type="module" src="./admin.js"></script>
 
-    <!-- INACTIVITY COUNTDOWN -->
-    <div id="inactivityRing" hidden aria-label="Inactivity countdown">
+
+    <!-- INACTIVITY COUNTDOWN RING -->
+    <div
+        id="inactivityRing"
+        hidden
+        aria-label="Inactivity countdown"
+    >
         <svg
             id="inactivityTimer"
             viewBox="0 0 100 100"
@@ -788,4 +896,3 @@
 
 </body>
 </html>
-```
