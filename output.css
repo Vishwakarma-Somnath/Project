@@ -2022,6 +2022,10 @@ video {
   }
 }
 
+  .text-overlay {
+    overflow-wrap: anywhere;
+}
+
 body {
   margin: 0;
   padding: 30px 16px;
