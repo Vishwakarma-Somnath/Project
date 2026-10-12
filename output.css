@@ -2468,3 +2468,10 @@ h1, h2 {
 #feedbackForm[hidden] {
     display: none !important;
 }
+html {
+    scroll-behavior: smooth;
+}
+
+#feedback {
+    scroll-margin-top: 100px;
+}

@@ -12,6 +12,23 @@
     <link rel="stylesheet" href="style01.css">
     <script src="script01.js"></script>
     <body>
+
+      <script>
+      window.addEventListener("load", function () {
+          if (window.location.hash === "#feedback") {
+              setTimeout(function () {
+                  const section = document.getElementById("feedback");
+
+                  if (section) {
+                      section.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start"
+                      });
+                  }
+              }, 700);
+          }
+      });
+      </script>
         <canvas id="heart"></canvas>
 	<script src="script02.js"></script>
 	</body>
@@ -2114,7 +2131,7 @@
     <!-- Right Side Feedback Form -->
     <main class="feedback-container">
 
-      <section class="feedback-form-card">
+      <section id="feedback" class="feedback-form-card">
 
         <h1 id="feedbackHeading">Share Your Feedback. Your feedback is valuable to me.</h1>
 
