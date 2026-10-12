@@ -15,9 +15,8 @@ const form = document.getElementById("feedbackForm");
 const statusBox = document.getElementById("formStatus");
 const submitBtn = document.getElementById("submitBtn");
 const feedbackList = document.getElementById("feedbackList");
-document.getElementById("feedbackForm").hidden = true;
-document.getElementById("feedbackWelcome").hidden = true;
-document.getElementById("feedbackSuccess").hidden = false;
+const feedbackWelcome = document.getElementById("feedbackWelcome");
+const feedbackSuccess = document.getElementById("feedbackSuccess");
 
 const slide = document.createElement("div");
 slide.className = "swiper-slide px-4 firebase-feedback-slide";
