@@ -59,7 +59,7 @@ function showAdminMessage(message, isError = false) {
 // AUTO LOGOUT + SOLID CIRCLE COUNTDOWN
 // =====================================
 
-const INACTIVITY_LIMIT = 2 * 60 * 1000; // 2 minutes
+const INACTIVITY_LIMIT = 45 * 1000; // 2 minutes
 
 let inactivityTimer = null;
 let inactivityCountdownInterval = null;
