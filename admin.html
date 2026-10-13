@@ -658,6 +658,45 @@
             font-size: 8px;
         }
 
+        /* Password show/hide button */
+        .password-box {
+            position: relative;
+        }
+
+        .password-box input {
+            padding-right: 65px;
+        }
+
+        .password-box .lock-icon {
+            right: 40px;
+            pointer-events: none;
+        }
+
+        .password-box .toggle-password {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 35px;
+            padding: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #e46033;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-box .toggle-password:focus-visible {
+            outline: 2px solid #e46033;
+            border-radius: 4px;
+        }
+
     /* =====================================
     10. MOBILE RESPONSIVE
     ===================================== */
@@ -797,16 +836,30 @@
                     <i class="bx bxs-user"></i>
                 </div>
 
-                <div class="input-box animation">
-                    <input
-                        id="adminPassword"
-                        type="password"
-                        placeholder=" "
-                        autocomplete="current-password"
-                        required
-                    >
-                    <label for="adminPassword">Password</label>
-                    <i class="bx bxs-lock-alt"></i>
+        <div class="input-box animation password-box">
+            <input
+            id="adminPassword"
+            type="password"
+            placeholder=" "
+            autocomplete="current-password"
+            required
+            >
+
+            <label for="adminPassword">Password</label>
+
+                <!-- Lock icon -->
+                <i class="bx bxs-lock-alt lock-icon"></i>
+
+                <!-- Show / Hide password button -->
+                <button
+                    type="button"
+                    id="togglePassword"
+                    class="toggle-password"
+                    aria-label="Show password"
+                    aria-pressed="false"
+                >
+                    <i class="bx bx-show" aria-hidden="true"></i>
+                </button>
                 </div>
 
                 <div class="input-box animation">

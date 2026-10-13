@@ -271,12 +271,36 @@ activityEvents.forEach((eventName) => {
 });
 
 // =====================================
-// PAGE EXIT LOGOUT
+// SHOW / HIDE PASSWORD
 // =====================================
 
-// No page-exit signOut handler is added here.
-// The existing Firebase authentication state
-// handles login and logout UI changes.
+const passwordInput = document.getElementById("adminPassword");
+const togglePassword = document.getElementById("togglePassword");
+
+if (passwordInput && togglePassword) {
+    togglePassword.addEventListener("click", () => {
+        const showPassword = passwordInput.type === "password";
+
+        passwordInput.type = showPassword ? "text" : "password";
+
+        const icon = togglePassword.querySelector("i");
+
+        if (icon) {
+            icon.classList.toggle("bx-show", !showPassword);
+            icon.classList.toggle("bx-hide", showPassword);
+        }
+
+        togglePassword.setAttribute(
+            "aria-label",
+            showPassword ? "Hide password" : "Show password"
+        );
+
+        togglePassword.setAttribute(
+            "aria-pressed",
+            String(showPassword)
+        );
+    });
+}
 
 // =====================================
 // ADMIN LOGIN
