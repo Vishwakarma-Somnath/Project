@@ -767,11 +767,11 @@ function createFeedbackCard(item) {
 
         image.style.cssText = `
             display: block;
-            width: 175px;
-            height: 175px;
-            flex: 0 0 20px;
+            width: 180px;
+            height: 180px;
+            flex: 0 0 10px;
             object-fit: cover;
-            border-radius: 8px;
+            border-radius: 10px;
             margin: 0;
         `;
 
