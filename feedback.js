@@ -1,7 +1,10 @@
-import { auth, db } from "./firebase-config.js";
 
+import { auth, db } from "./firebase-config.js";
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 import {
   addDoc,
@@ -12,7 +15,62 @@ import {
   updateDoc
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-// HTML elements
+import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
+
+// =====================================
+// EMAILJS CONFIGURATION
+// =====================================
+
+const EMAILJS_SERVICE_ID = "service_vatau98";
+const EMAILJS_TEMPLATE_ID = "template_z5cpbvg";
+const EMAILJS_PUBLIC_KEY = "rlbrvd9Eqh3Jbt8p8";
+
+emailjs.init({
+  publicKey: EMAILJS_PUBLIC_KEY
+});
+
+// =====================================
+// SEND FEEDBACK EMAIL NOTIFICATION
+// =====================================
+
+async function sendFeedbackNotification({
+  name,
+  designation,
+  message
+}) {
+  return emailjs.send(
+    EMAILJS_SERVICE_ID,
+    EMAILJS_TEMPLATE_ID,
+    {
+      visitor_name: name || "Visitor",
+      designation: designation || "Not provided",
+      feedback_message: message || "No message",
+      feedback_status: "Pending Approval"
+    }
+  );
+}
+
+// =====================================
+// Auto-reply function
+// =====================================
+
+async function sendVisitorAutoReply({ email, name, message, designation }) {
+    return emailjs.send(
+        EMAILJS_SERVICE_ID,
+        "template_qiy3vjg",
+        {
+            to_email: email,
+            visitor_name: name,
+            designation: designation || "",
+            feedback_message: message
+        }
+    );
+}
+
+// =====================================
+// HTML ELEMENTS
+// =====================================
+
 const form = document.getElementById("feedbackForm");
 const statusBox = document.getElementById("formStatus");
 const submitBtn = document.getElementById("submitBtn");
@@ -29,46 +87,48 @@ const FEEDBACK_SUBMITTED_KEY = "feedbackSubmitted";
 let isAdmin = false;
 let authReady = false;
 
+// =====================================
+// FIREBASE AUTHENTICATION STATE
+// =====================================
+
 onAuthStateChanged(auth, (user) => {
-    isAdmin = user?.uid === ADMIN_UID;
-    authReady = true;
+  isAdmin = user?.uid === ADMIN_UID;
+  authReady = true;
 
-    const alreadySubmitted =
-        localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true";
+  const alreadySubmitted =
+    localStorage.getItem(FEEDBACK_SUBMITTED_KEY) === "true";
 
-    if (isAdmin) {
-        // Admin can submit repeatedly
-        form.hidden = false;
-        form.style.display = "";
+  if (isAdmin) {
+    form.hidden = false;
+    form.style.display = "";
 
-        if (feedbackHeading) feedbackHeading.hidden = false;
-        if (privacyNote) privacyNote.hidden = false;
-        if (feedbackWelcome) feedbackWelcome.hidden = true;
-        if (feedbackSuccess) feedbackSuccess.hidden = true;
+    if (feedbackHeading) feedbackHeading.hidden = false;
+    if (privacyNote) privacyNote.hidden = false;
+    if (feedbackWelcome) feedbackWelcome.hidden = true;
+    if (feedbackSuccess) feedbackSuccess.hidden = true;
 
-    } else if (alreadySubmitted) {
-        // Visitor has already submitted
-        form.hidden = true;
+  } else if (alreadySubmitted) {
+    form.hidden = true;
 
-        if (feedbackHeading) feedbackHeading.hidden = true;
-        if (privacyNote) privacyNote.hidden = true;
-        if (feedbackWelcome) feedbackWelcome.hidden = false;
-        if (feedbackSuccess) feedbackSuccess.hidden = false;
+    if (feedbackHeading) feedbackHeading.hidden = true;
+    if (privacyNote) privacyNote.hidden = true;
+    if (feedbackWelcome) feedbackWelcome.hidden = false;
+    if (feedbackSuccess) feedbackSuccess.hidden = false;
 
-    } else {
-        // First-time visitor
-        form.hidden = false;
-        form.style.display = "";
+  } else {
+    form.hidden = false;
+    form.style.display = "";
 
-        if (feedbackHeading) feedbackHeading.hidden = false;
-        if (privacyNote) privacyNote.hidden = false;
-        if (feedbackWelcome) feedbackWelcome.hidden = true;
-        if (feedbackSuccess) feedbackSuccess.hidden = true;
-    }
+    if (feedbackHeading) feedbackHeading.hidden = false;
+    if (privacyNote) privacyNote.hidden = false;
+    if (feedbackWelcome) feedbackWelcome.hidden = true;
+    if (feedbackSuccess) feedbackSuccess.hidden = true;
+  }
 });
 
-const slide = document.createElement("div");
-slide.className = "swiper-slide px-4 firebase-feedback-slide";
+// =====================================
+// PHOTO VALIDATION
+// =====================================
 
 const MAX_SIZE = 2 * 1024 * 1024;
 
@@ -96,14 +156,19 @@ function validPhoto(file) {
   return Boolean(extensions && extensions.includes(extension));
 }
 
-// Submit feedback
+// =====================================
+// SUBMIT FEEDBACK
+// =====================================
+
 if (form && submitBtn) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    if (!authReady) { setStatus("Please wait, loading authentication...", true);
-    return;
-  }
+    if (!authReady) {
+      setStatus("Please wait, loading authentication...", true);
+      return;
+    }
+
     const name = form.elements.name.value.trim();
     const email = form.elements.email.value.trim();
     const designation = form.elements.designation.value.trim();
@@ -111,8 +176,18 @@ if (form && submitBtn) {
     const message = form.elements.message.value.trim();
     const photo = form.elements.photo.files[0];
 
-    if (!name || !email || !designation || !department || !message || !photo) {
-      setStatus("Please fill in every field and select a photo.", true);
+    if (
+      !name ||
+      !email ||
+      !designation ||
+      !department ||
+      !message ||
+      !photo
+    ) {
+      setStatus(
+        "Please fill in every field and select a photo.",
+        true
+      );
       return;
     }
 
@@ -131,8 +206,10 @@ if (form && submitBtn) {
     let uploadedPhotoPath = null;
 
     try {
-      // 1. Create a pending private feedback document.
-      // photoUrl is included in the Firestore Rules field allowlist.
+      // =====================================
+      // 1. SAVE PENDING FEEDBACK IN FIRESTORE
+      // =====================================
+
       feedbackRef = await addDoc(
         collection(db, "feedbackPrivate"),
         {
@@ -148,41 +225,54 @@ if (form && submitBtn) {
         }
       );
 
-      // 2. Upload the photo to Supabase.
-      // This path matches the current Firestore Rules.
-      const extension = photo.name.split(".").pop().toLowerCase();
+      console.log(
+        "Pending feedback saved:",
+        feedbackRef.id
+      );
 
-      
-uploadedPhotoPath = `feedbackPhotos/${feedbackRef.id}`;
+      // =====================================
+      // 2. UPLOAD PHOTO TO SUPABASE
+      // =====================================
 
-const { data, error: uploadError } = await supabase.storage
-  .from(FEEDBACK_BUCKET)
-  .upload(uploadedPhotoPath, photo, {
-    contentType: photo.type,
-    cacheControl: "3600",
-    upsert: false
-  });
+      uploadedPhotoPath = `feedbackPhotos/${feedbackRef.id}`;
 
-if (uploadError) {
-  console.error("Supabase upload failed:", {
-    message: uploadError.message,
-    name: uploadError.name
-  });
-  throw uploadError;
-}
+      const { data, error: uploadError } =
+        await supabase.storage
+          .from(FEEDBACK_BUCKET)
+          .upload(uploadedPhotoPath, photo, {
+            contentType: photo.type,
+            cacheControl: "3600",
+            upsert: false
+          });
 
-console.log("Photo uploaded successfully:", data);
+      if (uploadError) {
+        console.error(
+          "Supabase upload failed:",
+          uploadError.message
+        );
 
-      // 3. Get the public URL from Supabase.
-      const { data: publicUrlData } = supabase.storage
-        .from(FEEDBACK_BUCKET)
-        .getPublicUrl(uploadedPhotoPath);
+        throw uploadError;
+      }
+
+      console.log("Photo uploaded successfully:", data);
+
+      // =====================================
+      // 3. GET SUPABASE PUBLIC PHOTO URL
+      // =====================================
+
+      const { data: publicUrlData } =
+        supabase.storage
+          .from(FEEDBACK_BUCKET)
+          .getPublicUrl(uploadedPhotoPath);
 
       if (!publicUrlData?.publicUrl) {
         throw new Error("Could not obtain the photo URL.");
       }
 
-      // 4. Attach the photo details to the pending document.
+      // =====================================
+      // 4. UPDATE PHOTO DETAILS IN FIRESTORE
+      // =====================================
+
       await updateDoc(
         doc(db, "feedbackPrivate", feedbackRef.id),
         {
@@ -191,67 +281,106 @@ console.log("Photo uploaded successfully:", data);
         }
       );
 
-      // After successful submission
+      console.log("Feedback photo details saved.");
+
+      // =====================================
+      // 5. EMAILJS NOTIFICATION
+      //    AFTER PHOTO UPLOAD AND FIRESTORE UPDATE
+      // =====================================
+
+      try {
+        await sendFeedbackNotification({
+          name,
+          designation,
+          message
+        });
+
+        console.log("Feedback notification email sent.");
+
+      } catch (emailError) {
+        // Email failure must not undo saved feedback.
+        console.error(
+          "EmailJS notification failed:",
+          emailError
+        );
+      }
+
+      try {
+        await sendVisitorAutoReply({
+        email,
+        name,
+        designation,
+        message
+      });
+
+        console.log("Visitor auto-reply email sent.");
+    } catch (emailError) {
+        console.error("Visitor auto-reply email failed:", emailError);
+    }
+
+
+      // =====================================
+      // 6. SHOW SUCCESS MESSAGE
+      // =====================================
+
       form.reset();
-
-
-      // Hide form and heading
       form.hidden = true;
 
       if (feedbackHeading) {
-          feedbackHeading.hidden = true;
+        feedbackHeading.hidden = true;
       }
 
       if (privacyNote) {
-          privacyNote.hidden = true;
+        privacyNote.hidden = true;
       }
 
-      // Show thank-you content
       if (feedbackWelcome) {
-          feedbackWelcome.hidden = false;
+        feedbackWelcome.hidden = false;
       }
 
       if (feedbackSuccess) {
-          feedbackSuccess.hidden = false;
+        feedbackSuccess.hidden = false;
       }
 
-      // Normal visitors can submit only once in this browser
+      // Visitors can submit once per browser.
       if (!isAdmin) {
-          localStorage.setItem("feedbackSubmitted", "true");
-      }
-
-      // Admin can submit again after 10 seconds
-      if (isAdmin) {
-          setTimeout(() => {
-              form.hidden = false;
-              form.style.display = "";
-
-              if (feedbackHeading) {
-                  feedbackHeading.hidden = false;
-              }
-
-              if (privacyNote) {
-                  privacyNote.hidden = false;
-              }
-
-              if (feedbackWelcome) {
-                  feedbackWelcome.hidden = true;
-              }
-
-              if (feedbackSuccess) {
-                  feedbackSuccess.hidden = true;
-              }
-
-              const statusBox = document.getElementById("formStatus");
-              if (statusBox) {
-                  statusBox.textContent = "";
-              }
-          }, 10000);
-      }
-
-        setStatus(
-            "Thank you! Your feedback has been submitted for admin approval."
+        localStorage.setItem(
+          FEEDBACK_SUBMITTED_KEY,
+          "true"
         );
+      }
+
+      // Allow admin to submit again after 10 seconds.
+      if (isAdmin) {
+        setTimeout(() => {
+          form.hidden = false;
+          form.style.display = "";
+
+          if (feedbackHeading) {
+            feedbackHeading.hidden = false;
+          }
+
+          if (privacyNote) {
+            privacyNote.hidden = false;
+          }
+
+          if (feedbackWelcome) {
+            feedbackWelcome.hidden = true;
+          }
+
+          if (feedbackSuccess) {
+            feedbackSuccess.hidden = true;
+          }
+
+          if (statusBox) {
+            statusBox.textContent = "";
+          }
+        }, 10000);
+      }
+
+      setStatus(
+        "Thank you! Your feedback has been submitted for admin approval."
+      );
 
     } catch (error) {
       console.error("Feedback submission error:", error);
@@ -259,37 +388,56 @@ console.log("Photo uploaded successfully:", data);
       // Clean up the uploaded photo if a later step failed.
       if (uploadedPhotoPath) {
         try {
-          await supabase.storage
-            .from(FEEDBACK_BUCKET)
-            .remove([uploadedPhotoPath]);
+          const { error: cleanupError } =
+            await supabase.storage
+              .from(FEEDBACK_BUCKET)
+              .remove([uploadedPhotoPath]);
+
+          if (cleanupError) {
+            console.warn(
+              "Photo cleanup failed:",
+              cleanupError.message
+            );
+          }
         } catch (cleanupError) {
-          console.warn("Photo cleanup failed:", cleanupError);
+          console.warn(
+            "Photo cleanup failed:",
+            cleanupError
+          );
         }
       }
 
       // Keep any existing private document for admin review.
       setStatus(
-          "Submission failed: " + (error.code || error.message || "Unknown error"),
-  true
-);
+        "Submission failed: " +
+          (error.code || error.message || "Unknown error"),
+        true
+      );
+
     } finally {
       submitBtn.disabled = false;
     }
   });
 }
 
-// Load publicly approved feedback into the existing Swiper.
+// =====================================
+// LOAD APPROVED FEEDBACK INTO SWIPER
+// =====================================
+
 if (feedbackList) {
   const approvedCollection = collection(db, "publicFeedback");
 
-  console.log("Firebase project ID:", db.app.options.projectId);
+  console.log(
+    "Firebase project ID:",
+    db.app.options.projectId
+  );
+
   console.log("Reading collection: publicFeedback");
 
   onSnapshot(
     approvedCollection,
     (snapshot) => {
-
-      // Remove only previously generated Firebase slides.
+      // Remove only Firebase-generated slides.
       // Existing manual testimonials remain unchanged.
       feedbackList
         .querySelectorAll(".firebase-feedback-slide")
@@ -306,9 +454,10 @@ if (feedbackList) {
       approvedItems.forEach((item) => {
         const data = item.data();
 
-        // Create a Swiper slide.
+        // Create Swiper slide.
         const slide = document.createElement("div");
-        slide.className = "swiper-slide px-4 firebase-feedback-slide";
+        slide.className =
+          "swiper-slide px-4 firebase-feedback-slide";
 
         const card = document.createElement("div");
         card.className =
@@ -316,6 +465,7 @@ if (feedbackList) {
 
         // Visitor photo.
         const img = document.createElement("img");
+
         img.className =
           "shrink-0 w-[120px] h-[120px] md:w-[180px] md:h-[180px] rounded-full drop-shadow-[0_0px_80px_rgba(59,130,246,1)]";
 
@@ -323,7 +473,10 @@ if (feedbackList) {
         img.loading = "lazy";
         img.referrerPolicy = "no-referrer";
 
-        if (typeof data.photoUrl === "string" && data.photoUrl) {
+        if (
+          typeof data.photoUrl === "string" &&
+          data.photoUrl
+        ) {
           img.src = data.photoUrl;
         } else {
           img.hidden = true;
@@ -331,6 +484,7 @@ if (feedbackList) {
 
         // Feedback details.
         const details = document.createElement("div");
+
         details.className =
           "testimonial-text ml-6 text-left pt-6 md:pt-16 relative min-w-0";
 
@@ -339,36 +493,52 @@ if (feedbackList) {
         message.textContent = `“${data.message || ""}”`;
 
         const name = document.createElement("h2");
+
         name.className =
           "text-right text-[#459bd5] font-bold text-2xl md:text-4xl break-words";
+
         name.textContent = data.name || "Visitor";
 
         const designation = document.createElement("h5");
+
         designation.className =
           "text-right text-[#459bd5] text-base md:text-lg";
+
         designation.textContent = data.designation || "";
 
-                const department = document.createElement("h5");
+        const department = document.createElement("h5");
+
         department.className =
           "text-right text-[#459bd5] text-base md:text-lg";
+
         department.textContent = data.department || "";
 
-        details.append(message, name, designation, department);
+        details.append(
+          message,
+          name,
+          designation,
+          department
+        );
+
         card.append(img, details);
         slide.appendChild(card);
 
-        // Add the Firebase slide without removing existing testimonials.
+        // Preserve existing static testimonials.
         feedbackList.appendChild(slide);
       });
 
       // Refresh Swiper after Firebase slides are added.
       const swiperElement = feedbackList.closest(".swiper");
+
       if (swiperElement && swiperElement.swiper) {
         swiperElement.swiper.update();
       }
     },
     (error) => {
-      console.error("Could not load public feedback:", error);
+      console.error(
+        "Could not load public feedback:",
+        error
+      );
     }
   );
 }
