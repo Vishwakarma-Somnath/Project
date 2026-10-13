@@ -2243,7 +2243,7 @@ h1, h2 {
 
 .feedback-image img {
     width: 100%;
-    max-width: 620px;
+    max-width: 720px;
     height: 520px;
     object-fit: cover;
     display: block;
