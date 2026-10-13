@@ -630,7 +630,7 @@ function createFeedbackCard(item) {
         border: 1px solid #ddd;
         border-radius: 10px;
         padding: 16px;
-        margin: 12px 0;
+        margin: 0px 0;
         background: #fff;
         color: #222;
         overflow-wrap: anywhere;
@@ -787,7 +787,7 @@ function createFeedbackCard(item) {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 15px;
+        margin-top: 5px;
     `;
 
     // Approve and Reject
