@@ -23,6 +23,7 @@ import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
 
 const EMAILJS_SERVICE_ID = "service_vatau98";
 const EMAILJS_TEMPLATE_ID = "template_z5cpbvg";
+const EMAILJS_AUTOREPLY_TEMPLATE_ID = "template_qiy3vjg";
 const EMAILJS_PUBLIC_KEY = "rlbrvd9Eqh3Jbt8p8";
 
 emailjs.init({
@@ -33,6 +34,14 @@ emailjs.init({
 // SEND FEEDBACK EMAIL NOTIFICATION
 // =====================================
 
+// Apna actual admin email address yahan set karein.
+const EMAILJS_ADMIN_EMAIL = "YOUR_ADMIN_EMAIL@example.com";
+
+emailjs.init({
+  publicKey: EMAILJS_PUBLIC_KEY
+});
+
+// Admin notification
 async function sendFeedbackNotification({
   name,
   designation,
@@ -42,6 +51,7 @@ async function sendFeedbackNotification({
     EMAILJS_SERVICE_ID,
     EMAILJS_TEMPLATE_ID,
     {
+      to_email: EMAILJS_ADMIN_EMAIL,
       visitor_name: name || "Visitor",
       designation: designation || "Not provided",
       feedback_message: message || "No message",
@@ -50,22 +60,31 @@ async function sendFeedbackNotification({
   );
 }
 
-// =====================================
-// Auto-reply function
-// =====================================
+// Visitor auto-reply
+async function sendVisitorAutoReply({
+  email,
+  name,
+  message,
+  designation
+}) {
+  const visitorEmail = (email || "").trim();
 
-async function sendVisitorAutoReply({ email, name, message, designation }) {
-    return emailjs.send(
-        EMAILJS_SERVICE_ID,
-        "template_qiy3vjg",
-        {
-            to_email: email,
-            visitor_name: name,
-            designation: designation || "",
-            feedback_message: message
-        }
-    );
+  if (!visitorEmail) {
+    throw new Error("Visitor email address is missing.");
+  }
+
+  return emailjs.send(
+    EMAILJS_SERVICE_ID,
+    EMAILJS_AUTOREPLY_TEMPLATE_ID,
+    {
+      to_email: visitorEmail,
+      visitor_name: name || "Visitor",
+      designation: designation || "",
+      feedback_message: message || ""
+    }
+  );
 }
+
 
 // =====================================
 // HTML ELEMENTS
