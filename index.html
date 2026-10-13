@@ -18,6 +18,12 @@
       <!-- EmailJS SDK: pehle load hona chahiye -->
         <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
+         <script>
+        emailjs.init({
+          publicKey: "a_VfFYRUt306Tl45E"
+        });
+      </script>
+
       <script>
       window.addEventListener("load", function () {
           if (window.location.hash === "#feedback") {
