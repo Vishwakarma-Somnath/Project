@@ -147,6 +147,19 @@ function updateCountdown() {
         INACTIVITY_LIMIT / 1000
     );
 
+    // Update digital timer
+    const timeElement = document.getElementById("inactivityTime");
+
+    if (timeElement) {
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+
+        timeElement.textContent =
+            String(minutes).padStart(2, "0") +
+            ":" +
+            String(seconds).padStart(2, "0");
+    }
+
     // Do not stop the timer here.
     // Automatic logout must remain active.
 }
