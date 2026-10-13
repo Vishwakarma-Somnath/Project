@@ -1176,3 +1176,118 @@ onAuthStateChanged(
         );
     }
 );
+
+// =====================================
+// A4 PRINT + QR CODE
+// =====================================
+
+let isPreparingPrint = false;
+
+function getCurrentLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve("Location unavailable");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                resolve(
+                    `Latitude: ${latitude}, Longitude: ${longitude}`
+                );
+            },
+            () => resolve("Location unavailable"),
+            {
+                enableHighAccuracy: true,
+                timeout: 8000,
+                maximumAge: 0
+            }
+        );
+    });
+}
+//-------------------------------------//
+//QR-Code + CTRL+P  Program------------//
+//-------------------------------------//
+async function printAdminDashboard() {
+    if (isPreparingPrint) return;
+
+    if (!auth.currentUser) {
+        alert("Please log in before printing the dashboard.");
+        return;
+    }
+
+    if (typeof QRCode === "undefined") {
+        alert("QR code library is not loaded. Please refresh the page.");
+        return;
+    }
+
+    isPreparingPrint = true;
+
+    try {
+        const user = auth.currentUser;
+
+        const userName =
+            user.displayName ||
+            user.email ||
+            "Admin";
+
+        const now = new Date();
+
+        const date = now.toLocaleDateString("en-IN");
+        const time = now.toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        });
+
+        const location = await getCurrentLocation();
+
+        document.getElementById("printUser").textContent = userName;
+        document.getElementById("printDate").textContent = date;
+        document.getElementById("printTime").textContent = time;
+        document.getElementById("printLocation").textContent = location;
+
+        const qrElement = document.getElementById("printQr");
+        qrElement.replaceChildren();
+
+        const qrData = [
+            "ADMIN DASHBOARD REPORT",
+            `Admin: ${userName}`,
+            `Date: ${date}`,
+            `Time: ${time}`,
+            `Location: ${location}`
+        ].join("\n");
+
+        new QRCode(qrElement, {
+            text: qrData,
+            width: 220,
+            height: 220,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
+        // Allow the QR image to render before opening print dialog.
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        window.print();
+    } catch (error) {
+        console.error("Print preparation failed:", error);
+        alert("Unable to prepare the print report.");
+    } finally {
+        isPreparingPrint = false;
+    }
+}
+
+// Ctrl + P / Cmd + P
+document.addEventListener("keydown", (event) => {
+    if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "p"
+    ) {
+        event.preventDefault();
+        printAdminDashboard();
+    }
+});
