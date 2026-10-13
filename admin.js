@@ -37,6 +37,12 @@ const logoutBtn = document.getElementById("logoutBtn");
 const loginStatus = document.getElementById("loginStatus");
 const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
+// STATUS FILTER VARIABLES
+let allFeedbackRecords = [];
+
+const statusFilter = document.getElementById("statusFilter");
+const feedbackCount = document.getElementById("feedbackCount");
+
 // =====================================
 // STATUS MESSAGE FUNCTIONS
 // =====================================
@@ -498,6 +504,44 @@ function createElement(tag, className, text = "") {
 // LOAD FEEDBACK
 // =====================================
 
+    function renderFilteredFeedback() {
+        if (!pendingList) return;
+
+        const selectedStatus = statusFilter?.value || "all";
+
+        const filteredRecords = allFeedbackRecords.filter((item) => {
+            const currentStatus = item.status || "pending";
+
+            return selectedStatus === "all" ||
+                currentStatus === selectedStatus;
+        });
+
+        pendingList.replaceChildren();
+
+        filteredRecords.forEach((item) => {
+            pendingList.appendChild(createFeedbackCard(item));
+        });
+
+        if (feedbackCount) {
+            feedbackCount.textContent =
+                `Showing: ${filteredRecords.length} / ${allFeedbackRecords.length}`;
+        }
+
+        if (filteredRecords.length === 0) {
+            const message = document.createElement("p");
+
+            message.textContent = allFeedbackRecords.length === 0
+                ? "No feedback records found."
+                : "No feedback found for this status.";
+
+            pendingList.appendChild(message);
+        }
+    }
+
+    if (statusFilter) {
+        statusFilter.addEventListener("change", renderFilteredFeedback);
+    }
+
 function loadFeedback() {
     console.log("STEP 1: loadFeedback() started");
 
@@ -514,7 +558,7 @@ function loadFeedback() {
         );
         return;
     }
-
+    allFeedbackRecords = [];
     pendingList.replaceChildren();
     showAdminMessage("Connecting to Firestore...");
 
@@ -535,35 +579,16 @@ function loadFeedback() {
                     snapshot.size
                 );
 
-                pendingList.replaceChildren();
+            allFeedbackRecords = snapshot.docs.map((documentSnapshot) => ({
+                id: documentSnapshot.id,
+                ...documentSnapshot.data()
+            }));
 
-                if (snapshot.empty) {
-                    showAdminMessage(
-                        "Connected, but feedbackPrivate has no documents."
-                    );
-                    return;
-                }
+            renderFilteredFeedback();
 
-                snapshot.forEach((documentSnapshot) => {
-                    const item = {
-                        id: documentSnapshot.id,
-                        ...documentSnapshot.data()
-                    };
-
-                    console.log(
-                        "Feedback document:",
-                        item.id,
-                        item
-                    );
-
-                    pendingList.appendChild(
-                        createFeedbackCard(item)
-                    );
-                });
-
-                showAdminMessage(
-                    `Loaded ${snapshot.size} feedback record(s).`
-                );
+            showAdminMessage(
+                `Loaded ${snapshot.size} feedback record(s).`
+            );
             },
 
             (error) => {
@@ -1113,6 +1138,12 @@ onAuthStateChanged(
             if (feedbackUnsubscribe) {
                 feedbackUnsubscribe();
                 feedbackUnsubscribe = null;
+            }
+
+            allFeedbackRecords = [];
+
+            if (feedbackCount) {
+                feedbackCount.textContent = "Showing: 0 / 0";
             }
 
             if (loginSection) {

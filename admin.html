@@ -697,6 +697,50 @@
             border-radius: 4px;
         }
 
+        .feedback-filter {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+            padding: 14px;
+            background: #25252b;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: #fff;
+        }
+
+        .feedback-filter label {
+            font-weight: 600;
+        }
+
+        .feedback-filter select {
+            padding: 10px 12px;
+            border: 1px solid #e46033;
+            border-radius: 6px;
+            background: #fff;
+            color: #222;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        #feedbackCount {
+            margin-left: auto;
+            font-weight: 600;
+            color: #e46033;
+        }
+
+        @media (max-width: 600px) {
+            .feedback-filter {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            #feedbackCount {
+                margin-left: 0;
+            }
+        }
+
     /* =====================================
     10. MOBILE RESPONSIVE
     ===================================== */
@@ -915,6 +959,20 @@
 
             <p id="adminStatus" role="status" aria-live="polite"></p>
 
+        </div>
+
+        <!-- Feedback Status Filter -->
+        <div class="feedback-filter">
+            <label for="statusFilter">Filter by Status:</label>
+
+            <select id="statusFilter">
+                <option value="all">All Feedback</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+            </select>
+
+            <span id="feedbackCount">Total: 0</span>
         </div>
 
         <!-- ONLY THIS AREA SCROLLS -->
