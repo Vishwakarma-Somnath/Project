@@ -870,22 +870,26 @@
             }
         }
 
-        @media (max-width: 600px) {
-            .feedback-filter {
-                align-items: stretch;
-                flex-direction: column;
-            }
-
-            #feedbackCount {
-                margin-left: 0;
-            }
-        }
-
     /* =====================================
     10. MOBILE RESPONSIVE
     ===================================== */
 
     @media (max-width: 650px) {
+
+        /* Feedback Filter */
+        .feedback-filter {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* Feedback Count */
+        #feedbackCount {
+            margin-left: 0;
+            width: 100%;
+            text-align: left;
+        }
 
         #loginSection {
             width: calc(100% - 24px);
