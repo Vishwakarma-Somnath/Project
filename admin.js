@@ -147,7 +147,27 @@ function updateCountdown() {
         INACTIVITY_LIMIT / 1000
     );
 
-    // Update digital timer
+//Digital Timer//
+function updateCountdown() {
+    if (!auth.currentUser || isSigningOut || !inactivityDeadline) {
+        return;
+    }
+
+    // Milliseconds ko seconds mein convert karein
+    const remainingMs = Math.max(
+        0,
+        inactivityDeadline - Date.now()
+    );
+
+    const remainingSeconds = Math.ceil(remainingMs / 1000);
+
+    // Circular timer update
+    updateInactivityRing(
+        remainingSeconds,
+        INACTIVITY_LIMIT / 1000
+    );
+
+    // Digital timer: MM:SS format
     const timeElement = document.getElementById("inactivityTime");
 
     if (timeElement) {
@@ -159,6 +179,7 @@ function updateCountdown() {
             ":" +
             String(seconds).padStart(2, "0");
     }
+}
 
     // Do not stop the timer here.
     // Automatic logout must remain active.
