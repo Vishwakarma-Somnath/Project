@@ -13,6 +13,12 @@
     <script src="script01.js"></script>
     <body>
 
+      <!-- EmailJS SDK: pehle load hona chahiye -->
+        <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+        <!-- Your JavaScript file: SDK ke baad load karein -->
+        <script src="script01.js"></script>
+
       <script>
       window.addEventListener("load", function () {
           if (window.location.hash === "#feedback") {
