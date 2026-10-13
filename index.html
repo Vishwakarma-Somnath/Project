@@ -11,13 +11,12 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="style01.css">
     <script src="script01.js"></script>
+    <!-- Load feedback.js only once -->
+    <script type="module" src="feedback.js"></script>
     <body>
 
       <!-- EmailJS SDK: pehle load hona chahiye -->
         <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
-        <!-- Your JavaScript file: SDK ke baad load karein -->
-        <script src="script01.js"></script>
 
       <script>
       window.addEventListener("load", function () {
@@ -2307,27 +2306,25 @@
 
 </section>
 
-<!-- Load feedback.js only once -->
-    <script type="module" src="feedback.js"></script>
-    <section class="max-w-screen-xl px-4 pb-12">
+<section class="max-w-screen-xl px-4 pb-12">
       <h2
         class="text-3xl sm:text-[40px] bg-[#111] relative z-10 font-bold px-4 py-2 w-max mx-auto text-center text-[#1788ae] sm:border-2 border-[#1788ae] rounded-md"
       >
         Let's Connect
       </h2>
       <div class="flex flex-col md:flex-row items-center mt-10">
-  <div class="w-full">
+    <div class="w-full">
     <img src="./images/contact-me.svg" alt="phone" />
-  </div>
-  <!-- Contact Form -->
-  <form class="w-full" name="contactUS" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onsubmit="sendMail(event)">
-  <input type="hidden" name="form-name" value="contactUS" />
+    </div>
+    <!-- Contact Form -->
+    <form class="w-full" name="contactUS" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onsubmit="sendMail(event)">
+    <input type="hidden" name="form-name" value="contactUS" />
   
-  <!-- Honeypot field (hidden from users) -->
-  <p style="display:none;">
+    <!-- Honeypot field (hidden from users) -->
+    <p style="display:none;">
     <label>Don’t fill this out if you're human: <input name="bot-field" /></label>
-  </p>
-  <div class="container grid grid-cols-2 gap-12 max-w-6xl">
+    </p>
+    <div class="container grid grid-cols-2 gap-12 max-w-6xl">
     
     <label for="name" class="block mb-2 text-sm font-medium dark:text-yellow-300">Name</label>
     <div class="relative mb-4">
@@ -2391,72 +2388,11 @@
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
       </svg>
     </button>
+    </div>
+  </form>
+
   </div>
-</div>
-</form>
-
-<!-- Load EmailJS SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>
-  (function(){
-    emailjs.init({ publicKey: "a_VfFYRUt306Tl45E" });
-  })();
-
-  function sendMail(event) {
-    event.preventDefault();
-
-    const form = event.target;
-    const sendBtn = document.getElementById("sendBtn");
-    const btnText = document.getElementById("btnText");
-    const spinner = document.getElementById("spinner");
-
-    // Show loading spinner
-    btnText.textContent = "Sending...";
-    spinner.classList.remove("hidden");
-    sendBtn.disabled = true;
-
-    const firstName = form.querySelector('input[name="name"]').value.trim();
-    const email = form.querySelector('input[name="email"]').value.trim();
-    const message = form.querySelector('textarea[name="message"]').value.trim();
-
-    if (!firstName || !email || !message) {
-      alert("Please fill in all required fields.");
-      resetButton();
-      return;
-    }
-
-    let params = { from_name: firstName, from_email: email, message: message };
-
-    // Always send to Netlify backup
-    fetch("/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(new FormData(form)).toString()
-    }).catch(err => console.error("Netlify submission failed:", err));
-
-    // Send email via EmailJS
-    emailjs.send("service_ggu2apc", "template_sp3cetg", params)
-      .then(() => {
-        alert("Email sent successfully!");
-        form.reset();
-        resetButton();
-      })
-      .catch((error) => {
-        alert("Failed, Try Again.");
-        console.error(error);
-        form.reset();
-        resetButton();
-      });
-
-    function resetButton() {
-      btnText.textContent = "Send";
-      spinner.classList.add("hidden");
-      sendBtn.disabled = false;
-    }
-  }
-</script>
-</div>
-    </section>
+</section>
     <footer class="flex flex-col items-center pb-10">
       <p class="text-xs text-yellow-300">Copyright © 2025 by Somnath- Vishwakarma || All Right Reserved.</p>
       <div class="black-logo my-4">
