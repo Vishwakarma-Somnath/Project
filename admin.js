@@ -767,8 +767,8 @@ function createFeedbackCard(item) {
 
         image.style.cssText = `
             display: block;
-            width: 100px;
-            height: 100px;
+            width: 200px;
+            height: 200px;
             flex: 0 0 200px;
             object-fit: cover;
             border-radius: 8px;
