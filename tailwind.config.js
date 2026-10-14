@@ -1,6 +1,14 @@
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./index.html"],
+  darkMode: 'class',
+
+  content: [
+    "./index.html",
+    "./**/*.html",
+    "./**/*.js"
+  ],
+
   theme: {
     extend: {
       transitionTimingFunction: {
@@ -8,5 +16,6 @@ module.exports = {
       },
     },
   },
+
   plugins: [],
 };
