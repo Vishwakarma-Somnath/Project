@@ -57,21 +57,38 @@ async function sendMail(event) {
 // DARK / LIGHT MODE TOGGLE
 // =====================================
 
-const themeToggle = document.getElementById("themeToggle");
+document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.getElementById("themeToggle");
 
-// Restore saved theme
-const savedTheme = localStorage.getItem("theme");
+  if (!themeToggle) {
+    console.error("Theme toggle button nahi mila!");
+    return;
+  }
 
-if (savedTheme === "dark") {
-  document.documentElement.classList.add("dark");
-} else if (savedTheme === "light") {
-  document.documentElement.classList.remove("dark");
-}
+  function applyTheme(theme) {
+    const isDark = theme === "dark";
 
-if (themeToggle) {
+    document.documentElement.classList.toggle("dark", isDark);
+    document.body.classList.toggle("dark-mode-active", isDark);
+
+    themeToggle.innerHTML = isDark
+      ? "🌙"
+      : "☀️";
+
+    themeToggle.title = isDark
+      ? "Switch to Light Mode"
+      : "Switch to Dark Mode";
+
+    localStorage.setItem("theme", theme);
+    console.log("Current theme:", theme);
+  }
+
+  applyTheme(localStorage.getItem("theme") || "light");
+
   themeToggle.addEventListener("click", () => {
-    const isDark = document.documentElement.classList.toggle("dark");
+    const isDark =
+      document.documentElement.classList.contains("dark");
 
-    localStorage.setItem("theme", isDark ? "dark" : "light");
+    applyTheme(isDark ? "light" : "dark");
   });
-}
+});
