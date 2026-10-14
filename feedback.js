@@ -21,10 +21,10 @@ import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm";
 // EMAILJS CONFIGURATION
 // =====================================
 
-const EMAILJS_SERVICE_ID = "service_vatau98";
-const EMAILJS_TEMPLATE_ID = "template_z5cpbvg";
-const EMAILJS_AUTOREPLY_TEMPLATE_ID = "template_qiy3vjg";
-const EMAILJS_PUBLIC_KEY = "rlbrvd9Eqh3Jbt8p8";
+const EMAILJS_SERVICE_ID = "service_jkwrwgw";
+const EMAILJS_TEMPLATE_ID = "template_2qtibdc";
+const EMAILJS_AUTOREPLY_TEMPLATE_ID = "template_z0nz3uc";
+const EMAILJS_PUBLIC_KEY = "HDRkTPmmIgm4NRX2c";
 
 emailjs.init({
   publicKey: EMAILJS_PUBLIC_KEY
