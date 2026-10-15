@@ -1,7 +1,7 @@
 
 /* =========================================================
    ADMIN.JS
-   Firebase Admin + Feedback + Project Documents Users
+   Firebase Admin + Feedback + Project Documents User Management
    ========================================================= */
 
 import { auth, db } from "./firebase-config.js";
@@ -26,7 +26,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 /* =========================================================
-   HTML ELEMENTS
+   HTML ELEMENTS — MATCHED TO YOUR HTML
    ========================================================= */
 
 const $ = (id) => document.getElementById(id);
@@ -64,15 +64,13 @@ const feedbackFilterSection = $("feedbackFilterSection");
 const feedbackScrollSection = $("feedbackScrollSection");
 const dashboardSectionTitle = $("dashboardSectionTitle");
 
-/* Project Documents user-management elements */
-const projectUsersList = $("projectUsersList");
-const refreshProjectUsersBtn = $("refreshProjectUsers");
-const projectUsersSearch = $("projectUsersSearch");
-const projectUsersStatusFilter = $("projectUsersStatusFilter");
-const projectUsersTotal = $("projectUsersTotal");
-const projectUsersEnabled = $("projectUsersEnabled");
-const projectUsersDisabled = $("projectUsersDisabled");
-const projectUsersManagementStatus = $("projectUsersManagementStatus");
+/* User-management IDs from your supplied HTML */
+const projectUsersList = $("allProjectUsersList");
+const refreshProjectUsersBtn = $("refreshAllProjectUsers");
+const projectUsersTotal = $("allUsersTotal");
+const projectUsersEnabled = $("allUsersActive");
+const projectUsersDisabled = $("allUsersDisabled");
+const projectUsersManagementStatus = $("allProjectUsersStatus");
 
 /* =========================================================
    STATE
@@ -144,7 +142,6 @@ function createActionButton(label, backgroundColor) {
     const button = createElement("button", "", label);
 
     button.type = "button";
-    button.textContent = label;
 
     button.style.cssText = `
         background:${backgroundColor};
@@ -163,7 +160,10 @@ function setButtonBusy(button, busy, busyText = "Please wait...") {
     if (!button) return;
 
     if (busy) {
-        button.dataset.originalText = button.textContent;
+        if (!button.disabled) {
+            button.dataset.originalText = button.textContent;
+        }
+
         button.textContent = busyText;
         button.disabled = true;
     } else {
@@ -175,7 +175,7 @@ function setButtonBusy(button, busy, busyText = "Please wait...") {
 }
 
 /* =========================================================
-   INACTIVITY COUNTDOWN
+   INACTIVITY COUNTDOWN — 2 MINUTES
    ========================================================= */
 
 function updateInactivityRing(remainingSeconds, totalSeconds) {
@@ -231,10 +231,7 @@ function updateCountdown() {
 
     const remainingSeconds = Math.ceil(remainingMs / 1000);
 
-    updateInactivityRing(
-        remainingSeconds,
-        INACTIVITY_LIMIT / 1000
-    );
+    updateInactivityRing(remainingSeconds, 120);
 
     const timeElement = $("inactivityTime");
 
@@ -275,8 +272,7 @@ function resetInactivityTimer() {
     updateInactivityRing(120, 120);
     updateCountdown();
 
-    inactivityCountdownInterval =
-        setInterval(updateCountdown, 250);
+    inactivityCountdownInterval = setInterval(updateCountdown, 250);
 
     inactivityTimer = setTimeout(async () => {
         if (!auth.currentUser || isSigningOut) {
@@ -294,6 +290,7 @@ function resetInactivityTimer() {
             showLoginMessage("Session expired due to inactivity.");
         } catch (error) {
             console.error("Auto logout failed:", error);
+
             isSigningOut = false;
 
             if (auth.currentUser) resetInactivityTimer();
@@ -354,22 +351,21 @@ if (loginForm) {
     loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const email = loginForm
-            .querySelector('input[type="email"]')
-            ?.value.trim();
-
-        const password = $("adminPassword")?.value;
+        const email = $("adminEmail")?.value.trim();
+        const password = passwordInput?.value;
 
         if (!email || !password) {
             showLoginMessage("Please enter your email and password.", true);
             return;
         }
 
+        const loginButton = $("loginBtn");
+
+        setButtonBusy(loginButton, true, "Logging in...");
+        showLoginMessage("Logging in...");
+
         try {
-            showLoginMessage("Logging in...");
-
             await signInWithEmailAndPassword(auth, email, password);
-
             showLoginMessage("Login successful.");
         } catch (error) {
             console.error("Login error:", error);
@@ -380,6 +376,11 @@ if (loginForm) {
                     : "Login failed: " + error.message,
                 true
             );
+        } finally {
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.textContent = "Login";
+            }
         }
     });
 }
@@ -390,14 +391,11 @@ if (loginForm) {
 
 if (forgotPasswordBtn) {
     forgotPasswordBtn.addEventListener("click", async () => {
-        const emailInput =
-            loginForm?.querySelector('input[type="email"]');
-
-        const email = emailInput?.value.trim();
+        const email = $("adminEmail")?.value.trim();
 
         if (!email) {
             showLoginMessage("Please enter your email first.", true);
-            emailInput?.focus();
+            $("adminEmail")?.focus();
             return;
         }
 
@@ -450,7 +448,6 @@ if (logoutBtn) {
 
 document.addEventListener("keydown", (event) => {
     if (event.key !== "F4") return;
-
     if (!dashboard || dashboard.hidden) return;
 
     event.preventDefault();
@@ -472,8 +469,7 @@ function switchDashboardView() {
         return;
     }
 
-    const showUsers =
-        dashboardViewFilter.value === "projectUsers";
+    const showUsers = dashboardViewFilter.value === "projectUsers";
 
     projectUserSection.hidden = !showUsers;
     feedbackFilterSection.hidden = showUsers;
@@ -498,18 +494,16 @@ if (dashboardViewFilter) {
 }
 
 /* =========================================================
-   SECURE EDGE FUNCTION REQUEST HELPER
-   Never put the Supabase service role key in this file.
+   SECURE USER MANAGEMENT EDGE FUNCTION
+   Do not put a Supabase service role key in browser code.
    ========================================================= */
 
 async function callUserManagement(action, extra = {}) {
-    const user = auth.currentUser;
-
-    if (!user) {
+    if (!auth.currentUser) {
         throw new Error("Please log in again.");
     }
 
-    const token = await user.getIdToken(true);
+    const token = await auth.currentUser.getIdToken(true);
 
     const { data, error } = await supabase.functions.invoke(
         "admin-manage-users",
@@ -527,18 +521,18 @@ async function callUserManagement(action, extra = {}) {
         if (error.context) {
             try {
                 const response = error.context.clone();
-                const text = await response.text();
+                const responseText = await response.text();
 
-                if (text) {
+                if (responseText) {
                     try {
-                        const parsed = JSON.parse(text);
+                        const parsed = JSON.parse(responseText);
                         detail =
                             parsed.error ||
                             parsed.message ||
                             parsed.msg ||
-                            text;
+                            responseText;
                     } catch {
-                        detail = text;
+                        detail = responseText;
                     }
                 }
             } catch (readError) {
@@ -559,9 +553,9 @@ async function callUserManagement(action, extra = {}) {
 }
 
 /* =========================================================
-   PROJECT DOCUMENTS USERS — LOAD
-   Expected response from admin-manage-users:
-   { success: true, users: [...] }
+   LOAD ALL PROJECT DOCUMENTS USERS
+   Automatically called after admin login and on refresh.
+   Expected response: { success: true, users: [...] }
    ========================================================= */
 
 async function loadProjectUsers() {
@@ -573,7 +567,8 @@ async function loadProjectUsers() {
     }
 
     isLoadingProjectUsers = true;
-    showUsersMessage("Loading Project Documents users...");
+
+    showUsersMessage("Loading all user accounts...");
 
     if (refreshProjectUsersBtn) {
         refreshProjectUsersBtn.disabled = true;
@@ -600,13 +595,13 @@ async function loadProjectUsers() {
         renderProjectUsers();
 
         showUsersMessage(
-            `Loaded ${allProjectUsers.length} user(s).`
+            `Loaded ${allProjectUsers.length} user account(s).`
         );
     } catch (error) {
         console.error("Load users failed:", error);
 
         showUsersMessage(
-            "Could not load users: " + error.message,
+            "Could not load user accounts: " + error.message,
             true
         );
     } finally {
@@ -618,90 +613,58 @@ async function loadProjectUsers() {
     }
 }
 
+/* Refresh button — the only user-list control */
 if (refreshProjectUsersBtn) {
-    refreshProjectUsersBtn.addEventListener(
-        "click",
-        loadProjectUsers
-    );
-}
-
-if (projectUsersSearch) {
-    projectUsersSearch.addEventListener("input", renderProjectUsers);
-}
-
-if (projectUsersStatusFilter) {
-    projectUsersStatusFilter.addEventListener(
-        "change",
-        renderProjectUsers
-    );
+    refreshProjectUsersBtn.addEventListener("click", loadProjectUsers);
 }
 
 /* =========================================================
-   PROJECT DOCUMENTS USERS — RENDER
+   RENDER ALL USERS — NO SEARCH, NO STATUS FILTER
    ========================================================= */
 
 function renderProjectUsers() {
     if (!projectUsersList) return;
 
-    const search = (projectUsersSearch?.value || "")
-        .trim()
-        .toLowerCase();
+    const enabledCount = allProjectUsers.filter(
+        (user) => user.is_active === true
+    ).length;
 
-    const statusFilterValue =
-        projectUsersStatusFilter?.value || "all";
-
-    const enabledCount =
-        allProjectUsers.filter((user) => user.is_active).length;
-
-    const disabledCount =
-        allProjectUsers.length - enabledCount;
+    const disabledCount = allProjectUsers.length - enabledCount;
 
     if (projectUsersTotal) {
-        projectUsersTotal.textContent = allProjectUsers.length;
+        projectUsersTotal.textContent = String(allProjectUsers.length);
     }
 
     if (projectUsersEnabled) {
-        projectUsersEnabled.textContent = enabledCount;
+        projectUsersEnabled.textContent = String(enabledCount);
     }
 
     if (projectUsersDisabled) {
-        projectUsersDisabled.textContent = disabledCount;
+        projectUsersDisabled.textContent = String(disabledCount);
     }
-
-    const filtered = allProjectUsers.filter((user) => {
-        const matchesSearch = [
-            user.username,
-            user.company,
-            user.location
-        ].some((value) => value.toLowerCase().includes(search));
-
-        const matchesStatus =
-            statusFilterValue === "all" ||
-            (statusFilterValue === "active" && user.is_active) ||
-            (statusFilterValue === "inactive" && !user.is_active);
-
-        return matchesSearch && matchesStatus;
-    });
 
     projectUsersList.replaceChildren();
 
-    if (filtered.length === 0) {
+    if (allProjectUsers.length === 0) {
         projectUsersList.appendChild(
             createElement(
                 "p",
                 "project-users-empty",
-                allProjectUsers.length === 0
-                    ? "No Project Documents users found."
-                    : "No users match your search or status filter."
+                "No user accounts found."
             )
         );
         return;
     }
 
-    filtered.forEach((user) => {
+    /* Display every account; no search or filtering */
+    allProjectUsers.forEach((user) => {
         projectUsersList.appendChild(createProjectUserCard(user));
     });
 }
+
+/* =========================================================
+   USER CARD — ENABLE / DISABLE / RESET / DELETE
+   ========================================================= */
 
 function createProjectUserCard(user) {
     const card = createElement("article", "project-user-card");
@@ -739,7 +702,7 @@ function createProjectUserCard(user) {
     const location = createElement(
         "p",
         "",
-        "Location: " + (user.location || "Not set")
+        "Plant / Location: " + (user.location || "Not set")
     );
 
     const status = createElement(
@@ -754,9 +717,8 @@ function createProjectUserCard(user) {
         color:${user.is_active ? "#147d45" : "#b42318"};
     `;
 
-    [company, location].forEach((element) => {
-        element.style.cssText = "margin:8px 0;color:#333;";
-    });
+    company.style.cssText = "margin:8px 0;color:#333;";
+    location.style.cssText = "margin:8px 0;color:#333;";
 
     const actions = createElement("div", "project-user-actions");
 
@@ -767,6 +729,7 @@ function createProjectUserCard(user) {
         margin-top:14px;
     `;
 
+    /* ENABLE / DISABLE */
     const toggleButton = createActionButton(
         user.is_active ? "Disable Access" : "Enable Access",
         user.is_active ? "#b42318" : "#147d45"
@@ -793,11 +756,11 @@ function createProjectUserCard(user) {
 
             user.is_active = nextState;
 
+            renderProjectUsers();
+
             showUsersMessage(
                 `Access ${nextState ? "enabled" : "disabled"} for ${user.username}.`
             );
-
-            renderProjectUsers();
         } catch (error) {
             console.error("Access update failed:", error);
 
@@ -810,6 +773,7 @@ function createProjectUserCard(user) {
         }
     });
 
+    /* RESET PASSWORD */
     const resetButton = createActionButton(
         "Reset Password",
         "#1788ae"
@@ -818,7 +782,7 @@ function createProjectUserCard(user) {
     resetButton.addEventListener("click", async () => {
         const newPassword = window.prompt(
             `Enter a new password for ${user.username}.\n` +
-            "Minimum 8 characters. The password will not be displayed again."
+            "Minimum 8 characters."
         );
 
         if (newPassword === null) return;
@@ -831,11 +795,9 @@ function createProjectUserCard(user) {
             return;
         }
 
-        const confirmed = window.confirm(
-            `Reset the password for ${user.username}?`
-        );
-
-        if (!confirmed) return;
+        if (!window.confirm(`Reset password for ${user.username}?`)) {
+            return;
+        }
 
         setButtonBusy(resetButton, true);
 
@@ -854,7 +816,7 @@ function createProjectUserCard(user) {
 
             showUsersMessage(
                 "Password reset failed: " + error.message +
-                ". Confirm that admin-manage-users supports reset_password.",
+                ". The Edge Function must support reset_password.",
                 true
             );
         } finally {
@@ -862,6 +824,7 @@ function createProjectUserCard(user) {
         }
     });
 
+    /* DELETE USER */
     const deleteButton = createActionButton(
         "Delete User",
         "#6c757d"
@@ -870,8 +833,7 @@ function createProjectUserCard(user) {
     deleteButton.addEventListener("click", async () => {
         const confirmed = window.confirm(
             `Permanently delete user "${user.username}"?\n\n` +
-            "This action may remove the user's authentication account " +
-            "and Project Documents database record. It cannot be undone."
+            "This cannot be undone."
         );
 
         if (!confirmed) return;
@@ -938,7 +900,7 @@ function renderFilteredFeedback() {
 
     if (feedbackCount) {
         feedbackCount.textContent =
-            `Showing: ${filtered.length} / ${allFeedbackRecords.length}`;
+            `Total: ${filtered.length} / ${allFeedbackRecords.length}`;
     }
 
     if (filtered.length === 0) {
@@ -1069,7 +1031,8 @@ function createFeedbackCard(item) {
         "Status: " + (item.status || "pending")
     );
 
-    status.style.cssText = "font-weight:bold;margin:8px 0;color:#222;";
+    status.style.cssText =
+        "font-weight:bold;margin:8px 0;color:#222;";
 
     const details = createElement("div", "feedback-details");
 
@@ -1432,8 +1395,7 @@ if (createForm) {
             return;
         }
 
-        const submitButton =
-            createForm.querySelector('button[type="submit"]');
+        const submitButton = $("createPortalUserBtn");
 
         setButtonBusy(submitButton, true, "Creating user...");
         showCreateStatus("Creating user...");
@@ -1467,6 +1429,7 @@ if (createForm) {
                         if (responseText) {
                             try {
                                 const parsed = JSON.parse(responseText);
+
                                 message =
                                     parsed.error ||
                                     parsed.message ||
@@ -1485,7 +1448,8 @@ if (createForm) {
 
             if (!data || data.success === false || data.error) {
                 throw new Error(
-                    data?.error || data?.message ||
+                    data?.error ||
+                    data?.message ||
                     "The server did not confirm user creation."
                 );
             }
@@ -1497,9 +1461,11 @@ if (createForm) {
             createForm.reset();
             updateLocationOptions();
 
-            if (dashboardViewFilter?.value === "projectUsers") {
-                await loadProjectUsers();
-            }
+            /*
+             * Refresh the user list after creation, even when
+             * the Feedback view is currently selected.
+             */
+            await loadProjectUsers();
         } catch (error) {
             console.error("User creation failed:", error);
 
@@ -1510,9 +1476,8 @@ if (createForm) {
         } finally {
             if (submitButton) {
                 submitButton.disabled = false;
-                submitButton.textContent =
-                    submitButton.dataset.originalText ||
-                    "Create User";
+                submitButton.innerHTML =
+                    '<i class="bx bx-user-plus" aria-hidden="true"></i> Create Project User';
             }
         }
     });
@@ -1543,11 +1508,13 @@ onAuthStateChanged(
             dashboard.style.display = "flex";
 
             resetInactivityTimer();
-            loadFeedback();
 
-            if (dashboardViewFilter?.value === "projectUsers") {
-                loadProjectUsers();
-            }
+            /* Load feedback and all users on admin login */
+            loadFeedback();
+            loadProjectUsers();
+
+            /* Keep dashboard view in sync with the selected option */
+            switchDashboardView();
         } else {
             if (feedbackUnsubscribe) {
                 feedbackUnsubscribe();
@@ -1558,7 +1525,7 @@ onAuthStateChanged(
             allProjectUsers = [];
 
             if (feedbackCount) {
-                feedbackCount.textContent = "Showing: 0 / 0";
+                feedbackCount.textContent = "Total: 0 / 0";
             }
 
             if (pendingList) {
@@ -1567,6 +1534,13 @@ onAuthStateChanged(
 
             if (projectUsersList) {
                 projectUsersList.replaceChildren();
+                projectUsersList.appendChild(
+                    createElement(
+                        "p",
+                        "project-users-empty",
+                        "Log in to load user accounts."
+                    )
+                );
             }
 
             if (projectUsersTotal) projectUsersTotal.textContent = "0";
@@ -1652,6 +1626,7 @@ async function printAdminDashboard() {
         const userName = user.displayName || user.email || "Admin";
 
         const now = new Date();
+
         const date = now.toLocaleDateString("en-IN");
 
         const time = now.toLocaleTimeString("en-IN", {
@@ -1709,6 +1684,7 @@ async function printAdminDashboard() {
     }
 }
 
+/* Ctrl+P — prepare QR code and print */
 document.addEventListener("keydown", (event) => {
     if (
         (event.ctrlKey || event.metaKey) &&
