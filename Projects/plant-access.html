@@ -28,42 +28,84 @@ button{margin-top:16px;padding:14px 20px;width:100%;border:0;border-radius:9px;b
 <a class="back" id="backLink" href="../Documents.html">← Back</a>
 </main>
 <script src="plant-access.js"></script>
+<!-------------------------------------------->
+<!--------------HPCL-Madurai------------------>
+<!-------------------------------------------->
 <script>
-const params = new URLSearchParams(location.search);
+const params = new URLSearchParams(window.location.search);
 const company = params.get("company") || "";
 const plantName = params.get("plant") || "";
-const config = (window.PLANT_ACCESS_CONFIG && window.PLANT_ACCESS_CONFIG[company]) || [];
+
+const config =
+  (window.PLANT_ACCESS_CONFIG &&
+   window.PLANT_ACCESS_CONFIG[company]) || [];
+
 const plant = config.find(item => item.name === plantName);
-document.getElementById("heading").textContent = company + " — " + plantName;
-document.getElementById("backLink").href = company ? company + "/index.html" : "../Documents.html";
+
+const heading = document.getElementById("heading");
+const backLink = document.getElementById("backLink");
 const form = document.getElementById("verifyForm");
 const message = document.getElementById("message");
 const docs = document.getElementById("documents");
+const userCode = document.getElementById("userCode");
+
+heading.textContent =
+  company && plantName
+    ? company + " — " + plantName
+    : "Plant Verification";
+
+backLink.href = company
+  ? company + "/index.html"
+  : "../Documents.html";
+
 if (!plant) {
   form.hidden = true;
-  message.textContent = "Location configuration not found. Check Projects/plant-access.js.";
+  message.textContent =
+    "Location configuration not found. Check plant-access.js.";
 }
-form.addEventListener("submit", function(event) {
+
+form.addEventListener("submit", function (event) {
   event.preventDefault();
   docs.replaceChildren();
+
   if (!plant) return;
-  const entered = document.getElementById("userCode").value.trim();
-  if (plant.code === "CHANGE-ME" || !plant.code) {
-    message.textContent = "Administrator has not configured the code for this plant yet.";
+
+  const entered = userCode.value.trim();
+
+  if (!plant.code || plant.code === "CHANGE-ME") {
+    message.textContent =
+      "Administrator has not configured the code for this plant yet.";
     return;
   }
+
   if (entered.toUpperCase() !== plant.code.toUpperCase()) {
-    message.textContent = "Incorrect code. Please contact your administrator.";
+    message.textContent =
+      "Incorrect code. Please contact your administrator.";
     return;
   }
+
+  // HPCL Madurai: successful verification opens the project page.
+  if (company === "HPCL" &&
+      plantName === "Madurai" &&
+      plant.projectUrl) {
+    message.textContent = "Verification successful. Opening project...";
+    window.location.href = plant.projectUrl;
+    return;
+  }
+
+  // Other plants continue using the existing document-link behavior.
   message.textContent = "Verification successful.";
+
   if (!plant.documents || plant.documents.length === 0) {
     const p = document.createElement("p");
-    p.textContent = "No documents have been assigned to this plant yet. Add document paths in Projects/plant-access.js.";
+    p.textContent =
+      "No documents have been assigned to this plant yet. " +
+      "Add document paths in plant-access.js.";
     docs.appendChild(p);
     return;
   }
-  plant.documents.forEach(doc => {
+
+  plant.documents.forEach(function (doc) {
     const a = document.createElement("a");
     a.href = "../" + doc.path.replace(/^\/+/, "");
     a.target = "_blank";
