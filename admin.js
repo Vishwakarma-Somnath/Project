@@ -55,6 +55,16 @@ const createStatus = document.getElementById("createUserStatus");
 const companySelect = document.getElementById("newCompany");
 const locationSelect = document.getElementById("newLocation");
 
+
+const dashboardViewFilter = document.getElementById("dashboardViewFilter");
+const projectUserSection = document.getElementById("projectUserSection");
+
+const feedbackFilterSection = document.getElementById("feedbackFilterSection");
+const feedbackScrollSection = document.getElementById("feedbackScrollSection");
+
+const dashboardSectionTitle = document.getElementById("dashboardSectionTitle");
+
+
 /* =========================================================
    STATE
    ========================================================= */
@@ -436,6 +446,44 @@ function createActionButton(label, backgroundColor) {
     `;
 
     return button;
+}
+
+/* =========================================================
+   DASHBOARD VIEW SWITCHER
+   ========================================================= */
+
+function switchDashboardView() {
+    if (
+        !dashboardViewFilter ||
+        !projectUserSection ||
+        !feedbackFilterSection ||
+        !feedbackScrollSection
+    ) {
+        console.error("Dashboard view elements are missing.");
+        return;
+    }
+
+    const showProjectUsers =
+        dashboardViewFilter.value === "projectUsers";
+
+    projectUserSection.hidden = !showProjectUsers;
+    feedbackFilterSection.hidden = showProjectUsers;
+    feedbackScrollSection.hidden = showProjectUsers;
+
+    if (dashboardSectionTitle) {
+        dashboardSectionTitle.textContent = showProjectUsers
+            ? "Project Documents — User Management"
+            : "Pending Feedback";
+    }
+}
+
+if (dashboardViewFilter) {
+    dashboardViewFilter.addEventListener(
+        "change",
+        switchDashboardView
+    );
+
+    switchDashboardView();
 }
 
 /* =========================================================
