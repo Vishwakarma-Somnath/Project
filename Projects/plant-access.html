@@ -1,142 +1,361 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plant Document Verification</title>
-<style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#080808;color:#fff;font-family:Segoe UI,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
-main{width:min(680px,100%);background:#141414;border:1px solid #333;border-radius:18px;padding:28px;text-align:center}
-h1{color:#67e8f9;font-size:clamp(25px,4vw,38px)}label{display:block;text-align:left;margin:18px 0 7px;color:#cbd5e1}
-input{width:100%;padding:14px;border-radius:9px;border:1px solid #555;background:#090909;color:#fff;font-size:17px}
-button{margin-top:16px;padding:14px 20px;width:100%;border:0;border-radius:9px;background:#2563eb;color:#fff;font-weight:700;font-size:16px;cursor:pointer}
-#message{margin-top:16px;line-height:1.5}.docs{display:grid;gap:10px;margin-top:18px}.docs a{padding:13px;background:#1d4ed8;color:white;text-decoration:none;border-radius:8px;overflow-wrap:anywhere}
-.back{display:inline-block;margin-top:24px;color:#93c5fd}.warning{color:#fbbf24;font-size:13px;line-height:1.6}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plant Document Verification</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #080808;
+      color: #fff;
+      font-family: "Segoe UI", Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    main {
+      width: min(680px, 100%);
+      background: #141414;
+      border: 1px solid #333;
+      border-radius: 18px;
+      padding: 28px;
+    }
+
+    h1 {
+      color: #67e8f9;
+      text-align: center;
+      font-size: clamp(25px, 4vw, 38px);
+      overflow-wrap: anywhere;
+    }
+
+    .intro { color: #cbd5e1; text-align: center; }
+
+    label {
+      display: block;
+      margin: 18px 0 7px;
+      color: #cbd5e1;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 9px;
+      border: 1px solid #555;
+      background: #090909;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 16px;
+      padding: 14px 20px;
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: .6; cursor: wait; }
+
+    #message, #loginStatus {
+      margin-top: 16px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .docs { display: grid; gap: 10px; margin-top: 18px; }
+
+    .docs a {
+      display: block;
+      padding: 13px;
+      background: #1d4ed8;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 24px;
+      color: #93c5fd;
+    }
+
+    .note {
+      color: #fbbf24;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  </style>
 </head>
-<body><main>
-<h1 id="heading">Plant Verification</h1>
-<p>Enter the user code provided by your administrator.</p>
-<form id="verifyForm">
-<label for="userCode">Plant user code</label>
-<input id="userCode" type="password" autocomplete="off" required placeholder="Enter plant code">
-<button type="submit">Verify &amp; View Documents</button>
-</form>
-<div id="message" role="status"></div>
-<div id="documents" class="docs"></div>
-<p class="warning">Temporary GitHub Pages version: this code check runs in the browser. It is not secure for confidential documents; a visitor can inspect the JavaScript or access a public PDF URL directly.</p>
-<a class="back" id="backLink" href="../Documents.html">← Back</a>
 
-<form id="portalLoginForm">
-  <label for="portalUsername">Username</label>
-  <input
-    id="portalUsername"
-    type="text"
-    autocomplete="username"
-    required
-  />
+<body>
+<main>
+  <h1 id="heading">Plant Document Portal</h1>
 
-  <label for="portalPassword">Password</label>
-  <input
-    id="portalPassword"
-    type="password"
-    autocomplete="current-password"
-    required
-  />
+  <p class="intro" id="plantInfo">
+    Sign in with the username and password provided by your administrator.
+  </p>
 
-  <button type="submit">Login</button>
-  <p id="portalLoginStatus" role="status"></p>
-</form>
+  <form id="portalLoginForm">
+    <label for="portalUsername">Username</label>
+    <input
+      id="portalUsername"
+      type="text"
+      autocomplete="username"
+      minlength="3"
+      maxlength="40"
+      required
+    >
 
+    <label for="portalPassword">Password</label>
+    <input
+      id="portalPassword"
+      type="password"
+      autocomplete="current-password"
+      required
+    >
+
+    <button id="loginButton" type="submit">Login &amp; View Documents</button>
+  </form>
+
+  <p id="loginStatus" role="status" aria-live="polite"></p>
+  <div id="documents" class="docs"></div>
+
+  <p class="note">
+    Access is verified through Supabase. Keep the project-documents
+    bucket private and enforce user permissions with Storage RLS.
+  </p>
+
+  <a class="back" id="backLink" href="../Documents.html">
+    ← Back
+  </a>
 </main>
+
+<!-- Load plant configuration first -->
 <script src="plant-access.js"></script>
-<!-------------------------------------------->
-<!--------------HPCL-Madurai------------------>
-<!-------------------------------------------->
+
+<!-- Supabase JavaScript client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-const params = new URLSearchParams(window.location.search);
-const company = params.get("company") || "";
-const plantName = params.get("plant") || "";
+(() => {
+  "use strict";
 
-const config =
-  (window.PLANT_ACCESS_CONFIG &&
-   window.PLANT_ACCESS_CONFIG[company]) || [];
+  // Replace these two placeholders with your Supabase project values.
+  const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY";
 
-const plant = config.find(item => item.name === plantName);
+  const BUCKET = "project-documents";
 
-const heading = document.getElementById("heading");
-const backLink = document.getElementById("backLink");
-const form = document.getElementById("verifyForm");
-const message = document.getElementById("message");
-const docs = document.getElementById("documents");
-const userCode = document.getElementById("userCode");
+  const params = new URLSearchParams(window.location.search);
+  const companyParam = params.get("company") || "";
+  const plantParam = params.get("plant") || "";
 
-heading.textContent =
-  company && plantName
-    ? company + " — " + plantName
-    : "Plant Verification";
+  const companyKey = companyParam.toUpperCase();
 
-backLink.href = company
-  ? company + "/index.html"
-  : "../Documents.html";
+  const plantList =
+    window.PLANT_ACCESS_CONFIG?.[companyKey] || [];
 
-if (!plant) {
-  form.hidden = true;
-  message.textContent =
-    "Location configuration not found. Check plant-access.js.";
-}
+  const normalize = value =>
+    String(value || "").trim().toLowerCase();
 
-form.addEventListener("submit", function (event) {
-  event.preventDefault();
-  docs.replaceChildren();
+  const plant = plantList.find(
+    item => normalize(item.name) === normalize(plantParam)
+  );
 
-  if (!plant) return;
+  const heading = document.getElementById("heading");
+  const plantInfo = document.getElementById("plantInfo");
+  const form = document.getElementById("portalLoginForm");
+  const usernameInput = document.getElementById("portalUsername");
+  const passwordInput = document.getElementById("portalPassword");
+  const loginButton = document.getElementById("loginButton");
+  const status = document.getElementById("loginStatus");
+  const documents = document.getElementById("documents");
+  const backLink = document.getElementById("backLink");
 
-  const entered = userCode.value.trim();
+  heading.textContent = plant
+    ? `${companyKey} — ${plant.name}`
+    : "Plant Not Found";
 
-  if (!plant.code || plant.code === "CHANGE-ME") {
-    message.textContent =
-      "Administrator has not configured the code for this plant yet.";
+  backLink.href = companyParam
+    ? `${encodeURIComponent(companyParam)}/index.html`
+    : "../Documents.html";
+
+  if (!plant || plant.enabled === false) {
+    form.hidden = true;
+    plantInfo.textContent = plant
+      ? "This plant is not enabled yet. Contact your administrator."
+      : "Plant configuration was not found. Check the URL and plant-access.js.";
     return;
   }
 
-  if (entered.toUpperCase() !== plant.code.toUpperCase()) {
-    message.textContent =
-      "Incorrect code. Please contact your administrator.";
+  plantInfo.textContent =
+    `Sign in to access ${plant.name} documents.`;
+
+  if (
+    SUPABASE_URL.startsWith("YOUR_") ||
+    SUPABASE_ANON_KEY.startsWith("YOUR_") ||
+    !window.supabase?.createClient
+  ) {
+    form.hidden = true;
+    status.textContent =
+      "Supabase is not configured. Check the project URL, public key and client library.";
     return;
   }
 
-  // HPCL Madurai: successful verification opens the project page.
-  if (company === "HPCL" &&
-      plantName === "Madurai" &&
-      plant.projectUrl) {
-    message.textContent = "Verification successful. Opening project...";
-    window.location.href = plant.projectUrl;
-    return;
+  const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  let busy = false;
+
+  function showStatus(text) {
+    status.textContent = text;
   }
 
-  // Other plants continue using the existing document-link behavior.
-  message.textContent = "Verification successful.";
-
-  if (!plant.documents || plant.documents.length === 0) {
-    const p = document.createElement("p");
-    p.textContent =
-      "No documents have been assigned to this plant yet. " +
-      "Add document paths in plant-access.js.";
-    docs.appendChild(p);
-    return;
+  function safeErrorMessage(error) {
+    console.error("Portal request failed:", error);
+    return "Request failed. Check your login and portal configuration.";
   }
 
-  plant.documents.forEach(function (doc) {
-    const a = document.createElement("a");
-    a.href = "../" + doc.path.replace(/^\/+/, "");
-    a.target = "_blank";
-    a.rel = "noopener";
-    a.textContent = doc.title || doc.path;
-    docs.appendChild(a);
+  async function showPrivateDocuments() {
+    documents.replaceChildren();
+
+    // This folder must match the assigned company/location in Supabase.
+    const folder = `${plant.company}/${plant.location}`;
+
+    showStatus("Loading authorized documents...");
+
+    const { data: files, error } = await supabase.storage
+      .from(BUCKET)
+      .list(folder, {
+        limit: 100,
+        sortBy: { column: "name", order: "asc" }
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    const pdfs = (files || []).filter(file =>
+      file.name.toLowerCase().endsWith(".pdf") &&
+      file.name !== ".emptyFolderPlaceholder"
+    );
+
+    if (pdfs.length === 0) {
+      showStatus("No PDF documents are available for this plant yet.");
+      return;
+    }
+
+    for (const file of pdfs) {
+      // Never build a public URL for a private PDF.
+      const path = `${folder}/${file.name}`;
+
+      const { data, error: urlError } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, 60);
+
+      if (urlError || !data?.signedUrl) {
+        console.error("Could not create document link:", urlError);
+        continue;
+      }
+
+      const link = document.createElement("a");
+      link.href = data.signedUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = file.name;
+      documents.appendChild(link);
+    }
+
+    showStatus(
+      documents.childElementCount
+        ? "Login successful. Authorized documents are listed below."
+        : "Documents could not be opened. Check Storage permissions."
+    );
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    if (busy) return;
+    busy = true;
+    loginButton.disabled = true;
+    documents.replaceChildren();
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    showStatus("Verifying your account...");
+
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "username-login",
+        { body: { username, password } }
+      );
+
+      if (
+        error ||
+        !data?.access_token ||
+        !data?.refresh_token ||
+        !data?.user
+      ) {
+        throw new Error("Login failed");
+      }
+
+      // Never trust the URL alone to determine authorization.
+      if (
+        normalize(data.user.company) !== normalize(plant.company) ||
+        normalize(data.user.location) !== normalize(plant.location)
+      ) {
+        throw new Error("This account is not assigned to this plant.");
+      }
+
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token
+      });
+
+      if (sessionError) throw sessionError;
+
+      // If an existing project page is configured, preserve its URL.
+      // The destination page must independently verify authorization.
+      if (plant.projectUrl) {
+        showStatus("Login successful. Opening project...");
+        window.location.assign(plant.projectUrl);
+        return;
+      }
+
+      await showPrivateDocuments();
+
+    } catch (error) {
+      console.error("Portal login error:", error);
+      documents.replaceChildren();
+      showStatus(
+        error.message?.includes("not assigned")
+          ? "Access denied: your account is not assigned to this plant."
+          : safeErrorMessage(error)
+      );
+    } finally {
+      busy = false;
+      loginButton.disabled = false;
+    }
   });
-});
+})();
 </script>
-
 </body>
 </html>
