@@ -35,7 +35,7 @@ emailjs.init({
 // =====================================
 
 // Apna actual admin email address yahan set karein.
-const EMAILJS_ADMIN_EMAIL = "Somnathv615@outlook.com";
+const EMAILJS_ADMIN_EMAIL = "Somnathv615@gmail.com";
 
 emailjs.init({
   publicKey: EMAILJS_PUBLIC_KEY
