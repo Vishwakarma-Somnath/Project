@@ -1258,27 +1258,25 @@
                         >
                     </div>
 
-                    <div class="project-user-field">
-                        <label for="newCompany">Company</label>
-                        <select id="newCompany" name="company" required>
-                            <option value="">Select company</option>
-                            <option value="BPCL">BPCL</option>
-                            <option value="HPCL">HPCL</option>
-                            <option value="IOCL">IOCL</option>
-                        </select>
-                    </div>
+                <div class="project-user-field">
+                    <label for="newCompany">Company</label>
+                    <select id="newCompany" name="company" required>
+                        <option value="">Select company</option>
+                        <option value="BPCL"data-locations="URAN,PIYALA,NASHIK">BPCL</option>
+                        <option value="HPCL"data-locations="MADURAI">HPCL</option>
+                        <option value="IOCL"data-locations="VARANASI,JABALPUR">IOCL</option>
+                    </select>
+                </div>
 
                 <div class="project-user-field">
                     <label for="newLocation">Plant / Location</label>
-                    <select id="newLocation" name="location" required>
+                    <select
+                        id="newLocation"
+                        name="location"
+                        required
+                        disabled
+                        >
                         <option value="">Select company first</option>
-                            <option value="">Select company first</option>
-                            <option value="BPCL" data-locations="URAN">URAN</option>
-                            <option value="BPCL" data-locations="Piyala">PIYALA</option>
-                            <option value="BPCL" data-locations="Nashik">NASHIK</option>
-                            <option value="HPCL" data-locations="Madurai">MADURAI</option>
-                            <option value="IOCL" data-locations="Varanasi">VARANASI</option>
-                            <option value="IOCL" data-locations="Jabalpur">JABALPUR</option>
                     </select>
                 </div>
 
