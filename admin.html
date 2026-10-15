@@ -1269,12 +1269,8 @@
                     </div>
 
                     <div class="project-user-field">
-                        <label for="newLocation">Plant / Location</label>
-                        <select
-                            id="newLocation"
-                            name="location"
-                            required
-                        >
+                    <label for="newCompany">Company</label>
+                    <select id="newCompany" name="company" required>
                             <option value="">Select company first</option>
                             <option value="BPCL" data-locations="URAN">URAN</option>
                             <option value="BPCL" data-locations="Piyala">PIYALA</option>
@@ -1282,8 +1278,15 @@
                             <option value="HPCL" data-locations="Madurai">MADURAI</option>
                             <option value="IOCL" data-locations="Varanasi">VARANASI</option>
                             <option value="IOCL" data-locations="Jabalpur">JABALPUR</option>
-                        </select>
-                    </div>
+                    </select>
+                </div>
+
+                <div class="project-user-field">
+                    <label for="newLocation">Plant / Location</label>
+                    <select id="newLocation" name="location" required disabled>
+                        <option value="">Select company first</option>
+                    </select>
+                </div>
 
                 </div>
 
