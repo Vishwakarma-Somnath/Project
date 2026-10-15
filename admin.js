@@ -1,7 +1,8 @@
 
-// =====================================
-// FIREBASE & SUPABASE IMPORTS
-// =====================================
+/* =========================================================
+   ADMIN.JS
+   Firebase Admin + Feedback Management + Project Documents
+   ========================================================= */
 
 import { auth, db } from "./firebase-config.js";
 import { supabase, FEEDBACK_BUCKET } from "./supabase-config.js";
@@ -24,28 +25,59 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-// =====================================
-// HTML ELEMENTS
-// =====================================
+/* =========================================================
+   HTML ELEMENTS
+   ========================================================= */
 
 const loginSection = document.getElementById("loginSection");
 const loginForm = document.getElementById("loginForm");
 const dashboard = document.getElementById("dashboard");
+
 const pendingList = document.getElementById("pendingList");
 const adminStatus = document.getElementById("adminStatus");
-const logoutBtn = document.getElementById("logoutBtn");
 const loginStatus = document.getElementById("loginStatus");
-const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
-// STATUS FILTER VARIABLES
-let allFeedbackRecords = [];
+const logoutBtn = document.getElementById("logoutBtn");
+const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
 
 const statusFilter = document.getElementById("statusFilter");
 const feedbackCount = document.getElementById("feedbackCount");
 
-// =====================================
-// STATUS MESSAGE FUNCTIONS
-// =====================================
+const inactivityRing = document.getElementById("inactivityRing");
+const inactivityFill = document.getElementById("inactivityFill");
+
+const passwordInput = document.getElementById("adminPassword");
+const togglePassword = document.getElementById("togglePassword");
+
+const createForm = document.getElementById("createPortalUserForm");
+const createStatus = document.getElementById("createUserStatus");
+
+const companySelect = document.getElementById("newCompany");
+const locationSelect = document.getElementById("newLocation");
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let allFeedbackRecords = [];
+let feedbackUnsubscribe = null;
+
+let inactivityTimer = null;
+let inactivityCountdownInterval = null;
+let inactivityDeadline = 0;
+
+let isSigningOut = false;
+let isPreparingPrint = false;
+
+const INACTIVITY_LIMIT = 2 * 60 * 1000; // 2 minutes
+
+const CIRCLE_RADIUS = 44;
+const CIRCLE_CX = 50;
+const CIRCLE_CY = 50;
+
+/* =========================================================
+   STATUS MESSAGES
+   ========================================================= */
 
 function showLoginMessage(message, isError = false) {
     if (!loginStatus) return;
@@ -61,28 +93,16 @@ function showAdminMessage(message, isError = false) {
     adminStatus.style.color = isError ? "#dc2626" : "#15803d";
 }
 
-// =====================================
-// AUTO LOGOUT + SOLID CIRCLE COUNTDOWN
-// =====================================
+function showCreateStatus(message, isError = false) {
+    if (!createStatus) return;
 
-const INACTIVITY_LIMIT = 45 * 1000; // 2 minutes
+    createStatus.textContent = message;
+    createStatus.style.color = isError ? "#dc2626" : "#15803d";
+}
 
-let inactivityTimer = null;
-let inactivityCountdownInterval = null;
-let inactivityDeadline = 0;
-let feedbackUnsubscribe = null;
-let isSigningOut = false;
-
-const inactivityRing = document.getElementById("inactivityRing");
-const inactivityFill = document.getElementById("inactivityFill");
-
-const CIRCLE_RADIUS = 44;
-const CIRCLE_CX = 50;
-const CIRCLE_CY = 50;
-
-// =====================================
-// UPDATE COUNTDOWN CIRCLE
-// =====================================
+/* =========================================================
+   INACTIVITY COUNTDOWN CIRCLE
+   ========================================================= */
 
 function updateInactivityRing(remainingSeconds, totalSeconds) {
     if (!inactivityFill || totalSeconds <= 0) return;
@@ -101,7 +121,6 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
         return;
     }
 
-    // Full solid circle at the start
     if (progress >= 1) {
         inactivityFill.setAttribute(
             "d",
@@ -112,7 +131,6 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
         return;
     }
 
-    // Remaining solid green sector
     const angle = 2 * Math.PI * progress;
 
     const startX = cx;
@@ -132,10 +150,6 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
     );
 }
 
-// =====================================
-// UPDATE COUNTDOWN
-// =====================================
-
 function updateCountdown() {
     if (!auth.currentUser || isSigningOut || !inactivityDeadline) {
         return;
@@ -147,13 +161,12 @@ function updateCountdown() {
     );
 
     const remainingSeconds = Math.ceil(remainingMs / 1000);
-    // Update circular ring
+
     updateInactivityRing(
         remainingSeconds,
         INACTIVITY_LIMIT / 1000
     );
 
-    // Update digital timer
     const timeElement = document.getElementById("inactivityTime");
 
     if (timeElement) {
@@ -165,14 +178,7 @@ function updateCountdown() {
             ":" +
             String(seconds).padStart(2, "0");
     }
-
-    // Do not stop the timer here.
-    // Automatic logout must remain active.
 }
-
-// =====================================
-// STOP INACTIVITY TIMER
-// =====================================
 
 function stopInactivityTimer() {
     if (inactivityTimer !== null) {
@@ -188,42 +194,27 @@ function stopInactivityTimer() {
     inactivityDeadline = 0;
 }
 
-// =====================================
-// RESET / START INACTIVITY TIMER
-// FIXED: ILLEGAL RETURN STATEMENT
-// =====================================
-
 function resetInactivityTimer() {
     stopInactivityTimer();
 
     if (!auth.currentUser || isSigningOut) {
-        if (inactivityRing) {
-            inactivityRing.hidden = true;
-        }
+        if (inactivityRing) inactivityRing.hidden = true;
         return;
     }
 
-    if (inactivityRing) {
-        inactivityRing.hidden = false;
-    }
+    if (inactivityRing) inactivityRing.hidden = false;
 
     inactivityDeadline = Date.now() + INACTIVITY_LIMIT;
 
-    // Reset circle to full
     updateInactivityRing(
         INACTIVITY_LIMIT / 1000,
         INACTIVITY_LIMIT / 1000
     );
 
-    // Start countdown updates
     updateCountdown();
 
-    inactivityCountdownInterval = setInterval(
-        updateCountdown,
-        250
-    );
+    inactivityCountdownInterval = setInterval(updateCountdown, 250);
 
-    // Automatic logout after 2 minutes
     inactivityTimer = setTimeout(async () => {
         if (!auth.currentUser || isSigningOut) {
             stopInactivityTimer();
@@ -231,31 +222,23 @@ function resetInactivityTimer() {
         }
 
         isSigningOut = true;
-
-        if (inactivityRing) {
-            inactivityRing.hidden = true;
-        }
-
         stopInactivityTimer();
+
+        if (inactivityRing) inactivityRing.hidden = true;
 
         try {
             await signOut(auth);
-            // No alert or confirmation popup
+            showLoginMessage("Session expired due to inactivity.");
         } catch (error) {
             console.error("Auto logout failed:", error);
-
             isSigningOut = false;
 
-            if (auth.currentUser) {
-                resetInactivityTimer();
-            }
+            if (auth.currentUser) resetInactivityTimer();
         }
     }, INACTIVITY_LIMIT);
 }
 
-// =====================================
-// USER ACTIVITY EVENTS
-// =====================================
+/* Reset inactivity only for real user activity. */
 
 const activityEvents = [
     "mousemove",
@@ -270,18 +253,17 @@ activityEvents.forEach((eventName) => {
     document.addEventListener(
         eventName,
         () => {
-            resetInactivityTimer();
+            if (auth.currentUser && !isSigningOut) {
+                resetInactivityTimer();
+            }
         },
         { passive: true }
     );
 });
 
-// =====================================
-// SHOW / HIDE PASSWORD
-// =====================================
-
-const passwordInput = document.getElementById("adminPassword");
-const togglePassword = document.getElementById("togglePassword");
+/* =========================================================
+   SHOW / HIDE PASSWORD
+   ========================================================= */
 
 if (passwordInput && togglePassword) {
     togglePassword.addEventListener("click", () => {
@@ -308,24 +290,19 @@ if (passwordInput && togglePassword) {
     });
 }
 
-// =====================================
-// ADMIN LOGIN
-// =====================================
+/* =========================================================
+   ADMIN LOGIN
+   ========================================================= */
 
 if (loginForm) {
     loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const emailInput = loginForm.querySelector(
-            'input[type="email"]'
-        );
-
-        const passwordInput = loginForm.querySelector(
-            'input[type="password"]'
-        );
+        const emailInput = loginForm.querySelector('input[type="email"]');
+        const passwordField = document.getElementById("adminPassword");
 
         const email = emailInput?.value.trim();
-        const password = passwordInput?.value;
+        const password = passwordField?.value;
 
         if (!email || !password) {
             showLoginMessage(
@@ -338,25 +315,11 @@ if (loginForm) {
         try {
             showLoginMessage("Logging in...");
 
-            const userCredential = await signInWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
-
-            console.log(
-                "Login successful:",
-                userCredential.user.uid
-            );
+            await signInWithEmailAndPassword(auth, email, password);
 
             showLoginMessage("Login successful.");
-
         } catch (error) {
-            console.error(
-                "Login error:",
-                error.code,
-                error.message
-            );
+            console.error("Login error:", error.code, error.message);
 
             showLoginMessage(
                 error.code === "auth/invalid-credential"
@@ -368,23 +331,17 @@ if (loginForm) {
     });
 }
 
-// =====================================
-// FORGOT PASSWORD
-// =====================================
+/* =========================================================
+   FORGOT PASSWORD
+   ========================================================= */
 
 if (forgotPasswordBtn) {
     forgotPasswordBtn.addEventListener("click", async () => {
-        const emailInput = loginForm?.querySelector(
-            'input[type="email"]'
-        );
-
+        const emailInput = loginForm?.querySelector('input[type="email"]');
         const email = emailInput?.value.trim();
 
         if (!email) {
-            showLoginMessage(
-                "Please enter your email first.",
-                true
-            );
+            showLoginMessage("Please enter your email first.", true);
             emailInput?.focus();
             return;
         }
@@ -406,222 +363,182 @@ if (forgotPasswordBtn) {
     });
 }
 
-// =====================================
-// MANUAL LOGOUT
-// =====================================
+/* =========================================================
+   MANUAL LOGOUT
+   ========================================================= */
 
-if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-        try {
-            stopInactivityTimer();
-            isSigningOut = true;
+async function performLogout() {
+    if (isSigningOut) return;
 
-            if (inactivityRing) {
-                inactivityRing.hidden = true;
-            }
+    stopInactivityTimer();
+    isSigningOut = true;
 
-            await signOut(auth);
+    if (inactivityRing) inactivityRing.hidden = true;
 
-            showLoginMessage("You have been logged out.");
+    try {
+        await signOut(auth);
+        showLoginMessage("You have been logged out.");
+    } catch (error) {
+        console.error("Logout failed:", error);
 
-        } catch (error) {
-            console.error("Logout error:", error);
+        isSigningOut = false;
 
-            isSigningOut = false;
+        showAdminMessage(
+            "Logout failed: " + error.message,
+            true
+        );
 
-            showAdminMessage(
-                "Logout failed: " +
-                (error.message || "Unknown error"),
-                true
-            );
-
-            if (auth.currentUser) {
-                resetInactivityTimer();
-            }
-        }
-    });
+        if (auth.currentUser) resetInactivityTimer();
+    }
 }
 
-// =====================================
-// KEYBOARD SHORTCUT: F4 LOGOUT
-// =====================================
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", performLogout);
+}
 
-document.addEventListener("keydown", async (event) => {
-    if (event.key === "F4") {
-        event.preventDefault();
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "F4") return;
 
-        const currentDashboard = document.getElementById("dashboard");
+    const currentDashboard = document.getElementById("dashboard");
 
-        if (!currentDashboard || currentDashboard.hidden) {
-            return;
-        }
+    if (!currentDashboard || currentDashboard.hidden) return;
 
-        if (isSigningOut) {
-            return;
-        }
-
-        try {
-            stopInactivityTimer();
-            isSigningOut = true;
-
-            if (inactivityRing) {
-                inactivityRing.hidden = true;
-            }
-
-            await signOut(auth);
-
-            showLoginMessage("You have been logged out.");
-
-        } catch (error) {
-            console.error("Keyboard logout failed:", error);
-
-            isSigningOut = false;
-
-            if (auth.currentUser) {
-                resetInactivityTimer();
-            }
-        }
-    }
+    event.preventDefault();
+    performLogout();
 });
 
-// =====================================
-// HELPER: CREATE ELEMENT
-// =====================================
+/* =========================================================
+   DOM HELPERS
+   ========================================================= */
 
-function createElement(tag, className, text = "") {
+function createElement(tag, className = "", text = "") {
     const element = document.createElement(tag);
 
-    if (className) {
-        element.className = className;
-    }
+    if (className) element.className = className;
 
     element.textContent = text;
 
     return element;
 }
 
-// =====================================
-// LOAD FEEDBACK
-// =====================================
+function createActionButton(label, backgroundColor) {
+    const button = createElement("button", "", label);
 
-    function renderFilteredFeedback() {
-        if (!pendingList) return;
+    button.type = "button";
 
-        const selectedStatus = statusFilter?.value || "all";
+    button.style.cssText = `
+        background: ${backgroundColor};
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 9px 14px;
+        cursor: pointer;
+    `;
 
-        const filteredRecords = allFeedbackRecords.filter((item) => {
-            const currentStatus = item.status || "pending";
+    return button;
+}
 
-            return selectedStatus === "all" ||
-                currentStatus === selectedStatus;
-        });
+/* =========================================================
+   FEEDBACK FILTER
+   ========================================================= */
 
-        pendingList.replaceChildren();
+function renderFilteredFeedback() {
+    if (!pendingList) return;
 
-        filteredRecords.forEach((item) => {
-            pendingList.appendChild(createFeedbackCard(item));
-        });
+    const selectedStatus = statusFilter?.value || "all";
 
-        if (feedbackCount) {
-            feedbackCount.textContent =
-                `Showing: ${filteredRecords.length} / ${allFeedbackRecords.length}`;
-        }
+    const filteredRecords = allFeedbackRecords.filter((item) => {
+        const currentStatus = item.status || "pending";
 
-        if (filteredRecords.length === 0) {
-            const message = document.createElement("p");
+        return selectedStatus === "all" ||
+            currentStatus === selectedStatus;
+    });
 
-            message.textContent = allFeedbackRecords.length === 0
-                ? "No feedback records found."
-                : "No feedback found for this status.";
+    pendingList.replaceChildren();
 
-            pendingList.appendChild(message);
-        }
+    filteredRecords.forEach((item) => {
+        pendingList.appendChild(createFeedbackCard(item));
+    });
+
+    if (feedbackCount) {
+        feedbackCount.textContent =
+            `Showing: ${filteredRecords.length} / ${allFeedbackRecords.length}`;
     }
 
-    if (statusFilter) {
-        statusFilter.addEventListener("change", renderFilteredFeedback);
+    if (filteredRecords.length === 0) {
+        pendingList.appendChild(
+            createElement(
+                "p",
+                "",
+                allFeedbackRecords.length === 0
+                    ? "No feedback records found."
+                    : "No feedback found for this status."
+            )
+        );
     }
+}
+
+if (statusFilter) {
+    statusFilter.addEventListener("change", renderFilteredFeedback);
+}
+
+/* =========================================================
+   LOAD FEEDBACK FROM FIRESTORE
+   ========================================================= */
 
 function loadFeedback() {
-    console.log("STEP 1: loadFeedback() started");
-
     if (feedbackUnsubscribe) {
         feedbackUnsubscribe();
         feedbackUnsubscribe = null;
     }
 
     if (!pendingList) {
-        console.error("ERROR: #pendingList element not found");
-        showAdminMessage(
-            "HTML error: pendingList not found.",
-            true
-        );
+        showAdminMessage("HTML error: pendingList not found.", true);
         return;
     }
+
     allFeedbackRecords = [];
     pendingList.replaceChildren();
+
     showAdminMessage("Connecting to Firestore...");
-
-    console.log(
-        "STEP 2: Current user UID:",
-        auth.currentUser?.uid
-    );
-
-    console.log("STEP 3: Firestore database:", db);
 
     try {
         feedbackUnsubscribe = onSnapshot(
             collection(db, "feedbackPrivate"),
-
             (snapshot) => {
-                console.log(
-                    "STEP 4: Firestore response received. Documents:",
-                    snapshot.size
-                );
+                allFeedbackRecords = snapshot.docs.map((item) => ({
+                    id: item.id,
+                    ...item.data()
+                }));
 
-            allFeedbackRecords = snapshot.docs.map((documentSnapshot) => ({
-                id: documentSnapshot.id,
-                ...documentSnapshot.data()
-            }));
-
-            renderFilteredFeedback();
-
-            showAdminMessage(
-                `Loaded ${snapshot.size} feedback record(s).`
-            );
-            },
-
-            (error) => {
-                console.error(
-                    "STEP 5: Firestore listener error:",
-                    error
-                );
+                renderFilteredFeedback();
 
                 showAdminMessage(
-                    "Firestore error: " +
-                    error.code +
-                    " - " +
-                    error.message,
+                    `Loaded ${snapshot.size} feedback record(s).`
+                );
+            },
+            (error) => {
+                console.error("Firestore listener error:", error);
+
+                showAdminMessage(
+                    "Firestore error: " + error.message,
                     true
                 );
             }
         );
-
-        console.log("STEP 6: Firestore listener registered");
-
     } catch (error) {
-        console.error("STEP 7: Synchronous error:", error);
+        console.error("Unable to start Firestore listener:", error);
 
         showAdminMessage(
-            "Error: " + error.message,
+            "Unable to load feedback: " + error.message,
             true
         );
     }
 }
 
-// =====================================
-// CREATE FEEDBACK CARD
-// =====================================
+/* =========================================================
+   FEEDBACK CARD
+   ========================================================= */
 
 function createFeedbackCard(item) {
     const card = createElement("div", "admin-item");
@@ -630,19 +547,13 @@ function createFeedbackCard(item) {
         border: 1px solid #ddd;
         border-radius: 10px;
         padding: 16px;
-        margin: 0px 0;
+        margin: 10px 0;
         background: #fff;
         color: #222;
         overflow-wrap: anywhere;
     `;
 
-    // Name
-    const title = createElement(
-        "h3",
-        "",
-        item.name || "Unknown"
-    );
-
+    const title = createElement("h3", "", item.name || "Unknown");
     title.style.cssText = `
         font-weight: bold;
         font-size: 18px;
@@ -650,48 +561,36 @@ function createFeedbackCard(item) {
         color: #222;
     `;
 
-    // Email
     const email = createElement(
         "p",
         "",
         "Email: " + (item.email || "Not provided")
     );
-
     email.style.cssText = `
         margin: 8px 0;
         overflow-wrap: anywhere;
         color: #1788ae;
     `;
 
-    // Designation
     const designation = createElement(
         "p",
         "",
         "Designation: " + (item.designation || "Not provided")
     );
+    designation.style.cssText = "color:#222; margin:8px 0;";
 
-    designation.style.color = "#222";
-    designation.style.margin = "8px 0";
-
-    // Department
     const department = createElement(
         "p",
         "",
         "Department: " + (item.department || "Not provided")
     );
+    department.style.cssText = "color:#222; margin:8px 0;";
 
-    department.style.cssText = `
-        color: #222;
-        margin: 8px 0;
-    `;
-
-    // Feedback message
     const message = createElement(
         "p",
         "",
         item.message || "No feedback message"
     );
-
     message.style.cssText = `
         color: #222;
         white-space: pre-wrap;
@@ -699,26 +598,19 @@ function createFeedbackCard(item) {
         margin: 10px 0;
     `;
 
-    // Status
     const status = createElement(
         "p",
         "",
         "Status: " + (item.status || "pending")
     );
-
     status.style.cssText = `
         color: #222;
         font-weight: bold;
         margin: 8px 0;
     `;
 
-    // Text details
     const details = createElement("div", "feedback-details");
-
-    details.style.cssText = `
-        flex: 1;
-        min-width: 0;
-    `;
+    details.style.cssText = "flex:1; min-width:0;";
 
     details.append(
         title,
@@ -729,12 +621,7 @@ function createFeedbackCard(item) {
         status
     );
 
-    // Content row: details left, photo right
-    const contentRow = createElement(
-        "div",
-        "feedback-content-row"
-    );
-
+    const contentRow = createElement("div", "feedback-content-row");
     contentRow.style.cssText = `
         display: flex;
         flex-direction: row;
@@ -746,18 +633,16 @@ function createFeedbackCard(item) {
 
     contentRow.appendChild(details);
 
-    // Get photo URL
     let photoUrl = item.photoUrl || "";
 
     if (item.photoPath) {
-        const { data } = supabase.storage
+        const result = supabase.storage
             .from(FEEDBACK_BUCKET)
             .getPublicUrl(item.photoPath);
 
-        photoUrl = data?.publicUrl || photoUrl;
+        photoUrl = result.data?.publicUrl || photoUrl;
     }
 
-    // Photo
     if (photoUrl) {
         const image = document.createElement("img");
 
@@ -769,42 +654,39 @@ function createFeedbackCard(item) {
             display: block;
             width: 180px;
             height: 180px;
-            flex: 0 0 10px;
+            flex: 0 0 180px;
             object-fit: cover;
             border-radius: 10px;
             margin: 0;
         `;
+
+        image.onerror = () => {
+            image.alt = "Feedback photo could not be loaded";
+            image.style.display = "none";
+        };
 
         contentRow.appendChild(image);
     }
 
     card.appendChild(contentRow);
 
-    // Action buttons
     const buttonContainer = createElement("div", "");
 
     buttonContainer.style.cssText = `
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 5px;
+        margin-top: 12px;
     `;
 
-    // Approve and Reject
     if (item.status === "pending" || !item.status) {
-        const approveBtn = createActionButton(
-            "Approve",
-            "#198754"
-        );
+        const approveBtn = createActionButton("Approve", "#198754");
 
         approveBtn.addEventListener("click", () => {
             approveFeedback(item.id);
         });
 
-        const rejectBtn = createActionButton(
-            "Reject",
-            "#dc3545"
-        );
+        const rejectBtn = createActionButton("Reject", "#dc3545");
 
         rejectBtn.addEventListener("click", () => {
             rejectFeedback(item.id);
@@ -813,11 +695,7 @@ function createFeedbackCard(item) {
         buttonContainer.append(approveBtn, rejectBtn);
     }
 
-    // Delete
-    const deleteBtn = createActionButton(
-        "Delete",
-        "#6c757d"
-    );
+    const deleteBtn = createActionButton("Delete", "#6c757d");
 
     deleteBtn.addEventListener("click", () => {
         deleteFeedback(item.id);
@@ -829,30 +707,9 @@ function createFeedbackCard(item) {
     return card;
 }
 
-// =====================================
-// ACTION BUTTON
-// =====================================
-
-function createActionButton(label, backgroundColor) {
-    const button = createElement("button", "", label);
-
-    button.type = "button";
-
-    button.style.cssText = `
-        background: ${backgroundColor};
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 9px 14px;
-        cursor: pointer;
-    `;
-
-    return button;
-}
-
-// =====================================
-// APPROVE FEEDBACK
-// =====================================
+/* =========================================================
+   APPROVE FEEDBACK
+   ========================================================= */
 
 async function approveFeedback(id) {
     if (!auth.currentUser) {
@@ -871,9 +728,7 @@ async function approveFeedback(id) {
         const data = snapshot.data();
 
         if (data.status === "approved") {
-            showAdminMessage(
-                "This feedback is already approved."
-            );
+            showAdminMessage("This feedback is already approved.");
             return;
         }
 
@@ -900,10 +755,7 @@ async function approveFeedback(id) {
             reviewedAt: serverTimestamp()
         });
 
-        showAdminMessage(
-            "Feedback approved successfully."
-        );
-
+        showAdminMessage("Feedback approved successfully.");
     } catch (error) {
         console.error("Approve error:", error);
 
@@ -914,9 +766,9 @@ async function approveFeedback(id) {
     }
 }
 
-// =====================================
-// REJECT FEEDBACK
-// =====================================
+/* =========================================================
+   REJECT FEEDBACK
+   ========================================================= */
 
 async function rejectFeedback(id) {
     if (!auth.currentUser) {
@@ -931,7 +783,6 @@ async function rejectFeedback(id) {
         });
 
         showAdminMessage("Feedback rejected.");
-
     } catch (error) {
         console.error("Reject error:", error);
 
@@ -942,9 +793,9 @@ async function rejectFeedback(id) {
     }
 }
 
-// =====================================
-// DELETE FEEDBACK + SUPABASE PHOTO
-// =====================================
+/* =========================================================
+   DELETE FEEDBACK AND OPTIONAL PHOTO
+   ========================================================= */
 
 async function deleteFeedback(id) {
     if (!auth.currentUser) {
@@ -952,11 +803,11 @@ async function deleteFeedback(id) {
         return;
     }
 
-    const confirmed = window.confirm(
+    if (!window.confirm(
         "Are you sure you want to permanently delete this feedback and its photo?"
-    );
-
-    if (!confirmed) return;
+    )) {
+        return;
+    }
 
     try {
         showAdminMessage("Deleting feedback...");
@@ -964,8 +815,10 @@ async function deleteFeedback(id) {
         const privateRef = doc(db, "feedbackPrivate", id);
         const publicRef = doc(db, "publicFeedback", id);
 
-        const privateSnapshot = await getDoc(privateRef);
-        const publicSnapshot = await getDoc(publicRef);
+        const [privateSnapshot, publicSnapshot] = await Promise.all([
+            getDoc(privateRef),
+            getDoc(publicRef)
+        ]);
 
         if (!privateSnapshot.exists() && !publicSnapshot.exists()) {
             throw new Error("Feedback record not found.");
@@ -980,137 +833,244 @@ async function deleteFeedback(id) {
             : {};
 
         const photoPath =
-            privateData.photoPath || publicData.photoPath || "";
+            privateData.photoPath ||
+            publicData.photoPath ||
+            "";
 
-        console.log("FEEDBACK ID:", id);
-        console.log("SUPABASE BUCKET:", FEEDBACK_BUCKET);
-        console.log("FINAL PHOTO PATH:", photoPath);
+        // If there is a photo, remove it through the secure Edge Function.
+        if (photoPath) {
+            const currentUser = auth.currentUser;
 
-        // Delete the Supabase photo through the secure Edge Function
-        if (!photoPath) {
-            throw new Error(
-                "Photo path is missing in Firestore. " +
-                "Cannot safely delete the image."
-            );
-        }
-
-        const currentUser = auth.currentUser;
-
-        if (!currentUser) {
-            throw new Error("Please log in again.");
-        }
-
-        // Get a fresh Firebase ID token
-        const firebaseToken = await currentUser.getIdToken();
-
-        const {
-            data: deleteResult,
-            error: functionError
-        } = await supabase.functions.invoke(
-            "admin-delete-feedback-photo",
-            {
-                body: {
-                    photoPath: photoPath
-                },
-                headers: {
-                    Authorization: `Bearer ${firebaseToken}`
-                }
-            }
-        );
-
-        if (functionError) {
-            console.error(
-                "Edge Function error:",
-                functionError
-            );
-
-            console.error(
-                "Edge Function error context:",
-                functionError.context
-            );
-
-            if (functionError.context) {
-                try {
-                    const responseBody =
-                        await functionError.context.clone().text();
-
-                    console.error(
-                        "Edge Function response body:",
-                        responseBody
-                    );
-
-                } catch (e) {
-                    console.error(
-                        "Could not read response body:",
-                        e
-                    );
-                }
+            if (!currentUser) {
+                throw new Error("Please log in again.");
             }
 
-            throw new Error(
-                "Secure photo deletion failed: " +
-                functionError.message
+            const firebaseToken = await currentUser.getIdToken(true);
+
+            const { data, error } = await supabase.functions.invoke(
+                "admin-delete-feedback-photo",
+                {
+                    body: { photoPath },
+                    headers: {
+                        Authorization: `Bearer ${firebaseToken}`
+                    }
+                }
             );
+
+            if (error) {
+                console.error("Photo deletion error:", error);
+                throw new Error(
+                    "Photo deletion failed: " + error.message
+                );
+            }
+
+            if (!data || data.success !== true || data.deleted !== true) {
+                throw new Error(
+                    data?.error || "Photo deletion was not confirmed."
+                );
+            }
         }
 
-        if (
-            !deleteResult ||
-            deleteResult.success !== true ||
-            deleteResult.deleted !== true
-        ) {
-            console.error(
-                "Unexpected deletion response:",
-                deleteResult
-            );
+        // Delete Firestore records if the photo step succeeded,
+        // or immediately when the feedback has no photo.
+        const operations = [];
 
-            throw new Error(
-                deleteResult?.error ||
-                "Supabase did not confirm photo deletion."
-            );
-        }
-
-        console.log(
-            "Supabase photo deleted successfully:",
-            deleteResult.photoPath
-        );
-
-        // Delete public and private Firestore records
         if (publicSnapshot.exists()) {
-            await deleteDoc(publicRef);
+            operations.push(deleteDoc(publicRef));
         }
 
         if (privateSnapshot.exists()) {
-            await deleteDoc(privateRef);
+            operations.push(deleteDoc(privateRef));
         }
 
+        await Promise.all(operations);
+
         showAdminMessage(
-            "Feedback and its photo were deleted successfully."
+            photoPath
+                ? "Feedback and photo deleted successfully."
+                : "Feedback deleted successfully. No photo was attached."
         );
-
     } catch (error) {
-        console.error("Delete error:", error);
+        console.error("Delete feedback error:", error);
 
         showAdminMessage(
-            "Delete failed: " + error.message,
+            "Delete failed: " + (error.message || "Unknown error"),
             true
         );
     }
 }
 
-// =====================================
-// FIREBASE AUTH STATE
-// =====================================
+/* =========================================================
+   COMPANY / LOCATION DROPDOWN
+   ========================================================= */
+
+/*
+   Add data-locations to company options in your HTML.
+
+   Example:
+   <option value="HPCL" data-locations="Madurai,Chennai">
+       HPCL
+   </option>
+
+   Use your actual location names and exact folder spelling.
+*/
+
+function updateLocationOptions() {
+    if (!companySelect || !locationSelect) return;
+
+    const selectedOption =
+        companySelect.options[companySelect.selectedIndex];
+
+    const locationsText =
+        selectedOption?.dataset.locations || "";
+
+    const locations = locationsText
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+    locationSelect.replaceChildren();
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = locations.length
+        ? "Select Location"
+        : "No locations configured";
+
+    locationSelect.appendChild(placeholder);
+
+    locations.forEach((location) => {
+        const option = document.createElement("option");
+        option.value = location;
+        option.textContent = location;
+
+        locationSelect.appendChild(option);
+    });
+
+    locationSelect.disabled = locations.length === 0;
+}
+
+if (companySelect && locationSelect) {
+    companySelect.addEventListener("change", updateLocationOptions);
+    updateLocationOptions();
+}
+
+/* =========================================================
+   CREATE PROJECT DOCUMENTS USER
+   ========================================================= */
+
+if (createForm) {
+    createForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const username =
+            document.getElementById("newUsername")?.value.trim();
+
+        const password =
+            document.getElementById("newPassword")?.value;
+
+        const company = companySelect?.value;
+
+        const location = locationSelect?.value;
+
+        if (!username || !password || !company || !location) {
+            showCreateStatus("Please fill in all fields.", true);
+            return;
+        }
+
+        if (!/^[a-z0-9][a-z0-9._-]{2,39}$/i.test(username)) {
+            showCreateStatus("Invalid username format.", true);
+            return;
+        }
+
+        if (!/^[a-zA-Z0-9_-]+$/.test(location)) {
+            showCreateStatus(
+                "Location can contain letters, numbers, hyphens and underscores.",
+                true
+            );
+            return;
+        }
+
+        if (password.length < 8) {
+            showCreateStatus(
+                "Password must contain at least 8 characters.",
+                true
+            );
+            return;
+        }
+
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            showCreateStatus("Please log in again.", true);
+            return;
+        }
+
+        const submitButton =
+            createForm.querySelector('button[type="submit"]');
+
+        if (submitButton) submitButton.disabled = true;
+
+        showCreateStatus("Creating user...");
+
+        try {
+            const firebaseToken = await currentUser.getIdToken(true);
+
+            const { data, error } = await supabase.functions.invoke(
+                "admin-create-user",
+                {
+                    body: {
+                        username,
+                        password,
+                        company,
+                        location
+                    },
+                    headers: {
+                        Authorization: `Bearer ${firebaseToken}`
+                    }
+                }
+            );
+
+            if (error) {
+                console.error("User creation function error:", error);
+            }
+
+            if (error || !data?.success) {
+                throw new Error(
+                    data?.error ||
+                    error?.message ||
+                    "User creation failed."
+                );
+            }
+
+            showCreateStatus(
+                `User ${data.username || username} created successfully.`
+            );
+
+            createForm.reset();
+            updateLocationOptions();
+        } catch (error) {
+            console.error("User creation failed:", error);
+
+            showCreateStatus(
+                error.message || "Could not create user.",
+                true
+            );
+        } finally {
+            if (submitButton) submitButton.disabled = false;
+        }
+    });
+}
+
+/* =========================================================
+   FIREBASE AUTH STATE
+   ========================================================= */
 
 onAuthStateChanged(
     auth,
     (user) => {
         isSigningOut = false;
         stopInactivityTimer();
-
-        console.log(
-            "Firebase auth state:",
-            user ? "Logged in" : "Logged out"
-        );
 
         if (user) {
             if (!loginSection || !dashboard) {
@@ -1126,14 +1086,8 @@ onAuthStateChanged(
             dashboard.hidden = false;
             dashboard.style.display = "flex";
 
-            console.log("Dashboard visibility:", {
-                hidden: dashboard.hidden,
-                display: getComputedStyle(dashboard).display
-            });
-
             resetInactivityTimer();
             loadFeedback();
-
         } else {
             if (feedbackUnsubscribe) {
                 feedbackUnsubscribe();
@@ -1146,6 +1100,10 @@ onAuthStateChanged(
                 feedbackCount.textContent = "Showing: 0 / 0";
             }
 
+            if (pendingList) {
+                pendingList.replaceChildren();
+            }
+
             if (loginSection) {
                 loginSection.hidden = false;
                 loginSection.style.display = "block";
@@ -1156,19 +1114,15 @@ onAuthStateChanged(
                 dashboard.style.display = "none";
             }
 
-            if (pendingList) {
-                pendingList.replaceChildren();
+            if (inactivityRing) {
+                inactivityRing.hidden = true;
             }
 
             showLoginMessage("Please log in to continue.");
         }
     },
-
     (error) => {
-        console.error(
-            "Firebase auth state error:",
-            error
-        );
+        console.error("Firebase auth state error:", error);
 
         showLoginMessage(
             "Authentication error: " + error.message,
@@ -1177,11 +1131,9 @@ onAuthStateChanged(
     }
 );
 
-// =====================================
-// A4 PRINT + QR CODE
-// =====================================
-
-let isPreparingPrint = false;
+/* =========================================================
+   PRINT LOCATION HELPER
+   ========================================================= */
 
 function getCurrentLocation() {
     return new Promise((resolve) => {
@@ -1192,11 +1144,9 @@ function getCurrentLocation() {
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-
                 resolve(
-                    `Latitude: ${latitude}, Longitude: ${longitude}`
+                    `Latitude: ${position.coords.latitude}, ` +
+                    `Longitude: ${position.coords.longitude}`
                 );
             },
             () => resolve("Location unavailable"),
@@ -1208,9 +1158,11 @@ function getCurrentLocation() {
         );
     });
 }
-//-------------------------------------//
-//QR-Code + CTRL+P  Program------------//
-//-------------------------------------//
+
+/* =========================================================
+   A4 PRINT + QR CODE
+   ========================================================= */
+
 async function printAdminDashboard() {
     if (isPreparingPrint) return;
 
@@ -1237,6 +1189,7 @@ async function printAdminDashboard() {
         const now = new Date();
 
         const date = now.toLocaleDateString("en-IN");
+
         const time = now.toLocaleTimeString("en-IN", {
             hour: "2-digit",
             minute: "2-digit",
@@ -1246,12 +1199,21 @@ async function printAdminDashboard() {
 
         const location = await getCurrentLocation();
 
-        document.getElementById("printUser").textContent = userName;
-        document.getElementById("printDate").textContent = date;
-        document.getElementById("printTime").textContent = time;
-        document.getElementById("printLocation").textContent = location;
-
+        const printUser = document.getElementById("printUser");
+        const printDate = document.getElementById("printDate");
+        const printTime = document.getElementById("printTime");
+        const printLocation = document.getElementById("printLocation");
         const qrElement = document.getElementById("printQr");
+
+        if (!qrElement) {
+            throw new Error("HTML element #printQr was not found.");
+        }
+
+        if (printUser) printUser.textContent = userName;
+        if (printDate) printDate.textContent = date;
+        if (printTime) printTime.textContent = time;
+        if (printLocation) printLocation.textContent = location;
+
         qrElement.replaceChildren();
 
         const qrData = [
@@ -1269,19 +1231,20 @@ async function printAdminDashboard() {
             correctLevel: QRCode.CorrectLevel.M
         });
 
-        // Allow the QR image to render before opening print dialog.
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         window.print();
     } catch (error) {
         console.error("Print preparation failed:", error);
-        alert("Unable to prepare the print report.");
+
+        alert(
+            "Unable to prepare the print report: " + error.message
+        );
     } finally {
         isPreparingPrint = false;
     }
 }
 
-// Ctrl + P / Cmd + P
 document.addEventListener("keydown", (event) => {
     if (
         (event.ctrlKey || event.metaKey) &&
@@ -1292,91 +1255,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-
-const createForm = document.getElementById("createPortalUserForm");
-const createStatus = document.getElementById("createUserStatus");
-
-if (createForm && createStatus) {
-    createForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const username =
-            document.getElementById("newUsername")?.value.trim();
-
-        const password =
-            document.getElementById("newPassword")?.value;
-
-        const company =
-            document.getElementById("newCompany")?.value;
-
-        const location =
-            document.getElementById("newLocation")?.value.trim();
-
-        if (!username || !password || !company || !location) {
-            createStatus.textContent = "Please fill in all fields.";
-            return;
-        }
-
-        if (!/^[a-z0-9][a-z0-9._-]{2,39}$/i.test(username)) {
-            createStatus.textContent = "Invalid username format.";
-            return;
-        }
-
-        if (!/^[a-zA-Z0-9_-]+$/.test(location)) {
-            createStatus.textContent =
-                "Location can contain letters, numbers, hyphens and underscores.";
-            return;
-        }
-
-        if (!auth.currentUser) {
-            createStatus.textContent = "Please log in again.";
-            return;
-        }
-
-        createStatus.textContent = "Creating user...";
-
-        try {
-            // Firebase Admin identity token
-            const firebaseToken =
-                await auth.currentUser.getIdToken(true);
-
-            const { data, error } = await supabase.functions.invoke(
-                "admin-create-user",
-                {
-                    body: {
-                        username,
-                        password,
-                        company,
-                        location
-                    },
-                    headers: {
-                        Authorization: `Bearer ${firebaseToken}`
-                    }
-                }
-            );
-
-            if (error || !data?.success) {
-                throw new Error(
-                    data?.error ||
-                    error?.message ||
-                    "User creation failed."
-                );
-            }
-
-            createStatus.textContent =
-                `User ${data.username} created successfully.`;
-
-            createForm.reset();
-
-        } catch (error) {
-            console.error("User creation failed:", error);
-
-            createStatus.textContent =
-                error.message || "Could not create user.";
-        }
-    });
-} else {
-    console.warn(
-        "Portal user form not found. Check createPortalUserForm and createUserStatus IDs."
-    );
-}
+/* =========================================================
+   END OF ADMIN.JS
+   ========================================================= */
