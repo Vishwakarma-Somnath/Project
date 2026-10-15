@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -623,7 +624,7 @@
         .reject-btn:hover { background: #8f1b13; }
 
         /* =========================================
-           8. PROJECT USER MANAGEMENT
+           8. PROJECT USER CREATION
         ========================================= */
         #projectUserSection {
             flex: 1 1 auto;
@@ -737,7 +738,211 @@
         }
 
         /* =========================================
-           9. INACTIVITY COUNTDOWN
+           9. ALL USER ACCOUNT MANAGEMENT - NEW
+        ========================================= */
+        #allProjectUsers {
+            margin-top: 30px;
+            padding-top: 22px;
+            border-top: 1px solid var(--border);
+        }
+
+        #allProjectUsers h2 {
+            margin-bottom: 8px;
+            color: var(--orange-light);
+            font-size: 22px;
+        }
+
+        .all-users-description {
+            margin-bottom: 16px;
+            color: #dedee4;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .user-management-toolbar {
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) minmax(140px, 200px) auto;
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .user-management-toolbar input,
+        .user-management-toolbar select {
+            width: 100%;
+            min-width: 0;
+            min-height: 43px;
+            padding: 10px 12px;
+            border: 1px solid #777;
+            border-radius: 7px;
+            background: #090909;
+            color: #fff;
+            outline: none;
+        }
+
+        .user-management-toolbar input::placeholder {
+            color: #aaa;
+        }
+
+        .user-management-toolbar input:focus,
+        .user-management-toolbar select:focus {
+            border-color: var(--orange);
+            outline: 2px solid rgba(228,96,51,.3);
+        }
+
+        .user-management-toolbar button {
+            min-height: 43px;
+            padding: 10px 16px;
+            border: 0;
+            border-radius: 7px;
+            background: var(--orange);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .user-management-toolbar button:hover {
+            background: #c94b22;
+        }
+
+        .all-users-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .all-users-summary span {
+            padding: 9px 13px;
+            border: 1px solid rgba(255,255,255,.18);
+            border-radius: 7px;
+            background: rgba(255,255,255,.07);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .all-users-summary strong {
+            color: var(--orange-light);
+        }
+
+        #allProjectUsersStatus {
+            min-height: 20px;
+            margin: 10px 0;
+            color: #f5e12e;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        #allProjectUsersList {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        .all-project-user-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            width: 100%;
+            min-width: 0;
+            padding: 16px;
+            border: 1px solid #e1e1e1;
+            border-radius: 10px;
+            background: #fff;
+            color: #222;
+            box-shadow: 0 3px 10px rgba(0,0,0,.16);
+        }
+
+        .all-project-user-info {
+            flex: 1 1 220px;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .all-project-user-info strong {
+            display: block;
+            margin-bottom: 9px;
+            color: #222;
+            font-size: 17px;
+        }
+
+        .all-project-user-info p {
+            margin: 6px 0;
+            color: #333;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .user-account-status {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .user-account-status.is-active {
+            background: #d9fbe5;
+            color: #116334;
+        }
+
+        .user-account-status.is-disabled {
+            background: #ffe0de;
+            color: #9f2018;
+        }
+
+        .all-project-user-actions {
+            display: flex;
+            flex: 0 1 auto;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .all-project-user-actions button {
+            min-height: 38px;
+            padding: 9px 12px;
+            border: 0;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .user-access-toggle {
+            background: var(--orange);
+        }
+
+        .user-access-toggle:hover {
+            background: #c94b22;
+        }
+
+        .user-password-reset {
+            background: #2459a9;
+        }
+
+        .user-password-reset:hover {
+            background: #17417e;
+        }
+
+        .user-delete-button {
+            background: var(--red);
+        }
+
+        .user-delete-button:hover {
+            background: #8f1b13;
+        }
+
+        .all-project-user-actions button:disabled,
+        .user-management-toolbar button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        /* =========================================
+           10. INACTIVITY COUNTDOWN
         ========================================= */
         #inactivityRing {
             position: fixed;
@@ -789,7 +994,7 @@
         }
 
         /* =========================================
-           10. PRINT
+           11. PRINT
         ========================================= */
         #printHeader {
             display: none;
@@ -946,7 +1151,7 @@
         }
 
         /* =========================================
-           11. MOBILE
+           12. MOBILE
         ========================================= */
         @media (max-width: 650px) {
             #loginSection {
@@ -1074,6 +1279,35 @@
             .project-user-grid {
                 grid-template-columns: minmax(0, 1fr);
                 gap: 14px;
+            }
+
+            .user-management-toolbar {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .all-users-summary {
+                gap: 8px;
+            }
+
+            .all-users-summary span {
+                flex: 1 1 100px;
+            }
+
+            .all-project-user-card {
+                align-items: stretch;
+                flex-direction: column;
+                padding: 14px;
+            }
+
+            .all-project-user-actions {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                width: 100%;
+            }
+
+            .all-project-user-actions button {
+                width: 100%;
+                min-height: 42px;
             }
 
             #inactivityRing {
@@ -1207,7 +1441,7 @@
 
             <p id="adminStatus" role="status" aria-live="polite"></p>
 
-            <!-- Dashboard selector: visual control for now -->
+            <!-- Existing dashboard selector -->
             <div class="dashboard-view-filter">
                 <label for="dashboardViewFilter">Open Dashboard:</label>
 
@@ -1228,6 +1462,7 @@
                 No email notification will be sent.
             </p>
 
+            <!-- EXISTING USER CREATION FORM -->
             <form id="createPortalUserForm" autocomplete="off">
                 <div class="project-user-grid">
 
@@ -1258,28 +1493,28 @@
                         >
                     </div>
 
-                <div class="project-user-field">
-                    <label for="newCompany">Company</label>
-                    <select id="newCompany" name="company" required>
-                        <option value="">Select company</option>
-                        <option value="BPCL"data-locations="URAN,PIYALA,NASHIK">BPCL</option>
-                        <option value="HPCL"data-locations="MADURAI">HPCL</option>
-                        <option value="IOCL"data-locations="VARANASI,JABALPUR">IOCL</option>
-                    </select>
-                </div>
+                    <div class="project-user-field">
+                        <label for="newCompany">Company</label>
+                        <select id="newCompany" name="company" required>
+                            <option value="">Select company</option>
+                            <option value="BPCL" data-locations="URAN,PIYALA,NASHIK">BPCL</option>
+                            <option value="HPCL" data-locations="MADURAI">HPCL</option>
+                            <option value="IOCL" data-locations="VARANASI,JABALPUR">IOCL</option>
+                        </select>
+                    </div>
 
-                <div class="project-user-field">
-                    <label for="newLocation">Plant / Location</label>
-                    <select
-                        id="newLocation"
-                        name="location"
-                        required
-                        disabled
+                    <div class="project-user-field">
+                        <label for="newLocation">Plant / Location</label>
+                        <select
+                            id="newLocation"
+                            name="location"
+                            required
+                            disabled
                         >
-                        <option value="">Select company first</option>
-                    </select>
+                            <option value="">Select company first</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
                 <button
                     id="createPortalUserBtn"
@@ -1292,10 +1527,76 @@
 
                 <p id="createUserStatus" role="status" aria-live="polite"></p>
             </form>
+
+
+            <!-- =========================================
+                 NEW: ALL USER ACCOUNT MANAGEMENT
+                 Existing creation form is preserved.
+            ========================================== -->
+            <section id="allProjectUsers">
+                <h2>
+                    <i class="bx bx-group" aria-hidden="true"></i>
+                    All User Accounts
+                </h2>
+
+                <p class="all-users-description">
+                    View and manage all Project Documents accounts here.
+                    You can search users, control access, reset passwords,
+                    or delete accounts.
+                </p>
+
+                <div class="user-management-toolbar">
+                    <input
+                        type="search"
+                        id="searchProjectUsers"
+                        placeholder="Search username, company or location..."
+                        autocomplete="off"
+                        aria-label="Search user accounts"
+                    >
+
+                    <select
+                        id="filterProjectUserStatus"
+                        aria-label="Filter accounts by status"
+                    >
+                        <option value="all">All Users</option>
+                        <option value="active">Active Users</option>
+                        <option value="disabled">Disabled Users</option>
+                    </select>
+
+                    <button type="button" id="refreshAllProjectUsers">
+                        <i class="bx bx-refresh" aria-hidden="true"></i>
+                        Refresh Users
+                    </button>
+                </div>
+
+                <p
+                    id="allProjectUsersStatus"
+                    role="status"
+                    aria-live="polite"
+                ></p>
+
+                <div class="all-users-summary">
+                    <span>
+                        Total: <strong id="allUsersTotal">0</strong>
+                    </span>
+
+                    <span>
+                        Active: <strong id="allUsersActive">0</strong>
+                    </span>
+
+                    <span>
+                        Disabled: <strong id="allUsersDisabled">0</strong>
+                    </span>
+                </div>
+
+                <div id="allProjectUsersList">
+                    User accounts will appear here after loading.
+                </div>
+            </section>
         </section>
 
 
-        <!-- A4 PRINT HEADER -->
+        <!-- A4 PRINT HEADER: EXISTING -->
         <div id="printHeader">
             <div class="print-heading">
                 <div>
@@ -1317,7 +1618,7 @@
         </div>
 
 
-        <!-- FEEDBACK STATUS FILTER -->
+        <!-- EXISTING FEEDBACK STATUS FILTER -->
         <div class="feedback-filter" id="feedbackFilterSection">
             <label for="statusFilter">Filter by Status:</label>
 
@@ -1332,7 +1633,7 @@
         </div>
 
 
-        <!-- FEEDBACK SCROLL AREA -->
+        <!-- EXISTING FEEDBACK SCROLL AREA -->
         <div
             class="dashboard-feedback-scroll"
             id="feedbackScrollSection"
@@ -1343,7 +1644,7 @@
     </section>
 
 
-    <!-- QR CODE LIBRARY: used by existing print functionality -->
+    <!-- QR CODE LIBRARY: EXISTING PRINT FUNCTIONALITY -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Existing admin JavaScript -->
@@ -1353,11 +1654,11 @@
       IMPORTANT:
       Do not load portal-login.js on this Admin page.
       Load portal-login.js only on the separate Project Documents
-      portal login page, where its login form actually exists.
+      portal login page.
     -->
 
 
-    <!-- INACTIVITY COUNTDOWN -->
+    <!-- EXISTING INACTIVITY COUNTDOWN -->
     <div
         id="inactivityRing"
         hidden
