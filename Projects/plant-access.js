@@ -70,3 +70,36 @@ window.PLANT_ACCESS_CONFIG = {
     }
   ]
 };
+
+(() => {
+    const companySelect = document.getElementById("newCompany");
+    const locationSelect = document.getElementById("newLocation");
+
+    if (!companySelect || !locationSelect) return;
+
+    companySelect.addEventListener("change", () => {
+        locationSelect.replaceChildren();
+
+        const company = companySelect.value.toUpperCase();
+        const plants = window.PLANT_ACCESS_CONFIG?.[company] || [];
+
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = plants.length
+            ? "Select plant / location"
+            : "No locations configured";
+
+        locationSelect.appendChild(placeholder);
+
+        plants
+            .filter(plant => plant.enabled !== false)
+            .forEach(plant => {
+                const option = document.createElement("option");
+                option.value = plant.location;
+                option.textContent = plant.name;
+                locationSelect.appendChild(option);
+            });
+
+        locationSelect.disabled = plants.length === 0;
+    });
+})();
