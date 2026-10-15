@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plant Document Verification</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#080808;color:#fff;font-family:Segoe UI,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
+main{width:min(680px,100%);background:#141414;border:1px solid #333;border-radius:18px;padding:28px;text-align:center}
+h1{color:#67e8f9;font-size:clamp(25px,4vw,38px)}label{display:block;text-align:left;margin:18px 0 7px;color:#cbd5e1}
+input{width:100%;padding:14px;border-radius:9px;border:1px solid #555;background:#090909;color:#fff;font-size:17px}
+button{margin-top:16px;padding:14px 20px;width:100%;border:0;border-radius:9px;background:#2563eb;color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+#message{margin-top:16px;line-height:1.5}.docs{display:grid;gap:10px;margin-top:18px}.docs a{padding:13px;background:#1d4ed8;color:white;text-decoration:none;border-radius:8px;overflow-wrap:anywhere}
+.back{display:inline-block;margin-top:24px;color:#93c5fd}.warning{color:#fbbf24;font-size:13px;line-height:1.6}
+</style>
+</head>
+<body><main>
+<h1 id="heading">Plant Verification</h1>
+<p>Enter the user code provided by your administrator.</p>
+<form id="verifyForm">
+<label for="userCode">Plant user code</label>
+<input id="userCode" type="password" autocomplete="off" required placeholder="Enter plant code">
+<button type="submit">Verify &amp; View Documents</button>
+</form>
+<div id="message" role="status"></div>
+<div id="documents" class="docs"></div>
+<p class="warning">Temporary GitHub Pages version: this code check runs in the browser. It is not secure for confidential documents; a visitor can inspect the JavaScript or access a public PDF URL directly.</p>
+<a class="back" id="backLink" href="../Documents.html">← Back</a>
+</main>
+<script src="plant-access.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const company = params.get("company") || "";
+const plantName = params.get("plant") || "";
+const config = (window.PLANT_ACCESS_CONFIG && window.PLANT_ACCESS_CONFIG[company]) || [];
+const plant = config.find(item => item.name === plantName);
+document.getElementById("heading").textContent = company + " — " + plantName;
+document.getElementById("backLink").href = company ? company + "/index.html" : "../Documents.html";
+const form = document.getElementById("verifyForm");
+const message = document.getElementById("message");
+const docs = document.getElementById("documents");
+if (!plant) {
+  form.hidden = true;
+  message.textContent = "Location configuration not found. Check Projects/plant-access.js.";
+}
+form.addEventListener("submit", function(event) {
+  event.preventDefault();
+  docs.replaceChildren();
+  if (!plant) return;
+  const entered = document.getElementById("userCode").value.trim();
+  if (plant.code === "CHANGE-ME" || !plant.code) {
+    message.textContent = "Administrator has not configured the code for this plant yet.";
+    return;
+  }
+  if (entered.toUpperCase() !== plant.code.toUpperCase()) {
+    message.textContent = "Incorrect code. Please contact your administrator.";
+    return;
+  }
+  message.textContent = "Verification successful.";
+  if (!plant.documents || plant.documents.length === 0) {
+    const p = document.createElement("p");
+    p.textContent = "No documents have been assigned to this plant yet. Add document paths in Projects/plant-access.js.";
+    docs.appendChild(p);
+    return;
+  }
+  plant.documents.forEach(doc => {
+    const a = document.createElement("a");
+    a.href = "../" + doc.path.replace(/^\/+/, "");
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = doc.title || doc.path;
+    docs.appendChild(a);
+  });
+});
+</script>
+</body>
+</html>
