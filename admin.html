@@ -212,29 +212,11 @@
                 </h2>
 
                 <p class="all-users-description">
-                    View and manage all Project Documents accounts here.
-                    You can search users, control access, reset passwords,
-                    or delete accounts.
+                    All created Project Documents users will appear here automatically.
+                    Refresh the list whenever you want to verify user accounts.
                 </p>
 
                 <div class="user-management-toolbar">
-                    <input
-                        type="search"
-                        id="searchProjectUsers"
-                        placeholder="Search username, company or location..."
-                        autocomplete="off"
-                        aria-label="Search user accounts"
-                    >
-
-                    <select
-                        id="filterProjectUserStatus"
-                        aria-label="Filter accounts by status"
-                    >
-                        <option value="all">All Users</option>
-                        <option value="active">Active Users</option>
-                        <option value="disabled">Disabled Users</option>
-                    </select>
-
                     <button type="button" id="refreshAllProjectUsers">
                         <i class="bx bx-refresh" aria-hidden="true"></i>
                         Refresh Users
@@ -262,11 +244,9 @@
                 </div>
 
                 <div id="allProjectUsersList">
-                    User accounts will appear here after loading.
+                    Loading user accounts...
                 </div>
             </section>
-        </section>
-
 
         <!-- A4 PRINT HEADER: EXISTING -->
         <div id="printHeader">
