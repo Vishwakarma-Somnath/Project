@@ -503,12 +503,24 @@ async function callUserManagement(action, extra = {}) {
         throw new Error("Please log in again.");
     }
 
-    const token = await auth.currentUser.getIdToken(true);
+    let token;
+
+    try {
+        token = await auth.currentUser.getIdToken();
+    } catch (error) {
+        console.error("Firebase token error:", error);
+        throw new Error(
+            "Could not obtain Firebase admin token. Please log in again."
+        );
+    }
 
     const { data, error } = await supabase.functions.invoke(
         "admin-manage-users",
         {
-            body: { action, ...extra },
+            body: {
+                action,
+                ...extra
+            },
             headers: {
                 "x-firebase-id-token": token
             }
@@ -516,36 +528,64 @@ async function callUserManagement(action, extra = {}) {
     );
 
     if (error) {
-        let detail = error.message || "Edge Function request failed.";
+        console.error("Supabase Edge Function error:", {
+            name: error.name,
+            message: error.message
+        });
 
-        if (error.context) {
+        let details =
+            error.message || "Edge Function request failed.";
+
+        const context = error.context;
+
+        // Only read context if it really supports clone().
+        if (context && typeof context.clone === "function") {
             try {
-                const response = error.context.clone();
+                const response = context.clone();
                 const responseText = await response.text();
 
                 if (responseText) {
                     try {
                         const parsed = JSON.parse(responseText);
-                        detail =
+
+                        details =
                             parsed.error ||
                             parsed.message ||
                             parsed.msg ||
-                            responseText;
+                            details;
                     } catch {
-                        detail = responseText;
+                        details = responseText;
                     }
                 }
             } catch (readError) {
-                console.warn("Could not read function error:", readError);
+                console.warn(
+                    "Could not read function response:",
+                    readError
+                );
             }
         }
 
-        throw new Error(detail);
+        if (
+            error.name === "FunctionsFetchError" ||
+            /failed to send a request|failed to fetch|networkerror/i
+                .test(details)
+        ) {
+            throw new Error(
+                "Cannot reach admin-manage-users. Check Supabase deployment, " +
+                "Verify JWT settings and CORS preflight."
+            );
+        }
+
+        throw new Error(details);
     }
 
-    if (!data || data.success === false || data.error) {
+    if (!data) {
+        throw new Error("The server returned an empty response.");
+    }
+
+    if (data.success === false || data.error) {
         throw new Error(
-            data?.error || data?.message || "Request was not successful."
+            data.error || data.message || "The request failed."
         );
     }
 
@@ -1351,6 +1391,7 @@ if (companySelect && locationSelect) {
     updateLocationOptions();
 }
 
+
 /* =========================================================
    CREATE PROJECT DOCUMENTS USER
    ========================================================= */
@@ -1359,21 +1400,27 @@ if (createForm) {
     createForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const username = $("newUsername")?.value.trim();
+        const username = $("newUsername")?.value.trim().toLowerCase();
         const password = $("newPassword")?.value;
         const company = companySelect?.value;
         const location = locationSelect?.value;
 
+        // Validate required fields
         if (!username || !password || !company || !location) {
             showCreateStatus("Please fill in all fields.", true);
             return;
         }
 
-        if (!/^[a-z0-9][a-z0-9._-]{2,39}$/i.test(username)) {
-            showCreateStatus("Invalid username format.", true);
+        // Validate username
+        if (!/^[a-z0-9][a-z0-9._-]{2,39}$/.test(username)) {
+            showCreateStatus(
+                "Username must be 3–40 characters and contain only letters, numbers, dots, hyphens or underscores.",
+                true
+            );
             return;
         }
 
+        // Validate location
         if (!/^[a-zA-Z0-9_-]+$/.test(location)) {
             showCreateStatus(
                 "Location can contain letters, numbers, hyphens and underscores.",
@@ -1382,6 +1429,7 @@ if (createForm) {
             return;
         }
 
+        // Validate password
         if (password.length < 8) {
             showCreateStatus(
                 "Password must contain at least 8 characters.",
@@ -1390,6 +1438,7 @@ if (createForm) {
             return;
         }
 
+        // Ensure Firebase admin is logged in
         if (!auth.currentUser) {
             showCreateStatus("Please log in again.", true);
             return;
@@ -1397,11 +1446,23 @@ if (createForm) {
 
         const submitButton = $("createPortalUserBtn");
 
+        // Prevent duplicate submissions
+        if (submitButton?.disabled) {
+            return;
+        }
+
         setButtonBusy(submitButton, true, "Creating user...");
         showCreateStatus("Creating user...");
 
         try {
+            // Get a fresh Firebase ID token
             const token = await auth.currentUser.getIdToken(true);
+
+            if (!token) {
+                throw new Error(
+                    "Could not obtain Firebase admin token. Please log in again."
+                );
+            }
 
             const { data, error } = await supabase.functions.invoke(
                 "admin-create-user",
@@ -1418,12 +1479,21 @@ if (createForm) {
                 }
             );
 
+            // Safely handle Supabase Edge Function errors
             if (error) {
-                let message = error.message || "User creation failed.";
+                console.error("admin-create-user error:", {
+                    name: error.name,
+                    message: error.message
+                });
 
-                if (error.context) {
+                let message =
+                    error.message || "User creation failed.";
+
+                const context = error.context;
+
+                if (context && typeof context.clone === "function") {
                     try {
-                        const response = error.context.clone();
+                        const response = context.clone();
                         const responseText = await response.text();
 
                         if (responseText) {
@@ -1433,19 +1503,34 @@ if (createForm) {
                                 message =
                                     parsed.error ||
                                     parsed.message ||
+                                    parsed.msg ||
                                     message;
                             } catch {
                                 message = responseText;
                             }
                         }
                     } catch (readError) {
-                        console.warn(readError);
+                        console.warn(
+                            "Could not read create-user response:",
+                            readError
+                        );
                     }
+                }
+
+                if (
+                    error.name === "FunctionsFetchError" ||
+                    /failed to fetch|networkerror|failed to send a request/i
+                        .test(message)
+                ) {
+                    throw new Error(
+                        "Cannot reach admin-create-user. Check the Edge Function deployment and CORS preflight settings."
+                    );
                 }
 
                 throw new Error(message);
             }
 
+            // Validate the server response
             if (!data || data.success === false || data.error) {
                 throw new Error(
                     data?.error ||
@@ -1454,23 +1539,27 @@ if (createForm) {
                 );
             }
 
+            // Show success only after server confirmation
             showCreateStatus(
                 `User ${data.username || username} created successfully.`
             );
 
+            // Clear the form after successful creation
             createForm.reset();
-            updateLocationOptions();
 
-            /*
-             * Refresh the user list after creation, even when
-             * the Feedback view is currently selected.
-             */
-            await loadProjectUsers();
+            if (typeof updateLocationOptions === "function") {
+                updateLocationOptions();
+            }
+
+            // Refresh the Project Documents users list
+            if (typeof loadProjectUsers === "function") {
+                await loadProjectUsers();
+            }
         } catch (error) {
-            console.error("User creation failed:", error);
+            console.error("Project user creation failed:", error);
 
             showCreateStatus(
-                error.message || "Could not create user.",
+                error?.message || "Could not create user.",
                 true
             );
         } finally {
