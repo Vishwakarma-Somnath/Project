@@ -1087,6 +1087,76 @@
     ===================================== -->
 
     <section class="admin-panel" id="dashboard" hidden>
+        <!-------User-Creation-Form----------->
+        
+            <!-- PROJECT DOCUMENTS USER MANAGEMENT -->
+            <section id="projectUserSection" class="project-user-section">
+                <h2>Project Documents — User Management</h2>
+
+                <p class="project-user-description">
+                    Create a username and password and assign access to a plant.
+                    No email notification will be sent.
+                </p>
+
+                <form id="createPortalUserForm" autocomplete="off">
+                    <div class="project-user-grid">
+
+                        <div class="project-user-field">
+                            <label for="newUsername">Custom Username</label>
+                            <input
+                                id="newUsername"
+                                type="text"
+                                placeholder="BPCL_KALLAKURICHI"
+                                minlength="3"
+                                maxlength="40"
+                                autocomplete="off"
+                                required
+                            >
+                        </div>
+
+                        <div class="project-user-field">
+                            <label for="newPassword">Temporary Password</label>
+                            <input
+                                id="newPassword"
+                                type="password"
+                                minlength="12"
+                                autocomplete="new-password"
+                                placeholder="Minimum 12 characters"
+                                required
+                            >
+                        </div>
+
+                        <div class="project-user-field">
+                            <label for="newCompany">Company</label>
+                            <select id="newCompany" required>
+                                <option value="">Select company</option>
+                                <option value="bpcl">BPCL</option>
+                                <option value="hpcl">HPCL</option>
+                                <option value="iocl">IOCL</option>
+                            </select>
+                        </div>
+
+                        <div class="project-user-field">
+                            <label for="newLocation">Plant / Location</label>
+                            <select id="newLocation" required disabled>
+                                <option value="">Select company first</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <button
+                        id="createPortalUserBtn"
+                        class="create-user-btn"
+                        type="submit"
+                    >
+                        <i class="bx bx-user-plus"></i>
+                        Create Project User
+                    </button>
+
+                    <p id="createUserStatus" role="status" aria-live="polite"></p>
+                </form>
+        </section>
 
         <!-- A4 PRINT HEADER -->
         <div id="printHeader">
@@ -1108,48 +1178,6 @@
 
             <hr>
         </div>
-
-        <form id="createPortalUserForm">
-  <h3>Create Project Portal User</h3>
-
-  <label for="newUsername">Custom Username</label>
-  <input
-    id="newUsername"
-    type="text"
-    placeholder="BPCL_KALLAKURICHI"
-    required
-    minlength="3"
-    maxlength="40"
-  />
-
-  <label for="newPassword">Password</label>
-  <input
-    id="newPassword"
-    type="password"
-    minlength="12"
-    autocomplete="new-password"
-    required
-  />
-
-  <label for="newCompany">Company folder</label>
-  <select id="newCompany" required>
-    <option value="">Select company</option>
-    <option value="bpcl">BPCL</option>
-    <option value="hpcl">HPCL</option>
-    <option value="iocl">IOCL</option>
-  </select>
-
-  <label for="newLocation">Location folder</label>
-  <input
-    id="newLocation"
-    type="text"
-    placeholder="kallakurichi"
-    required
-  />
-
-  <button type="submit">Create User</button>
-  <p id="createUserStatus" role="status"></p>
-</form>
 
         <!-- FIXED HEADER: DOES NOT SCROLL -->
         <div class="dashboard-fixed-header">
