@@ -27,6 +27,7 @@ window.PLANT_ACCESS_CONFIG = {
     {
       "name": "Madurai",
       "code": "MDU",
+      "projectUrl": "projects/HPCL/Madurai/Madurai.html",
       "documents": []
     },
     {
