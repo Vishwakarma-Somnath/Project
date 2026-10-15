@@ -1,7 +1,7 @@
 
 /* =========================================================
    ADMIN.JS
-   Firebase Admin + Feedback Management + Project Documents
+   Firebase Admin + Feedback + Project Documents Users
    ========================================================= */
 
 import { auth, db } from "./firebase-config.js";
@@ -29,41 +29,50 @@ import {
    HTML ELEMENTS
    ========================================================= */
 
-const loginSection = document.getElementById("loginSection");
-const loginForm = document.getElementById("loginForm");
-const dashboard = document.getElementById("dashboard");
+const $ = (id) => document.getElementById(id);
 
-const pendingList = document.getElementById("pendingList");
-const adminStatus = document.getElementById("adminStatus");
-const loginStatus = document.getElementById("loginStatus");
+const loginSection = $("loginSection");
+const loginForm = $("loginForm");
+const dashboard = $("dashboard");
 
-const logoutBtn = document.getElementById("logoutBtn");
-const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
+const pendingList = $("pendingList");
+const adminStatus = $("adminStatus");
+const loginStatus = $("loginStatus");
 
-const statusFilter = document.getElementById("statusFilter");
-const feedbackCount = document.getElementById("feedbackCount");
+const logoutBtn = $("logoutBtn");
+const forgotPasswordBtn = $("forgotPasswordBtn");
 
-const inactivityRing = document.getElementById("inactivityRing");
-const inactivityFill = document.getElementById("inactivityFill");
+const statusFilter = $("statusFilter");
+const feedbackCount = $("feedbackCount");
 
-const passwordInput = document.getElementById("adminPassword");
-const togglePassword = document.getElementById("togglePassword");
+const inactivityRing = $("inactivityRing");
+const inactivityFill = $("inactivityFill");
 
-const createForm = document.getElementById("createPortalUserForm");
-const createStatus = document.getElementById("createUserStatus");
+const passwordInput = $("adminPassword");
+const togglePassword = $("togglePassword");
 
-const companySelect = document.getElementById("newCompany");
-const locationSelect = document.getElementById("newLocation");
+const createForm = $("createPortalUserForm");
+const createStatus = $("createUserStatus");
 
+const companySelect = $("newCompany");
+const locationSelect = $("newLocation");
 
-const dashboardViewFilter = document.getElementById("dashboardViewFilter");
-const projectUserSection = document.getElementById("projectUserSection");
+const dashboardViewFilter = $("dashboardViewFilter");
+const projectUserSection = $("projectUserSection");
 
-const feedbackFilterSection = document.getElementById("feedbackFilterSection");
-const feedbackScrollSection = document.getElementById("feedbackScrollSection");
+const feedbackFilterSection = $("feedbackFilterSection");
+const feedbackScrollSection = $("feedbackScrollSection");
+const dashboardSectionTitle = $("dashboardSectionTitle");
 
-const dashboardSectionTitle = document.getElementById("dashboardSectionTitle");
-
+/* Project Documents user-management elements */
+const projectUsersList = $("projectUsersList");
+const refreshProjectUsersBtn = $("refreshProjectUsers");
+const projectUsersSearch = $("projectUsersSearch");
+const projectUsersStatusFilter = $("projectUsersStatusFilter");
+const projectUsersTotal = $("projectUsersTotal");
+const projectUsersEnabled = $("projectUsersEnabled");
+const projectUsersDisabled = $("projectUsersDisabled");
+const projectUsersManagementStatus = $("projectUsersManagementStatus");
 
 /* =========================================================
    STATE
@@ -72,6 +81,9 @@ const dashboardSectionTitle = document.getElementById("dashboardSectionTitle");
 let allFeedbackRecords = [];
 let feedbackUnsubscribe = null;
 
+let allProjectUsers = [];
+let isLoadingProjectUsers = false;
+
 let inactivityTimer = null;
 let inactivityCountdownInterval = null;
 let inactivityDeadline = 0;
@@ -79,14 +91,14 @@ let inactivityDeadline = 0;
 let isSigningOut = false;
 let isPreparingPrint = false;
 
-const INACTIVITY_LIMIT = 2 * 60 * 1000; // 2 minutes
+const INACTIVITY_LIMIT = 2 * 60 * 1000;
 
 const CIRCLE_RADIUS = 44;
 const CIRCLE_CX = 50;
 const CIRCLE_CY = 50;
 
 /* =========================================================
-   STATUS MESSAGES
+   STATUS HELPERS
    ========================================================= */
 
 function showLoginMessage(message, isError = false) {
@@ -110,8 +122,60 @@ function showCreateStatus(message, isError = false) {
     createStatus.style.color = isError ? "#dc2626" : "#15803d";
 }
 
+function showUsersMessage(message, isError = false) {
+    if (!projectUsersManagementStatus) return;
+
+    projectUsersManagementStatus.textContent = message;
+    projectUsersManagementStatus.style.color =
+        isError ? "#ff7b72" : "#7ee2a8";
+}
+
+function createElement(tag, className = "", text = "") {
+    const element = document.createElement(tag);
+
+    if (className) element.className = className;
+
+    element.textContent = text;
+
+    return element;
+}
+
+function createActionButton(label, backgroundColor) {
+    const button = createElement("button", "", label);
+
+    button.type = "button";
+    button.textContent = label;
+
+    button.style.cssText = `
+        background:${backgroundColor};
+        color:#fff;
+        border:0;
+        border-radius:6px;
+        padding:9px 14px;
+        cursor:pointer;
+        font-weight:600;
+    `;
+
+    return button;
+}
+
+function setButtonBusy(button, busy, busyText = "Please wait...") {
+    if (!button) return;
+
+    if (busy) {
+        button.dataset.originalText = button.textContent;
+        button.textContent = busyText;
+        button.disabled = true;
+    } else {
+        button.textContent =
+            button.dataset.originalText || button.textContent;
+
+        button.disabled = false;
+    }
+}
+
 /* =========================================================
-   INACTIVITY COUNTDOWN CIRCLE
+   INACTIVITY COUNTDOWN
    ========================================================= */
 
 function updateInactivityRing(remainingSeconds, totalSeconds) {
@@ -122,7 +186,7 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
         Math.min(1, remainingSeconds / totalSeconds)
     );
 
-    const radius = CIRCLE_RADIUS;
+    const r = CIRCLE_RADIUS;
     const cx = CIRCLE_CX;
     const cy = CIRCLE_CY;
 
@@ -134,28 +198,23 @@ function updateInactivityRing(remainingSeconds, totalSeconds) {
     if (progress >= 1) {
         inactivityFill.setAttribute(
             "d",
-            `M ${cx} ${cy - radius}
-             A ${radius} ${radius} 0 1 1 ${cx} ${cy + radius}
-             A ${radius} ${radius} 0 1 1 ${cx} ${cy - radius} Z`
+            `M ${cx} ${cy-r}
+             A ${r} ${r} 0 1 1 ${cx} ${cy+r}
+             A ${r} ${r} 0 1 1 ${cx} ${cy-r} Z`
         );
         return;
     }
 
     const angle = 2 * Math.PI * progress;
-
-    const startX = cx;
-    const startY = cy - radius;
-
-    const endX = cx + radius * Math.sin(angle);
-    const endY = cy - radius * Math.cos(angle);
-
+    const endX = cx + r * Math.sin(angle);
+    const endY = cy - r * Math.cos(angle);
     const largeArc = progress > 0.5 ? 1 : 0;
 
     inactivityFill.setAttribute(
         "d",
         `M ${cx} ${cy}
-         L ${startX} ${startY}
-         A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}
+         L ${cx} ${cy-r}
+         A ${r} ${r} 0 ${largeArc} 1 ${endX} ${endY}
          Z`
     );
 }
@@ -177,16 +236,13 @@ function updateCountdown() {
         INACTIVITY_LIMIT / 1000
     );
 
-    const timeElement = document.getElementById("inactivityTime");
+    const timeElement = $("inactivityTime");
 
     if (timeElement) {
-        const minutes = Math.floor(remainingSeconds / 60);
-        const seconds = remainingSeconds % 60;
-
         timeElement.textContent =
-            String(minutes).padStart(2, "0") +
+            String(Math.floor(remainingSeconds / 60)).padStart(2, "0") +
             ":" +
-            String(seconds).padStart(2, "0");
+            String(remainingSeconds % 60).padStart(2, "0");
     }
 }
 
@@ -216,14 +272,11 @@ function resetInactivityTimer() {
 
     inactivityDeadline = Date.now() + INACTIVITY_LIMIT;
 
-    updateInactivityRing(
-        INACTIVITY_LIMIT / 1000,
-        INACTIVITY_LIMIT / 1000
-    );
-
+    updateInactivityRing(120, 120);
     updateCountdown();
 
-    inactivityCountdownInterval = setInterval(updateCountdown, 250);
+    inactivityCountdownInterval =
+        setInterval(updateCountdown, 250);
 
     inactivityTimer = setTimeout(async () => {
         if (!auth.currentUser || isSigningOut) {
@@ -248,18 +301,14 @@ function resetInactivityTimer() {
     }, INACTIVITY_LIMIT);
 }
 
-/* Reset inactivity only for real user activity. */
-
-const activityEvents = [
+[
     "mousemove",
     "mousedown",
     "keydown",
     "scroll",
     "click",
     "touchstart"
-];
-
-activityEvents.forEach((eventName) => {
+].forEach((eventName) => {
     document.addEventListener(
         eventName,
         () => {
@@ -272,31 +321,28 @@ activityEvents.forEach((eventName) => {
 });
 
 /* =========================================================
-   SHOW / HIDE PASSWORD
+   SHOW / HIDE ADMIN PASSWORD
    ========================================================= */
 
 if (passwordInput && togglePassword) {
     togglePassword.addEventListener("click", () => {
-        const showPassword = passwordInput.type === "password";
+        const show = passwordInput.type === "password";
 
-        passwordInput.type = showPassword ? "text" : "password";
+        passwordInput.type = show ? "text" : "password";
 
         const icon = togglePassword.querySelector("i");
 
         if (icon) {
-            icon.classList.toggle("bx-show", !showPassword);
-            icon.classList.toggle("bx-hide", showPassword);
+            icon.classList.toggle("bx-show", !show);
+            icon.classList.toggle("bx-hide", show);
         }
 
         togglePassword.setAttribute(
             "aria-label",
-            showPassword ? "Hide password" : "Show password"
+            show ? "Hide password" : "Show password"
         );
 
-        togglePassword.setAttribute(
-            "aria-pressed",
-            String(showPassword)
-        );
+        togglePassword.setAttribute("aria-pressed", String(show));
     });
 }
 
@@ -308,17 +354,14 @@ if (loginForm) {
     loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const emailInput = loginForm.querySelector('input[type="email"]');
-        const passwordField = document.getElementById("adminPassword");
+        const email = loginForm
+            .querySelector('input[type="email"]')
+            ?.value.trim();
 
-        const email = emailInput?.value.trim();
-        const password = passwordField?.value;
+        const password = $("adminPassword")?.value;
 
         if (!email || !password) {
-            showLoginMessage(
-                "Please enter your email and password.",
-                true
-            );
+            showLoginMessage("Please enter your email and password.", true);
             return;
         }
 
@@ -329,7 +372,7 @@ if (loginForm) {
 
             showLoginMessage("Login successful.");
         } catch (error) {
-            console.error("Login error:", error.code, error.message);
+            console.error("Login error:", error);
 
             showLoginMessage(
                 error.code === "auth/invalid-credential"
@@ -342,12 +385,14 @@ if (loginForm) {
 }
 
 /* =========================================================
-   FORGOT PASSWORD
+   ADMIN FORGOT PASSWORD
    ========================================================= */
 
 if (forgotPasswordBtn) {
     forgotPasswordBtn.addEventListener("click", async () => {
-        const emailInput = loginForm?.querySelector('input[type="email"]');
+        const emailInput =
+            loginForm?.querySelector('input[type="email"]');
+
         const email = emailInput?.value.trim();
 
         if (!email) {
@@ -374,7 +419,7 @@ if (forgotPasswordBtn) {
 }
 
 /* =========================================================
-   MANUAL LOGOUT
+   LOGOUT
    ========================================================= */
 
 async function performLogout() {
@@ -393,10 +438,7 @@ async function performLogout() {
 
         isSigningOut = false;
 
-        showAdminMessage(
-            "Logout failed: " + error.message,
-            true
-        );
+        showAdminMessage("Logout failed: " + error.message, true);
 
         if (auth.currentUser) resetInactivityTimer();
     }
@@ -409,44 +451,11 @@ if (logoutBtn) {
 document.addEventListener("keydown", (event) => {
     if (event.key !== "F4") return;
 
-    const currentDashboard = document.getElementById("dashboard");
-
-    if (!currentDashboard || currentDashboard.hidden) return;
+    if (!dashboard || dashboard.hidden) return;
 
     event.preventDefault();
     performLogout();
 });
-
-/* =========================================================
-   DOM HELPERS
-   ========================================================= */
-
-function createElement(tag, className = "", text = "") {
-    const element = document.createElement(tag);
-
-    if (className) element.className = className;
-
-    element.textContent = text;
-
-    return element;
-}
-
-function createActionButton(label, backgroundColor) {
-    const button = createElement("button", "", label);
-
-    button.type = "button";
-
-    button.style.cssText = `
-        background: ${backgroundColor};
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        padding: 9px 14px;
-        cursor: pointer;
-    `;
-
-    return button;
-}
 
 /* =========================================================
    DASHBOARD VIEW SWITCHER
@@ -459,21 +468,25 @@ function switchDashboardView() {
         !feedbackFilterSection ||
         !feedbackScrollSection
     ) {
-        console.error("Dashboard view elements are missing.");
+        console.warn("Some dashboard view elements are missing.");
         return;
     }
 
-    const showProjectUsers =
+    const showUsers =
         dashboardViewFilter.value === "projectUsers";
 
-    projectUserSection.hidden = !showProjectUsers;
-    feedbackFilterSection.hidden = showProjectUsers;
-    feedbackScrollSection.hidden = showProjectUsers;
+    projectUserSection.hidden = !showUsers;
+    feedbackFilterSection.hidden = showUsers;
+    feedbackScrollSection.hidden = showUsers;
 
     if (dashboardSectionTitle) {
-        dashboardSectionTitle.textContent = showProjectUsers
+        dashboardSectionTitle.textContent = showUsers
             ? "Project Documents — User Management"
             : "Pending Feedback";
+    }
+
+    if (showUsers && auth.currentUser) {
+        loadProjectUsers();
     }
 }
 
@@ -482,8 +495,423 @@ if (dashboardViewFilter) {
         "change",
         switchDashboardView
     );
+}
 
-    switchDashboardView();
+/* =========================================================
+   SECURE EDGE FUNCTION REQUEST HELPER
+   Never put the Supabase service role key in this file.
+   ========================================================= */
+
+async function callUserManagement(action, extra = {}) {
+    const user = auth.currentUser;
+
+    if (!user) {
+        throw new Error("Please log in again.");
+    }
+
+    const token = await user.getIdToken(true);
+
+    const { data, error } = await supabase.functions.invoke(
+        "admin-manage-users",
+        {
+            body: { action, ...extra },
+            headers: {
+                "x-firebase-id-token": token
+            }
+        }
+    );
+
+    if (error) {
+        let detail = error.message || "Edge Function request failed.";
+
+        if (error.context) {
+            try {
+                const response = error.context.clone();
+                const text = await response.text();
+
+                if (text) {
+                    try {
+                        const parsed = JSON.parse(text);
+                        detail =
+                            parsed.error ||
+                            parsed.message ||
+                            parsed.msg ||
+                            text;
+                    } catch {
+                        detail = text;
+                    }
+                }
+            } catch (readError) {
+                console.warn("Could not read function error:", readError);
+            }
+        }
+
+        throw new Error(detail);
+    }
+
+    if (!data || data.success === false || data.error) {
+        throw new Error(
+            data?.error || data?.message || "Request was not successful."
+        );
+    }
+
+    return data;
+}
+
+/* =========================================================
+   PROJECT DOCUMENTS USERS — LOAD
+   Expected response from admin-manage-users:
+   { success: true, users: [...] }
+   ========================================================= */
+
+async function loadProjectUsers() {
+    if (!projectUsersList || isLoadingProjectUsers) return;
+
+    if (!auth.currentUser) {
+        showUsersMessage("Please log in again.", true);
+        return;
+    }
+
+    isLoadingProjectUsers = true;
+    showUsersMessage("Loading Project Documents users...");
+
+    if (refreshProjectUsersBtn) {
+        refreshProjectUsersBtn.disabled = true;
+    }
+
+    try {
+        const data = await callUserManagement("list");
+
+        const users = Array.isArray(data.users)
+            ? data.users
+            : Array.isArray(data.data?.users)
+                ? data.data.users
+                : [];
+
+        allProjectUsers = users.map((user) => ({
+            ...user,
+            username: String(user.username || ""),
+            company: String(user.company || ""),
+            location: String(user.location || ""),
+            auth_user_id: String(user.auth_user_id || ""),
+            is_active: user.is_active === true
+        }));
+
+        renderProjectUsers();
+
+        showUsersMessage(
+            `Loaded ${allProjectUsers.length} user(s).`
+        );
+    } catch (error) {
+        console.error("Load users failed:", error);
+
+        showUsersMessage(
+            "Could not load users: " + error.message,
+            true
+        );
+    } finally {
+        isLoadingProjectUsers = false;
+
+        if (refreshProjectUsersBtn) {
+            refreshProjectUsersBtn.disabled = false;
+        }
+    }
+}
+
+if (refreshProjectUsersBtn) {
+    refreshProjectUsersBtn.addEventListener(
+        "click",
+        loadProjectUsers
+    );
+}
+
+if (projectUsersSearch) {
+    projectUsersSearch.addEventListener("input", renderProjectUsers);
+}
+
+if (projectUsersStatusFilter) {
+    projectUsersStatusFilter.addEventListener(
+        "change",
+        renderProjectUsers
+    );
+}
+
+/* =========================================================
+   PROJECT DOCUMENTS USERS — RENDER
+   ========================================================= */
+
+function renderProjectUsers() {
+    if (!projectUsersList) return;
+
+    const search = (projectUsersSearch?.value || "")
+        .trim()
+        .toLowerCase();
+
+    const statusFilterValue =
+        projectUsersStatusFilter?.value || "all";
+
+    const enabledCount =
+        allProjectUsers.filter((user) => user.is_active).length;
+
+    const disabledCount =
+        allProjectUsers.length - enabledCount;
+
+    if (projectUsersTotal) {
+        projectUsersTotal.textContent = allProjectUsers.length;
+    }
+
+    if (projectUsersEnabled) {
+        projectUsersEnabled.textContent = enabledCount;
+    }
+
+    if (projectUsersDisabled) {
+        projectUsersDisabled.textContent = disabledCount;
+    }
+
+    const filtered = allProjectUsers.filter((user) => {
+        const matchesSearch = [
+            user.username,
+            user.company,
+            user.location
+        ].some((value) => value.toLowerCase().includes(search));
+
+        const matchesStatus =
+            statusFilterValue === "all" ||
+            (statusFilterValue === "active" && user.is_active) ||
+            (statusFilterValue === "inactive" && !user.is_active);
+
+        return matchesSearch && matchesStatus;
+    });
+
+    projectUsersList.replaceChildren();
+
+    if (filtered.length === 0) {
+        projectUsersList.appendChild(
+            createElement(
+                "p",
+                "project-users-empty",
+                allProjectUsers.length === 0
+                    ? "No Project Documents users found."
+                    : "No users match your search or status filter."
+            )
+        );
+        return;
+    }
+
+    filtered.forEach((user) => {
+        projectUsersList.appendChild(createProjectUserCard(user));
+    });
+}
+
+function createProjectUserCard(user) {
+    const card = createElement("article", "project-user-card");
+
+    card.style.cssText = `
+        background:#fff;
+        color:#222;
+        border:1px solid #ddd;
+        border-radius:10px;
+        padding:16px;
+        margin:12px 0;
+        overflow-wrap:anywhere;
+        box-shadow:0 3px 12px rgba(0,0,0,.12);
+    `;
+
+    const title = createElement(
+        "h3",
+        "project-user-card-title",
+        user.username || "Unnamed user"
+    );
+
+    title.style.cssText = `
+        margin:0 0 12px;
+        color:#222;
+        font-size:18px;
+        font-weight:700;
+    `;
+
+    const company = createElement(
+        "p",
+        "",
+        "Company: " + (user.company || "Not set")
+    );
+
+    const location = createElement(
+        "p",
+        "",
+        "Location: " + (user.location || "Not set")
+    );
+
+    const status = createElement(
+        "p",
+        "",
+        "Access: " + (user.is_active ? "Enabled" : "Disabled")
+    );
+
+    status.style.cssText = `
+        margin:8px 0;
+        font-weight:700;
+        color:${user.is_active ? "#147d45" : "#b42318"};
+    `;
+
+    [company, location].forEach((element) => {
+        element.style.cssText = "margin:8px 0;color:#333;";
+    });
+
+    const actions = createElement("div", "project-user-actions");
+
+    actions.style.cssText = `
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        margin-top:14px;
+    `;
+
+    const toggleButton = createActionButton(
+        user.is_active ? "Disable Access" : "Enable Access",
+        user.is_active ? "#b42318" : "#147d45"
+    );
+
+    toggleButton.addEventListener("click", async () => {
+        const nextState = !user.is_active;
+
+        const confirmed = window.confirm(
+            `${nextState ? "Enable" : "Disable"} access for ` +
+            `${user.username}?`
+        );
+
+        if (!confirmed) return;
+
+        setButtonBusy(toggleButton, true);
+
+        try {
+            await callUserManagement("set_active", {
+                auth_user_id: user.auth_user_id,
+                username: user.username,
+                is_active: nextState
+            });
+
+            user.is_active = nextState;
+
+            showUsersMessage(
+                `Access ${nextState ? "enabled" : "disabled"} for ${user.username}.`
+            );
+
+            renderProjectUsers();
+        } catch (error) {
+            console.error("Access update failed:", error);
+
+            showUsersMessage(
+                "Unable to update access: " + error.message,
+                true
+            );
+
+            setButtonBusy(toggleButton, false);
+        }
+    });
+
+    const resetButton = createActionButton(
+        "Reset Password",
+        "#1788ae"
+    );
+
+    resetButton.addEventListener("click", async () => {
+        const newPassword = window.prompt(
+            `Enter a new password for ${user.username}.\n` +
+            "Minimum 8 characters. The password will not be displayed again."
+        );
+
+        if (newPassword === null) return;
+
+        if (newPassword.length < 8) {
+            showUsersMessage(
+                "Password must contain at least 8 characters.",
+                true
+            );
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Reset the password for ${user.username}?`
+        );
+
+        if (!confirmed) return;
+
+        setButtonBusy(resetButton, true);
+
+        try {
+            await callUserManagement("reset_password", {
+                auth_user_id: user.auth_user_id,
+                username: user.username,
+                new_password: newPassword
+            });
+
+            showUsersMessage(
+                `Password reset successfully for ${user.username}.`
+            );
+        } catch (error) {
+            console.error("Password reset failed:", error);
+
+            showUsersMessage(
+                "Password reset failed: " + error.message +
+                ". Confirm that admin-manage-users supports reset_password.",
+                true
+            );
+        } finally {
+            setButtonBusy(resetButton, false);
+        }
+    });
+
+    const deleteButton = createActionButton(
+        "Delete User",
+        "#6c757d"
+    );
+
+    deleteButton.addEventListener("click", async () => {
+        const confirmed = window.confirm(
+            `Permanently delete user "${user.username}"?\n\n` +
+            "This action may remove the user's authentication account " +
+            "and Project Documents database record. It cannot be undone."
+        );
+
+        if (!confirmed) return;
+
+        setButtonBusy(deleteButton, true);
+
+        try {
+            await callUserManagement("delete", {
+                auth_user_id: user.auth_user_id,
+                username: user.username
+            });
+
+            allProjectUsers = allProjectUsers.filter(
+                (item) =>
+                    item.auth_user_id !== user.auth_user_id &&
+                    item.username !== user.username
+            );
+
+            renderProjectUsers();
+
+            showUsersMessage(
+                `User ${user.username} deleted successfully.`
+            );
+        } catch (error) {
+            console.error("User deletion failed:", error);
+
+            showUsersMessage(
+                "User deletion failed: " + error.message,
+                true
+            );
+
+            setButtonBusy(deleteButton, false);
+        }
+    });
+
+    actions.append(toggleButton, resetButton, deleteButton);
+
+    card.append(title, company, location, status, actions);
+
+    return card;
 }
 
 /* =========================================================
@@ -495,7 +923,7 @@ function renderFilteredFeedback() {
 
     const selectedStatus = statusFilter?.value || "all";
 
-    const filteredRecords = allFeedbackRecords.filter((item) => {
+    const filtered = allFeedbackRecords.filter((item) => {
         const currentStatus = item.status || "pending";
 
         return selectedStatus === "all" ||
@@ -504,16 +932,16 @@ function renderFilteredFeedback() {
 
     pendingList.replaceChildren();
 
-    filteredRecords.forEach((item) => {
+    filtered.forEach((item) => {
         pendingList.appendChild(createFeedbackCard(item));
     });
 
     if (feedbackCount) {
         feedbackCount.textContent =
-            `Showing: ${filteredRecords.length} / ${allFeedbackRecords.length}`;
+            `Showing: ${filtered.length} / ${allFeedbackRecords.length}`;
     }
 
-    if (filteredRecords.length === 0) {
+    if (filtered.length === 0) {
         pendingList.appendChild(
             createElement(
                 "p",
@@ -550,38 +978,29 @@ function loadFeedback() {
 
     showAdminMessage("Connecting to Firestore...");
 
-    try {
-        feedbackUnsubscribe = onSnapshot(
-            collection(db, "feedbackPrivate"),
-            (snapshot) => {
-                allFeedbackRecords = snapshot.docs.map((item) => ({
-                    id: item.id,
-                    ...item.data()
-                }));
+    feedbackUnsubscribe = onSnapshot(
+        collection(db, "feedbackPrivate"),
+        (snapshot) => {
+            allFeedbackRecords = snapshot.docs.map((item) => ({
+                id: item.id,
+                ...item.data()
+            }));
 
-                renderFilteredFeedback();
+            renderFilteredFeedback();
 
-                showAdminMessage(
-                    `Loaded ${snapshot.size} feedback record(s).`
-                );
-            },
-            (error) => {
-                console.error("Firestore listener error:", error);
+            showAdminMessage(
+                `Loaded ${snapshot.size} feedback record(s).`
+            );
+        },
+        (error) => {
+            console.error("Firestore listener error:", error);
 
-                showAdminMessage(
-                    "Firestore error: " + error.message,
-                    true
-                );
-            }
-        );
-    } catch (error) {
-        console.error("Unable to start Firestore listener:", error);
-
-        showAdminMessage(
-            "Unable to load feedback: " + error.message,
-            true
-        );
-    }
+            showAdminMessage(
+                "Firestore error: " + error.message,
+                true
+            );
+        }
+    );
 }
 
 /* =========================================================
@@ -592,21 +1011,22 @@ function createFeedbackCard(item) {
     const card = createElement("div", "admin-item");
 
     card.style.cssText = `
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 16px;
-        margin: 10px 0;
-        background: #fff;
-        color: #222;
-        overflow-wrap: anywhere;
+        border:1px solid #ddd;
+        border-radius:10px;
+        padding:16px;
+        margin:10px 0;
+        background:#fff;
+        color:#222;
+        overflow-wrap:anywhere;
     `;
 
     const title = createElement("h3", "", item.name || "Unknown");
+
     title.style.cssText = `
-        font-weight: bold;
-        font-size: 18px;
-        margin: 0 0 10px;
-        color: #222;
+        font-weight:bold;
+        font-size:18px;
+        margin:0 0 10px;
+        color:#222;
     `;
 
     const email = createElement(
@@ -614,36 +1034,33 @@ function createFeedbackCard(item) {
         "",
         "Email: " + (item.email || "Not provided")
     );
-    email.style.cssText = `
-        margin: 8px 0;
-        overflow-wrap: anywhere;
-        color: #1788ae;
-    `;
+
+    email.style.cssText =
+        "margin:8px 0;overflow-wrap:anywhere;color:#1788ae;";
 
     const designation = createElement(
         "p",
         "",
         "Designation: " + (item.designation || "Not provided")
     );
-    designation.style.cssText = "color:#222; margin:8px 0;";
 
     const department = createElement(
         "p",
         "",
         "Department: " + (item.department || "Not provided")
     );
-    department.style.cssText = "color:#222; margin:8px 0;";
 
     const message = createElement(
         "p",
         "",
         item.message || "No feedback message"
     );
+
     message.style.cssText = `
-        color: #222;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        margin: 10px 0;
+        white-space:pre-wrap;
+        overflow-wrap:anywhere;
+        margin:10px 0;
+        color:#222;
     `;
 
     const status = createElement(
@@ -651,14 +1068,12 @@ function createFeedbackCard(item) {
         "",
         "Status: " + (item.status || "pending")
     );
-    status.style.cssText = `
-        color: #222;
-        font-weight: bold;
-        margin: 8px 0;
-    `;
+
+    status.style.cssText = "font-weight:bold;margin:8px 0;color:#222;";
 
     const details = createElement("div", "feedback-details");
-    details.style.cssText = "flex:1; min-width:0;";
+
+    details.style.cssText = "flex:1;min-width:0;";
 
     details.append(
         title,
@@ -669,26 +1084,24 @@ function createFeedbackCard(item) {
         status
     );
 
-    const contentRow = createElement("div", "feedback-content-row");
-    contentRow.style.cssText = `
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 20px;
-        width: 100%;
+    const row = createElement("div", "feedback-content-row");
+
+    row.style.cssText = `
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:20px;
+        width:100%;
     `;
 
-    contentRow.appendChild(details);
+    row.appendChild(details);
 
     let photoUrl = item.photoUrl || "";
 
     if (item.photoPath) {
-        const result = supabase.storage
+        photoUrl = supabase.storage
             .from(FEEDBACK_BUCKET)
-            .getPublicUrl(item.photoPath);
-
-        photoUrl = result.data?.publicUrl || photoUrl;
+            .getPublicUrl(item.photoPath).data?.publicUrl || photoUrl;
     }
 
     if (photoUrl) {
@@ -699,58 +1112,50 @@ function createFeedbackCard(item) {
         image.loading = "lazy";
 
         image.style.cssText = `
-            display: block;
-            width: 180px;
-            height: 180px;
-            flex: 0 0 180px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin: 0;
+            display:block;
+            width:180px;
+            height:180px;
+            flex:0 0 180px;
+            object-fit:cover;
+            border-radius:10px;
         `;
 
         image.onerror = () => {
-            image.alt = "Feedback photo could not be loaded";
             image.style.display = "none";
         };
 
-        contentRow.appendChild(image);
+        row.appendChild(image);
     }
 
-    card.appendChild(contentRow);
+    card.appendChild(row);
 
-    const buttonContainer = createElement("div", "");
+    const buttons = createElement("div", "");
 
-    buttonContainer.style.cssText = `
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 12px;
+    buttons.style.cssText = `
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        margin-top:12px;
     `;
 
     if (item.status === "pending" || !item.status) {
-        const approveBtn = createActionButton("Approve", "#198754");
+        const approve = createActionButton("Approve", "#198754");
+        approve.addEventListener("click", () => approveFeedback(item.id));
 
-        approveBtn.addEventListener("click", () => {
-            approveFeedback(item.id);
-        });
+        const reject = createActionButton("Reject", "#dc3545");
+        reject.addEventListener("click", () => rejectFeedback(item.id));
 
-        const rejectBtn = createActionButton("Reject", "#dc3545");
-
-        rejectBtn.addEventListener("click", () => {
-            rejectFeedback(item.id);
-        });
-
-        buttonContainer.append(approveBtn, rejectBtn);
+        buttons.append(approve, reject);
     }
 
-    const deleteBtn = createActionButton("Delete", "#6c757d");
+    const deleteButton = createActionButton("Delete", "#6c757d");
 
-    deleteBtn.addEventListener("click", () => {
+    deleteButton.addEventListener("click", () => {
         deleteFeedback(item.id);
     });
 
-    buttonContainer.appendChild(deleteBtn);
-    card.appendChild(buttonContainer);
+    buttons.appendChild(deleteButton);
+    card.appendChild(buttons);
 
     return card;
 }
@@ -842,7 +1247,7 @@ async function rejectFeedback(id) {
 }
 
 /* =========================================================
-   DELETE FEEDBACK AND OPTIONAL PHOTO
+   DELETE FEEDBACK AND OPTIONAL SUPABASE PHOTO
    ========================================================= */
 
 async function deleteFeedback(id) {
@@ -852,7 +1257,7 @@ async function deleteFeedback(id) {
     }
 
     if (!window.confirm(
-        "Are you sure you want to permanently delete this feedback and its photo?"
+        "Permanently delete this feedback and its photo?"
     )) {
         return;
     }
@@ -885,42 +1290,34 @@ async function deleteFeedback(id) {
             publicData.photoPath ||
             "";
 
-        // If there is a photo, remove it through the secure Edge Function.
         if (photoPath) {
-            const currentUser = auth.currentUser;
-
-            if (!currentUser) {
-                throw new Error("Please log in again.");
-            }
-
-            const firebaseToken = await currentUser.getIdToken(true);
+            const token = await auth.currentUser.getIdToken(true);
 
             const { data, error } = await supabase.functions.invoke(
                 "admin-delete-feedback-photo",
                 {
                     body: { photoPath },
                     headers: {
-                        Authorization: `Bearer ${firebaseToken}`
+                        Authorization: `Bearer ${token}`
                     }
                 }
             );
 
             if (error) {
-                console.error("Photo deletion error:", error);
-                throw new Error(
-                    "Photo deletion failed: " + error.message
-                );
+                throw new Error("Photo deletion failed: " + error.message);
             }
 
-            if (!data || data.success !== true || data.deleted !== true) {
+            if (
+                !data ||
+                data.success !== true ||
+                data.deleted !== true
+            ) {
                 throw new Error(
                     data?.error || "Photo deletion was not confirmed."
                 );
             }
         }
 
-        // Delete Firestore records if the photo step succeeded,
-        // or immediately when the feedback has no photo.
         const operations = [];
 
         if (publicSnapshot.exists()) {
@@ -942,7 +1339,7 @@ async function deleteFeedback(id) {
         console.error("Delete feedback error:", error);
 
         showAdminMessage(
-            "Delete failed: " + (error.message || "Unknown error"),
+            "Delete failed: " + error.message,
             true
         );
     }
@@ -952,27 +1349,13 @@ async function deleteFeedback(id) {
    COMPANY / LOCATION DROPDOWN
    ========================================================= */
 
-/*
-   Add data-locations to company options in your HTML.
-
-   Example:
-   <option value="HPCL" data-locations="Madurai,Chennai">
-       HPCL
-   </option>
-
-   Use your actual location names and exact folder spelling.
-*/
-
 function updateLocationOptions() {
     if (!companySelect || !locationSelect) return;
 
     const selectedOption =
         companySelect.options[companySelect.selectedIndex];
 
-    const locationsText =
-        selectedOption?.dataset.locations || "";
-
-    const locations = locationsText
+    const locations = (selectedOption?.dataset.locations || "")
         .split(",")
         .map((value) => value.trim())
         .filter(Boolean);
@@ -980,6 +1363,7 @@ function updateLocationOptions() {
     locationSelect.replaceChildren();
 
     const placeholder = document.createElement("option");
+
     placeholder.value = "";
     placeholder.textContent = locations.length
         ? "Select Location"
@@ -989,6 +1373,7 @@ function updateLocationOptions() {
 
     locations.forEach((location) => {
         const option = document.createElement("option");
+
         option.value = location;
         option.textContent = location;
 
@@ -1011,14 +1396,9 @@ if (createForm) {
     createForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        const username =
-            document.getElementById("newUsername")?.value.trim();
-
-        const password =
-            document.getElementById("newPassword")?.value;
-
+        const username = $("newUsername")?.value.trim();
+        const password = $("newPassword")?.value;
         const company = companySelect?.value;
-
         const location = locationSelect?.value;
 
         if (!username || !password || !company || !location) {
@@ -1047,9 +1427,7 @@ if (createForm) {
             return;
         }
 
-        const currentUser = auth.currentUser;
-
-        if (!currentUser) {
+        if (!auth.currentUser) {
             showCreateStatus("Please log in again.", true);
             return;
         }
@@ -1057,12 +1435,11 @@ if (createForm) {
         const submitButton =
             createForm.querySelector('button[type="submit"]');
 
-        if (submitButton) submitButton.disabled = true;
-
+        setButtonBusy(submitButton, true, "Creating user...");
         showCreateStatus("Creating user...");
 
         try {
-            const firebaseToken = await currentUser.getIdToken(true);
+            const token = await auth.currentUser.getIdToken(true);
 
             const { data, error } = await supabase.functions.invoke(
                 "admin-create-user",
@@ -1074,37 +1451,43 @@ if (createForm) {
                         location
                     },
                     headers: {
-                        "x-firebase-id-token": firebaseToken
+                        "x-firebase-id-token": token
                     }
                 }
             );
-    
-        console.error("User creation function error:", error);
-            if (error?.context) {
-                try {
-                    const response = error.context.clone();
-                    const responseText = await response.text();
 
-                    console.error("Server response body:", responseText);
+            if (error) {
+                let message = error.message || "User creation failed.";
 
-                    let serverMessage = responseText;
-
+                if (error.context) {
                     try {
-                        const parsed = JSON.parse(responseText);
-                        serverMessage =
-                            parsed.error ||
-                            parsed.message ||
-                            parsed.msg ||
-                            responseText;
-                    } catch {
-                        // Response JSON न हो तो text ही दिखाएँ।
-                    }
+                        const response = error.context.clone();
+                        const responseText = await response.text();
 
-                    document.getElementById("adminStatus").textContent =
-                        "User creation failed: " + serverMessage;
-                } catch (readError) {
-                    console.error("Could not read server response:", readError);
+                        if (responseText) {
+                            try {
+                                const parsed = JSON.parse(responseText);
+                                message =
+                                    parsed.error ||
+                                    parsed.message ||
+                                    message;
+                            } catch {
+                                message = responseText;
+                            }
+                        }
+                    } catch (readError) {
+                        console.warn(readError);
+                    }
                 }
+
+                throw new Error(message);
+            }
+
+            if (!data || data.success === false || data.error) {
+                throw new Error(
+                    data?.error || data?.message ||
+                    "The server did not confirm user creation."
+                );
             }
 
             showCreateStatus(
@@ -1113,6 +1496,10 @@ if (createForm) {
 
             createForm.reset();
             updateLocationOptions();
+
+            if (dashboardViewFilter?.value === "projectUsers") {
+                await loadProjectUsers();
+            }
         } catch (error) {
             console.error("User creation failed:", error);
 
@@ -1121,7 +1508,12 @@ if (createForm) {
                 true
             );
         } finally {
-            if (submitButton) submitButton.disabled = false;
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent =
+                    submitButton.dataset.originalText ||
+                    "Create User";
+            }
         }
     });
 }
@@ -1152,6 +1544,10 @@ onAuthStateChanged(
 
             resetInactivityTimer();
             loadFeedback();
+
+            if (dashboardViewFilter?.value === "projectUsers") {
+                loadProjectUsers();
+            }
         } else {
             if (feedbackUnsubscribe) {
                 feedbackUnsubscribe();
@@ -1159,6 +1555,7 @@ onAuthStateChanged(
             }
 
             allFeedbackRecords = [];
+            allProjectUsers = [];
 
             if (feedbackCount) {
                 feedbackCount.textContent = "Showing: 0 / 0";
@@ -1167,6 +1564,14 @@ onAuthStateChanged(
             if (pendingList) {
                 pendingList.replaceChildren();
             }
+
+            if (projectUsersList) {
+                projectUsersList.replaceChildren();
+            }
+
+            if (projectUsersTotal) projectUsersTotal.textContent = "0";
+            if (projectUsersEnabled) projectUsersEnabled.textContent = "0";
+            if (projectUsersDisabled) projectUsersDisabled.textContent = "0";
 
             if (loginSection) {
                 loginSection.hidden = false;
@@ -1244,14 +1649,9 @@ async function printAdminDashboard() {
 
     try {
         const user = auth.currentUser;
-
-        const userName =
-            user.displayName ||
-            user.email ||
-            "Admin";
+        const userName = user.displayName || user.email || "Admin";
 
         const now = new Date();
-
         const date = now.toLocaleDateString("en-IN");
 
         const time = now.toLocaleTimeString("en-IN", {
@@ -1263,11 +1663,11 @@ async function printAdminDashboard() {
 
         const location = await getCurrentLocation();
 
-        const printUser = document.getElementById("printUser");
-        const printDate = document.getElementById("printDate");
-        const printTime = document.getElementById("printTime");
-        const printLocation = document.getElementById("printLocation");
-        const qrElement = document.getElementById("printQr");
+        const printUser = $("printUser");
+        const printDate = $("printDate");
+        const printTime = $("printTime");
+        const printLocation = $("printLocation");
+        const qrElement = $("printQr");
 
         if (!qrElement) {
             throw new Error("HTML element #printQr was not found.");
