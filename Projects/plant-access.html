@@ -26,6 +26,28 @@ button{margin-top:16px;padding:14px 20px;width:100%;border:0;border-radius:9px;b
 <div id="documents" class="docs"></div>
 <p class="warning">Temporary GitHub Pages version: this code check runs in the browser. It is not secure for confidential documents; a visitor can inspect the JavaScript or access a public PDF URL directly.</p>
 <a class="back" id="backLink" href="../Documents.html">← Back</a>
+
+<form id="portalLoginForm">
+  <label for="portalUsername">Username</label>
+  <input
+    id="portalUsername"
+    type="text"
+    autocomplete="username"
+    required
+  />
+
+  <label for="portalPassword">Password</label>
+  <input
+    id="portalPassword"
+    type="password"
+    autocomplete="current-password"
+    required
+  />
+
+  <button type="submit">Login</button>
+  <p id="portalLoginStatus" role="status"></p>
+</form>
+
 </main>
 <script src="plant-access.js"></script>
 <!-------------------------------------------->
@@ -115,5 +137,6 @@ form.addEventListener("submit", function (event) {
   });
 });
 </script>
+
 </body>
 </html>

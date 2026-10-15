@@ -1291,3 +1291,61 @@ document.addEventListener("keydown", (event) => {
         printAdminDashboard();
     }
 });
+
+
+const createForm = document.getElementById("createPortalUserForm");
+const createStatus = document.getElementById("createUserStatus");
+
+createForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const username =
+    document.getElementById("newUsername").value.trim();
+
+  const password =
+    document.getElementById("newPassword").value;
+
+  const company =
+    document.getElementById("newCompany").value;
+
+  const location =
+    document.getElementById("newLocation")
+      .value.trim().toLowerCase();
+
+  if (!/^[a-z0-9][a-z0-9._-]{2,39}$/i.test(username)) {
+    createStatus.textContent = "Invalid username format.";
+    return;
+  }
+
+  if (!/^[a-z0-9-]+$/.test(location)) {
+    createStatus.textContent =
+      "Use lowercase letters, numbers and hyphens for location.";
+    return;
+  }
+
+  createStatus.textContent = "Creating user...";
+
+  try {
+    const { data, error } = await supabase.functions.invoke(
+      "admin-create-user",
+      {
+        body: { username, password, company, location }
+      }
+    );
+
+    if (error || !data?.success) {
+      throw new Error(
+        data?.error || error?.message || "User creation failed"
+      );
+    }
+
+    createStatus.textContent =
+      `User ${data.username} created successfully. No email sent.`;
+
+    createForm.reset();
+  } catch (error) {
+    console.error("User creation failed:", error);
+    createStatus.textContent =
+      error.message || "Could not create user.";
+  }
+});
