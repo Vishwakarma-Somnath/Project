@@ -27,7 +27,7 @@ window.PLANT_ACCESS_CONFIG = {
     {
       "name": "Madurai",
       "code": "MDU",
-      "projectUrl": "projects/HPCL/Madurai/Madurai.html",
+      "projectUrl": "https://vishwakarma-somnath.github.io/Project/Projects/HPCL/Madurai/Madurai.html",
       "documents": []
     },
     {
