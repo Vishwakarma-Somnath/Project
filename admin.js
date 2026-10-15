@@ -1078,17 +1078,33 @@ if (createForm) {
                     }
                 }
             );
+    
+        console.error("User creation function error:", error);
+            if (error?.context) {
+                try {
+                    const response = error.context.clone();
+                    const responseText = await response.text();
 
-            if (error) {
-                console.error("User creation function error:", error);
-            }
+                    console.error("Server response body:", responseText);
 
-            if (error || !data?.success) {
-                throw new Error(
-                    data?.error ||
-                    error?.message ||
-                    "User creation failed."
-                );
+                    let serverMessage = responseText;
+
+                    try {
+                        const parsed = JSON.parse(responseText);
+                        serverMessage =
+                            parsed.error ||
+                            parsed.message ||
+                            parsed.msg ||
+                            responseText;
+                    } catch {
+                        // Response JSON न हो तो text ही दिखाएँ।
+                    }
+
+                    document.getElementById("adminStatus").textContent =
+                        "User creation failed: " + serverMessage;
+                } catch (readError) {
+                    console.error("Could not read server response:", readError);
+                }
             }
 
             showCreateStatus(
