@@ -1,46 +1,72 @@
+
 /*
- TEMPORARY GITHUB PAGES VERSION.
- Edit plant entries and document paths below.
- IMPORTANT: codes in this JavaScript are visible to visitors and can be bypassed.
- Do not use this for confidential PDFs. Move to Firebase/server-side access later.
- Document paths must be relative to the repository root, e.g. "Projects/BPCL/Piyala/report.pdf".
+  plant-access.js
+  GitHub Pages + Supabase Project Documents Portal
+
+  IMPORTANT:
+  - No passwords or access codes in this file.
+  - Plant names and folder paths are public configuration.
+  - Private PDF access must be enforced by Supabase Auth,
+    Edge Functions, and Storage RLS policies.
+  - Keep the existing feedback-photos bucket unchanged.
 */
+
 window.PLANT_ACCESS_CONFIG = {
-  "BPCL": [
+  BPCL: [
     {
-      "name": "Piyala",
-      "code": "CHANGE-ME",
-      "documents": []
+      name: "Piyala",
+      company: "bpcl",
+      location: "piyala",
+      enabled: true,
+      projectUrl: "",
+      documentFolder: "bpcl/piyala"
     },
     {
-      "name": "Nashik",
-      "code": "CHANGE-ME",
-      "documents": []
+      name: "Nashik",
+      company: "bpcl",
+      location: "nashik",
+      enabled: true,
+      projectUrl: "",
+      documentFolder: "bpcl/nashik"
     },
     {
-      "name": "Uran",
-      "code": "CHANGE-ME",
-      "documents": []
+      name: "Uran",
+      company: "bpcl",
+      location: "uran",
+      enabled: true,
+      projectUrl: "",
+      documentFolder: "bpcl/uran"
     }
   ],
-  "HPCL": [
+
+  HPCL: [
     {
-      "name": "Madurai",
-      "code": "MDU",
-      "projectUrl": "https://vishwakarma-somnath.github.io/Project/Projects/HPCL/Madurai/Madurai.html",
-      "documents": []
+      name: "Madurai",
+      company: "hpcl",
+      location: "madurai",
+      enabled: true,
+      projectUrl:
+        "https://vishwakarma-somnath.github.io/Project/Projects/HPCL/Madurai/Madurai.html",
+      documentFolder: "hpcl/madurai"
     },
     {
-      "name": "Other Plant (edit this)",
-      "code": "CHANGE-ME",
-      "documents": []
+      name: "Other Plant (edit this)",
+      company: "hpcl",
+      location: "other-plant",
+      enabled: false,
+      projectUrl: "",
+      documentFolder: "hpcl/other-plant"
     }
   ],
-  "IOCL": [
+
+  IOCL: [
     {
-      "name": "Add your plant location",
-      "code": "CHANGE-ME",
-      "documents": []
+      name: "Add your plant location",
+      company: "iocl",
+      location: "add-location",
+      enabled: false,
+      projectUrl: "",
+      documentFolder: "iocl/add-location"
     }
   ]
 };

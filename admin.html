@@ -1109,6 +1109,48 @@
             <hr>
         </div>
 
+        <form id="createPortalUserForm">
+  <h3>Create Project Portal User</h3>
+
+  <label for="newUsername">Custom Username</label>
+  <input
+    id="newUsername"
+    type="text"
+    placeholder="BPCL_KALLAKURICHI"
+    required
+    minlength="3"
+    maxlength="40"
+  />
+
+  <label for="newPassword">Password</label>
+  <input
+    id="newPassword"
+    type="password"
+    minlength="12"
+    autocomplete="new-password"
+    required
+  />
+
+  <label for="newCompany">Company folder</label>
+  <select id="newCompany" required>
+    <option value="">Select company</option>
+    <option value="bpcl">BPCL</option>
+    <option value="hpcl">HPCL</option>
+    <option value="iocl">IOCL</option>
+  </select>
+
+  <label for="newLocation">Location folder</label>
+  <input
+    id="newLocation"
+    type="text"
+    placeholder="kallakurichi"
+    required
+  />
+
+  <button type="submit">Create User</button>
+  <p id="createUserStatus" role="status"></p>
+</form>
+
         <!-- FIXED HEADER: DOES NOT SCROLL -->
         <div class="dashboard-fixed-header">
 
@@ -1172,48 +1214,5 @@
             <small>Auto Logout</small>
         </div>
     </div>
-        
-<form id="createPortalUserForm">
-  <h3>Create Project Portal User</h3>
-
-  <label for="newUsername">Custom Username</label>
-  <input
-    id="newUsername"
-    type="text"
-    placeholder="BPCL_KALLAKURICHI"
-    required
-    minlength="3"
-    maxlength="40"
-  />
-
-  <label for="newPassword">Password</label>
-  <input
-    id="newPassword"
-    type="password"
-    minlength="12"
-    autocomplete="new-password"
-    required
-  />
-
-  <label for="newCompany">Company folder</label>
-  <select id="newCompany" required>
-    <option value="">Select company</option>
-    <option value="bpcl">BPCL</option>
-    <option value="hpcl">HPCL</option>
-    <option value="iocl">IOCL</option>
-  </select>
-
-  <label for="newLocation">Location folder</label>
-  <input
-    id="newLocation"
-    type="text"
-    placeholder="kallakurichi"
-    required
-  />
-
-  <button type="submit">Create User</button>
-  <p id="createUserStatus" role="status"></p>
-</form>
-
 </body>
 </html>
