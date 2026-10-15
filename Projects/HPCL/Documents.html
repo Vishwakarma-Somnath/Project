@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon -->
+    <link href="images/name-logo04 copy.png" rel="icon">
+
+    <title>My_Latest_Projects_Documents</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Heart animation canvas */
+        #heart {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+		#heart-name,
+        #heart-name01,
+        #heart-name02,
+        #heart-name03 {
+            position: fixed;
+            transform: translateX(-50%);
+            z-index: 11;
+            pointer-events: none;
+
+            font-family: "Algerian", serif;
+            font-size: 32px;
+            font-weight: bold;
+
+        /* Animation */
+            animation:
+        nameFloat 3s ease-in-out infinite,
+        nameGlow 1.8s ease-in-out infinite alternate;
+
+    white-space: nowrap;
+    }
+
+/* ------------------------------
+   SOMNATH
+   ------------------------------ */
+
+#heart-name01 {
+    left: 35%;
+    top: 20%;
+    color: #ffffff;
+
+    animation-delay: 0s;
+
+    text-shadow:
+        0 0 5px red,
+        0 0 10px red,
+        0 0 15px red,
+        0 0 25px red;
+}
+
+/* ------------------------------
+   VISHWAKARMA_01
+   ------------------------------ */
+
+#heart-name02 {
+    left: 65%;
+    top: 20%;
+    color: #ffffff;
+
+    animation-delay: 0.5s;
+
+    text-shadow:
+        0 0 5px #5fd6ee,
+        0 0 10px #5fd6ee,
+        0 0 15px #5fd6ee,
+        0 0 25px #5fd6ee;
+}
+
+/* ------------------------------
+   ROHIT
+   ------------------------------ */
+
+#heart-name {
+    left: 35%;
+    top: 83%;
+    color: #23f3f0;
+
+    animation-delay: 1s;
+
+    text-shadow:
+        0 0 5px red,
+        0 0 10px red,
+        0 0 15px red,
+        0 0 25px red;
+}
+
+/* ------------------------------
+   VISHWAKARMA_2
+   ------------------------------ */
+
+#heart-name03 {
+    left: 65%;
+    top: 83%;
+    color: #fef603;
+
+    animation-delay: 1.5s;
+
+    text-shadow:
+        0 0 5px #ff5e00,
+        0 0 10px #ff5e00,
+        0 0 15px #ff5e00,
+        0 0 25px #ff5e00;
+}
+
+
+/* ==============================
+   FLOATING ANIMATION
+   ============================== */
+
+@keyframes nameFloat {
+
+    0% {
+        transform: translate(-50%, 0px) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(-50%, -8px) rotate(-1deg);
+    }
+
+    50% {
+        transform: translate(-50%, -15px) rotate(0deg);
+    }
+
+    75% {
+        transform: translate(-50%, -8px) rotate(1deg);
+    }
+
+    100% {
+        transform: translate(-50%, 0px) rotate(0deg);
+    }
+}
+
+
+/* ==============================
+   GLOW / PULSE ANIMATION
+   ============================== */
+
+@keyframes nameGlow {
+
+    0% {
+        opacity: 0.75;
+        letter-spacing: 1px;
+        filter: brightness(0.9);
+    }
+
+    50% {
+        opacity: 1;
+        letter-spacing: 3px;
+        filter: brightness(1.4);
+    }
+
+    100% {
+        opacity: 0.85;
+        letter-spacing: 1px;
+        filter: brightness(1);
+    }
+}
+
+        .container {
+            width: 90%;
+            max-width: 1800px;
+            text-align: center;
+            background: transparent;
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+
+            /* Keep content above canvas */
+            position: relative;
+            z-index: 1;
+        }
+
+        .algerian-title {
+    font-family: "Algerian", serif;
+    font-size: 50px;
+    font-weight: normal;
+    margin-bottom: 30px;
+
+    background: linear-gradient(
+        90deg,
+        #ff0000,
+        #ffff00,
+        #00ffff,
+        #00ff00,
+        #ff00ff,
+        #ff0000
+    );
+
+    background-size: 400% 100%;
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    animation:
+        titleColor 5s linear infinite,
+        titleFloat 3s ease-in-out infinite;
+
+    text-shadow: none;
+    letter-spacing: 3px;
+}
+
+@keyframes titleColor {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes titleFloat {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(250px, 1fr));
+            gap: 15px 800px;
+			
+        }
+
+        .folder-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .folder-btn:hover {
+            background: linear-gradient(135deg, #d81dcc, #a21caf);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.3);
+        }
+
+        .folder-btn:active {
+            transform: scale(0.97);
+        }
+
+        @media (max-width: 500px) {
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .algerian-title {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 25px;
+            }
+        }
+            /* =========================================
+               MOBILE MODE - HIDE NAMES
+             ========================================= */
+
+            @media (max-width: 768px) {
+                #heart-name,
+                #heart-name01,
+                #heart-name02,
+                #heart-name03 {
+                    display: none !important;
+                }
+            }
+    </style>
+</head>
+
+<body>
+
+    <!-- Animated Heart Canvas -->
+    <canvas id="heart"></canvas>
+	<div id="heart-name01">Somnath</div>
+	<div id="heart-name02">Vishwakarma</div>
+	<div id="heart-name">Rohit</div>
+	<div id="heart-name03">Vishwakarma</div>
+
+    <div class="container" role="main" aria-label="Project Documents">
+
+        <h1 class="algerian-title">
+            📂 My Latest Projects Documents
+        </h1>
+
+        <div class="buttons">
+
+            <a class="folder-btn"
+               href="Projects/CIMFR.pdf"
+               target="_blank"
+               aria-label="Open CIMFR Document">
+                📁 CIMFR (Central Institute of Mining and Fuel Research)
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/PESO_1.pdf"
+               target="_blank"
+               aria-label="Open PESO 1 Document">
+                📁 PESO_1 (Petroleum and Explosives Safety Organisation)
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/PESO_2.pdf"
+               target="_blank"
+               aria-label="Open PESO 2 Document">
+                📁 PESO_2 (Petroleum and Explosives Safety Organisation)
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/Cold_Flaring.pdf"
+               target="_blank"
+               aria-label="Open Cold Flaring Document">
+                📁 Cold_Flaring
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/Degasing_Unit.pdf"
+               target="_blank"
+               aria-label="Open Degasing Unit Document">
+                📁 Degasing_Unit
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/HYDRO TESTING.pdf"
+               target="_blank"
+               aria-label="Open Hydro Testing Document">
+                📁 HST (Hydro Testing Unit)
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/Cold_Flaring.pdf"
+               target="_blank"
+               aria-label="Open Pneumatic Testing Unit">
+                📁 PNEUMATIC TESTING UNIT
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/Degasing_Unit.pdf"
+               target="_blank"
+               aria-label="Open SC Valve Screwing Machine">
+                📁 SC Valve Screwing Machine
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/HYDRO TESTING.pdf"
+               target="_blank"
+               aria-label="Open Punch Marking Machine">
+                📁 PUNCH (Marking) MACHINE
+            </a>
+
+            <a class="folder-btn"
+               href="Projects/HYDRO TESTING.pdf"
+               target="_blank"
+               aria-label="Open Foot Ring Machine">
+                📁 Foot Ring Machine
+            </a>
+
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="heart.js"></script>
+
+</body>
+</html>
