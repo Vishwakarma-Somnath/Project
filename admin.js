@@ -1074,7 +1074,7 @@ if (createForm) {
                         location
                     },
                     headers: {
-                        Authorization: `Bearer ${firebaseToken}`
+                        "x-firebase-id-token": firebaseToken
                     }
                 }
             );
