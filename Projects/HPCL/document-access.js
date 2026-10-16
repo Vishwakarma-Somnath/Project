@@ -7,8 +7,8 @@
  * Never put the service-role key in this file.
  */
 
-const DOCUMENT_SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
-const DOCUMENT_SUPABASE_ANON_KEY = "YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY";
+const SUPABASE_URL = "https://ypxffgqjrckojzzldczm.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nFp00HnajqG5_C2XJJlR8Q_iMe-5hKh";
 
 let documentSupabaseClient = null;
 
