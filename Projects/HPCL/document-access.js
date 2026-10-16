@@ -67,7 +67,7 @@ async function openProjectDocument(path) {
         }
 
         const { data, error } = await client.functions.invoke(
-            "document-access",
+            "project_portal_users",
             {
                 body: { path }
             }
