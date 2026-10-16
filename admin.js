@@ -481,7 +481,7 @@ function switchDashboardView() {
             : "Pending Feedback";
     }
 
-    if (showUsers && auth.currentUser) {
+    if (showUsers && auth.currentUser && !isLoadingProjectUsers) {
         loadProjectUsers();
     }
 }
@@ -1598,11 +1598,11 @@ onAuthStateChanged(
 
             resetInactivityTimer();
 
-            /* Load feedback and all users on admin login */
+            /* Load feedback on admin login */
             loadFeedback();
-            loadProjectUsers();
 
-            /* Keep dashboard view in sync with the selected option */
+            /* Sync dashboard view.
+            switchDashboardView() loads users only when needed. */
             switchDashboardView();
         } else {
             if (feedbackUnsubscribe) {
