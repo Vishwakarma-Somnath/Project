@@ -63,7 +63,7 @@
             position: relative;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            width: min(900px, calc(100% - 32px));
+            width: min(850px, calc(100% - 32px));
             min-height: 500px;
             margin: 45px auto;
             overflow: hidden;
@@ -71,7 +71,7 @@
             border: 2px solid var(--orange);
             border-radius: 16px;
             background: #1b1b20;
-            box-shadow: 0 0 28px rgba(228, 96, 51, .35);
+            box-shadow: 0 0 25px rgba(228, 96, 51, .35);
         }
 
         .curved-shape,
@@ -82,26 +82,29 @@
         }
 
         .curved-shape {
-            z-index: -1;
-            top: -40%;
-            right: -27%;
-            width: 78%;
-            height: 155%;
-            background: linear-gradient(145deg, #000, var(--orange));
-            transform: rotate(18deg) skewY(12deg);
-            transform-origin: center;
-            animation: shapeEntry 1.1s ease-out both;
+            position: absolute;
+            top: -5px;
+            right: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(45deg, #000000, #e46033);
+            transform: rotate(10deg) skewY(40deg);
+            transform-origin: bottom right;
+            animation: curvedShapeEntry 1.5s ease-out forwards;
+            z-index: 1;
         }
 
         .curved-shape3 {
-            z-index: -1;
-            bottom: -48%;
-            left: -25%;
-            width: 70%;
-            height: 130%;
-            background: linear-gradient(35deg, #000, #6d321f);
-            transform: rotate(-18deg) skewY(-12deg);
-            animation: shapeEntryLeft 1.1s ease-out both;
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(135deg, #000000, #47ff3a);
+            transform: rotate(0deg) skewY(-30deg);
+            transform-origin: bottom right;
+            animation: curvedShape3Entry 1.5s ease-out forwards;
+            z-index: 0;
         }
 
         .curved-shape2 {
@@ -109,15 +112,27 @@
         }
 
         @keyframes shapeEntry {
-            from { opacity: 0; transform: translateX(60px) rotate(18deg) skewY(12deg); }
-            to   { opacity: 1; transform: translateX(0) rotate(18deg) skewY(12deg); }
+            from { opacity: 0; transform: translateX(100px) rotate(10deg) skewY(40deg); }
+            to   { opacity: 1; transform: translateX(0) rotate(10deg) skewY(40deg); }
         }
 
         @keyframes shapeEntryLeft {
-            from { opacity: 0; transform: translateX(-60px) rotate(-18deg) skewY(-12deg); }
-            to   { opacity: 1; transform: translateX(0) rotate(-18deg) skewY(-12deg); }
+            from { opacity: 0; transform: translateX(-100px) rotate(-18deg) skewY(-40deg); }
+            to   { opacity: 1; transform: translateX(0) rotate(-0deg) skewY(-40deg); }
         }
 
+        .curved-shape2 {
+            position: absolute;
+            top: 100%;
+            left: 250px;
+            width: 850px;
+            height: 700px;
+            background: #000000;
+            border-top: 3px solid #e46033;
+            transform: rotate(0deg) skewY(0deg);
+            transform-origin: bottom left;
+        }
+        
         .form-box {
             position: relative;
             z-index: 1;
