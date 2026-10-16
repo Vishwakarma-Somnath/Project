@@ -341,9 +341,10 @@
 
         .info-content02 {
             position: absolute;
-            top: 5%;
+            top: 3%;
             right: 0;
             width: 35%;
+            text-align: center;
             height: 70%;
             display: flex;
             flex-direction: column;
