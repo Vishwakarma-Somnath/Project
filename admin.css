@@ -59,7 +59,7 @@ button:disabled {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: min(850px, calc(100% - 32px));
-    min-height: 500px;
+    min-height: 600px;
     margin: 45px auto;
     overflow: hidden;
     isolation: isolate;
@@ -73,11 +73,11 @@ button:disabled {
 .container {
     position: relative;
     width: min(850px, calc(100% - 32px));
-    min-height: 450px;
+    min-height: 6000px;
     margin: 45px auto;
     overflow: hidden;
     border: 2px solid var(--orange);
-    border-radius: 12px;
+    border-radius: 16px;
     box-shadow: 0 0 25px rgba(228, 96, 51, 0.5);
 }
 
@@ -110,7 +110,7 @@ button:disabled {
     width: 850px;
     height: 600px;
     background: linear-gradient(135deg, #000000, #47ff3a);
-    transform: rotate(0deg) skewY(-40deg);
+    transform: rotate(0deg) skewY(-30deg);
     transform-origin: bottom right;
     animation: curvedShape3Entry 1.5s ease-out forwards;
 }
@@ -120,7 +120,7 @@ button:disabled {
     top: 100%;
     left: 250px;
     width: 850px;
-    height: 700px;
+    height: 600px;
     background: #000000;
     border-top: 3px solid var(--orange);
     transform-origin: bottom left;
@@ -154,13 +154,16 @@ button:disabled {
    4. LOGIN FORM
 ========================================= */
 .form-box {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-width: 0;
-    padding: 42px 36px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 105%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 35px 40px;
+            z-index: 2;
 }
 
 .form-box h2 {
