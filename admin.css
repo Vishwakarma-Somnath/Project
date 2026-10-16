@@ -1617,3 +1617,202 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/* =========================================
+   13. UPDATED DASHBOARD VIEWS
+   Feedback Management / User Creation / User Management
+========================================= */
+
+/* Keep dropdown-controlled sections hidden */
+#feedbackSection[hidden],
+#userCreationSection[hidden],
+#userManagementSection[hidden] {
+    display: none !important;
+}
+
+/* Shared layout for the three dashboard views */
+#feedbackSection,
+#userCreationSection,
+#userManagementSection {
+    min-width: 0;
+    min-height: 0;
+}
+
+/* Feedback view fills remaining dashboard space */
+#feedbackSection {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Creation and management get their own scrolling area */
+#userCreationSection,
+#userManagementSection {
+    flex: 1 1 0;
+    min-height: 0;
+    margin: 18px 28px 24px;
+    padding: 22px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--orange);
+    border-radius: 12px;
+    background: rgba(20, 20, 24, .96);
+    color: var(--white);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .22);
+    scrollbar-width: thin;
+    scrollbar-color: var(--orange) rgba(255, 255, 255, .15);
+}
+
+#userCreationSection h2,
+#userManagementSection h2 {
+    margin-bottom: 10px;
+    color: var(--orange-light);
+    font-size: 22px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+/* Support the old section ID too, if it remains in HTML */
+#projectUserSection {
+    min-width: 0;
+}
+
+/* Creation form fields */
+#userCreationSection .project-user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
+}
+
+#userCreationSection .project-user-field {
+    min-width: 0;
+}
+
+#userCreationSection .project-user-field input,
+#userCreationSection .project-user-field select {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* User management filter controls */
+#userManagementSection .user-management-toolbar {
+    display: grid;
+    grid-template-columns:
+        minmax(160px, 1.4fr)
+        repeat(3, minmax(120px, 1fr))
+        auto;
+    gap: 10px;
+    width: 100%;
+}
+
+#userManagementSection .user-management-toolbar input,
+#userManagementSection .user-management-toolbar select {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* User account cards */
+#userManagementSection #allProjectUsersList {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+#userManagementSection .all-project-user-card {
+    min-width: 0;
+}
+
+#userManagementSection .all-project-user-info {
+    overflow-wrap: anywhere;
+}
+
+#userManagementSection .all-project-user-actions {
+    flex-wrap: wrap;
+}
+
+/* Focus accessibility */
+#userCreationSection button:focus-visible,
+#userManagementSection button:focus-visible,
+#userManagementSection input:focus-visible,
+#userManagementSection select:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 2px;
+}
+
+/* FIX: Open Dashboard left, Logout right */
+.dashboard-toolbar-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.dashboard-toolbar-row .dashboard-view-filter {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px;
+    flex: 0 1 auto;
+    min-width: 0;
+    width: 100%;
+    margin: 0 !important;
+}
+
+.dashboard-toolbar-row .dashboard-view-filter label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.dashboard-toolbar-row .dashboard-view-filter select {
+    width: auto !important;
+    max-width: 350px;
+    min-width: 0;
+    flex: 0 1 350px;
+}
+
+.dashboard-toolbar-row #logoutBtn {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    order: 2;
+    margin: 0 !important;
+    margin-left:auto !important;
+    white-space: nowrap;
+}
+
+/* Mobile: keep both controls on the same row */
+@media (max-width: 650px) {
+    .dashboard-toolbar-row {
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+    }
+
+    .dashboard-toolbar-row .dashboard-view-filter {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .dashboard-toolbar-row .dashboard-view-filter label {
+        display: none;
+    }
+
+    .dashboard-toolbar-row .dashboard-view-filter select {
+        width: 100% !important;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .dashboard-toolbar-row #logoutBtn {
+        width: auto !important;
+        min-width: 80px;
+        flex-shrink: 0;
+    }
+}
