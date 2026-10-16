@@ -466,14 +466,14 @@
             padding: 9px 17px;
             border: 1px solid #ff8a80;
             border-radius: 7px;
-            background: var(--red);
-            color: #ff0000;
+            background: wheat;
+            color: #e0d3d3;
             font-size: 14px;
             font-weight: 700;
 }
 
 #logoutBtn:hover {
-    background: #8f1b13;
+    background: #f3581b;
 }
 
 #adminStatus {
