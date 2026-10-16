@@ -434,6 +434,33 @@ button:disabled {
     }
 }
 
+        #adminEmail,
+        #adminPassword {
+            color: #fff !important;
+            background-color: transparent !important;
+            caret-color: #e46033;
+            -webkit-text-fill-color: #fff !important;
+        }
+
+        #adminEmail:-webkit-autofill,
+        #adminPassword:-webkit-autofill,
+        #adminEmail:-webkit-autofill:hover,
+        #adminPassword:-webkit-autofill:hover,
+        #adminEmail:-webkit-autofill:focus,
+        #adminPassword:-webkit-autofill:focus {
+            -webkit-text-fill-color: #fff !important;
+            -webkit-box-shadow: 0 0 0 1000px #25252b inset !important;
+            caret-color: #e46033;
+            transition: background-color 9999s ease-in-out 0s;
+        }
+
+        #adminEmail::selection,
+        #adminPassword::selection {
+            background: #e46033;
+            color: #fff;
+        }
+
+
 /* =========================================
    7. DASHBOARD FRAME
 ========================================= */
