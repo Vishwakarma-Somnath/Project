@@ -202,13 +202,13 @@
             border: 0;
             border-radius: 5px;
             background: transparent;
-            color: var(--orange-light);
+            color: #f53b08;
             font-size: 22px;
             transform: translateY(-50%);
         }
 
         .toggle-password:focus-visible {
-            outline: 2px solid var(--orange);
+            outline: 2px solid #f53b08;
         }
 
         #adminEmail,
@@ -422,7 +422,7 @@
             width: 100%;
             padding: 20px 28px 12px;
             background: rgba(20, 20, 24, .88);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid #e46033a6;
             backdrop-filter: blur(8px);
 }
 
@@ -553,7 +553,7 @@
     width: min(100%, 350px);
     min-height: 42px;
     padding: 9px 12px;
-    border: 1px solid var(--orange);
+    border: 1px solid #f53b08;
     border-radius: 7px;
     outline: none;
     background: #fff;
@@ -562,7 +562,7 @@
 }
 
 .dashboard-view-filter select:focus {
-    outline: 2px solid var(--orange-light);
+    outline: 2px solid #f53b08;
     outline-offset: 2px;
 }
 
@@ -591,7 +591,7 @@
     min-width: 175px;
     min-height: 40px;
     padding: 9px 11px;
-    border: 1px solid var(--orange);
+    border: 1px solid #f53b08;
     border-radius: 6px;
     background: #fff;
     color: #222;
@@ -618,7 +618,7 @@
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: var(--orange) rgba(255, 255, 255, 0.15);
+    scrollbar-color: #f53b08 rgba(255, 255, 255, 0.15);
 }
 
 .dashboard-feedback-scroll::-webkit-scrollbar {
@@ -631,7 +631,7 @@
 
 .dashboard-feedback-scroll::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    background: var(--orange);
+    background: #f53b08;
 }
 
 #pendingList {
@@ -704,11 +704,11 @@
 }
 
 .approve-btn {
-    background: var(--green);
+    background: #21e362;
 }
 
 .reject-btn {
-    background: var(--red);
+    background: #21e362;
 }
 
 .approve-btn:hover {
@@ -735,7 +735,7 @@
     padding: 22px;
     overflow-x: hidden;
     overflow-y: auto;
-    border: 1px solid var(--orange);
+    border: 1px solid #f53b08;
     border-radius: 12px;
     background: rgba(20, 20, 24, 0.96);
     color: white;
@@ -746,7 +746,7 @@
 #userCreationSection h2,
 #userManagementSection h2 {
     margin-bottom: 10px;
-    color: var(--orange-light);
+    color: #c94b22;
     font-size: 22px;
     line-height: 1.4;
     overflow-wrap: anywhere;
@@ -801,7 +801,7 @@
 
 .project-user-field input:focus,
 .project-user-field select:focus {
-    border-color: var(--orange);
+    border-color: #f53b08;
     outline: 2px solid rgba(228, 96, 51, 0.35);
     outline-offset: 1px;
 }
@@ -822,7 +822,7 @@
     padding: 12px 16px;
     border: 0;
     border-radius: 7px;
-    background: var(--orange);
+    background: #f53b08;
     color: #fff;
     font-family: Arial, sans-serif;
     font-size: 15px;
@@ -850,12 +850,12 @@
 #allProjectUsers {
     margin-top: 30px;
     padding-top: 22px;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid #e46033a6;
 }
 
 #allProjectUsers h2 {
     margin-bottom: 8px;
-    color: var(--orange-light);
+    color: #c94b22;
     font-size: 22px;
 }
 
@@ -897,7 +897,7 @@
 
 .user-management-toolbar input:focus,
 .user-management-toolbar select:focus {
-    border-color: var(--orange);
+    border-color: #f53b08;
     outline: 2px solid rgba(228, 96, 51, 0.3);
 }
 
@@ -906,7 +906,7 @@
     padding: 10px 16px;
     border: 0;
     border-radius: 7px;
-    background: var(--orange);
+    background: #f53b08;
     color: #fff;
     font-weight: 700;
 }
@@ -932,7 +932,7 @@
 }
 
 .all-users-summary strong {
-    color: var(--orange-light);
+    color: #c94b22;
 }
 
 #allProjectUsersStatus {
@@ -1025,7 +1025,7 @@
 }
 
 .user-access-toggle {
-    background: var(--orange);
+    background: #f53b08;
 }
 
 .user-access-toggle:hover {
@@ -1041,7 +1041,7 @@
 }
 
 .user-delete-button {
-    background: var(--red);
+    background: #9f2018;
 }
 
 .user-delete-button:hover {
@@ -1088,13 +1088,13 @@
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
-    border: 1px solid var(--orange);
+    border: 1px solid #f53b08;
     border-radius: 12px;
     background: rgba(20, 20, 24, 0.96);
     color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
     scrollbar-width: thin;
-    scrollbar-color: var(--orange) rgba(255, 255, 255, 0.15);
+    scrollbar-color: #f53b08 rgba(255, 255, 255, 0.15);
 }
 
 #userCreationSection .project-user-grid {
@@ -1138,7 +1138,7 @@
 #userManagementSection button:focus-visible,
 #userManagementSection input:focus-visible,
 #userManagementSection select:focus-visible {
-    outline: 2px solid var(--orange-light);
+    outline: 2px solid #c94b22;
     outline-offset: 2px;
 }
 
@@ -1659,19 +1659,19 @@
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
-    border: 1px solid var(--orange);
+    border: 1px solid #f53b08;
     border-radius: 12px;
     background: rgba(20, 20, 24, .96);
     color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .22);
     scrollbar-width: thin;
-    scrollbar-color: var(--orange) rgba(255, 255, 255, .15);
+    scrollbar-color: #f53b08 rgba(255, 255, 255, .15);
 }
 
 #userCreationSection h2,
 #userManagementSection h2 {
     margin-bottom: 10px;
-    color: var(--orange-light);
+    color: #f53b08;
     font-size: 22px;
     line-height: 1.4;
     overflow-wrap: anywhere;
@@ -1742,7 +1742,7 @@
 #userManagementSection button:focus-visible,
 #userManagementSection input:focus-visible,
 #userManagementSection select:focus-visible {
-    outline: 2px solid var(--orange-light);
+    outline: 2px solid #f53b08;
     outline-offset: 2px;
 }
 
