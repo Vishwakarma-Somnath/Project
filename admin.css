@@ -517,6 +517,7 @@
     font-size: 14px;
     font-weight: 700;
     white-space: nowrap;
+    color: #ffffff;
 }
 
 .dashboard-toolbar-row .dashboard-view-filter select {
@@ -583,6 +584,7 @@
 
 .feedback-filter label {
     font-size: 14px;
+    color: #ffffff;
     font-weight: 700;
 }
 
