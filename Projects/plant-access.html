@@ -4,9 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-   <!-- Favicons -->
-  <link href="name-logo04 copy.png"  rel="icon"/>
   <title>Plant Document Verification</title>
+  <link rel="icon" href="name-logo04%20copy.png">
 
   <style>
     * { box-sizing: border-box; }
@@ -113,24 +112,16 @@
 
   <form id="portalLoginForm">
     <label for="portalUsername">Username</label>
-    <input
-      id="portalUsername"
-      type="text"
-      autocomplete="username"
-      minlength="3"
-      maxlength="40"
-      required
-    >
+    <input id="portalUsername" type="text"
+      autocomplete="username" minlength="3" maxlength="40" required>
 
     <label for="portalPassword">Password</label>
-    <input
-      id="portalPassword"
-      type="password"
-      autocomplete="current-password"
-      required
-    >
+    <input id="portalPassword" type="password"
+      autocomplete="current-password" required>
 
-    <button id="loginButton" type="submit">Login &amp; View Documents</button>
+    <button id="loginButton" type="submit">
+      Login &amp; View Documents
+    </button>
   </form>
 
   <p id="loginStatus" role="status" aria-live="polite"></p>
@@ -138,34 +129,30 @@
 
   <p class="note">
     Access is verified through Supabase. Keep the project-documents
-    bucket private and enforce user permissions with Storage RLS.
+    bucket private and enforce access through Storage RLS policies.
   </p>
 
-  <a class="back" id="backLink" href="../Documents.html">
-    ← Back
-  </a>
+  <a class="back" id="backLink" href="../Documents.html">← Back</a>
 </main>
 
-<!-- Load plant configuration first -->
 <script src="plant-access.js"></script>
-
-<!-- Supabase JavaScript client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 (() => {
   "use strict";
 
-  // Replace these two placeholders with your Supabase project values.
-  const SUPABASE_URL = "https://ypxffgqjrckojzzldczm.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_nFp00HnajqG5_C2XJJlR8Q_iMe-5hKh";
+  const SUPABASE_URL =
+    "https://ypxffgqjrckojzzldczm.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_nFp00HnajqG5_C2XJJlR8Q_iMe-5hKh";
 
   const BUCKET = "project-documents";
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const companyParam = params.get("company") || "";
   const plantParam = params.get("plant") || "";
-
   const companyKey = companyParam.toUpperCase();
 
   const plantList =
@@ -200,44 +187,56 @@
     form.hidden = true;
     plantInfo.textContent = plant
       ? "This plant is not enabled yet. Contact your administrator."
-      : "Plant configuration was not found. Check the URL and plant-access.js.";
+      : "Plant configuration not found. Check plant-access.js and the URL.";
     return;
   }
 
   plantInfo.textContent =
     `Sign in to access ${plant.name} documents.`;
 
-  if (
-    SUPABASE_URL.startsWith("YOUR_") ||
-    SUPABASE_ANON_KEY.startsWith("YOUR_") ||
-    !window.supabase?.createClient
-  ) {
+  if (!window.supabase?.createClient) {
     form.hidden = true;
-    status.textContent =
-      "Supabase is not configured. Check the project URL, public key and client library.";
+    status.textContent = "Supabase client library failed to load.";
     return;
   }
 
   const supabase = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY
+    SUPABASE_ANON_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false
+      }
+    }
   );
 
   let busy = false;
 
-  function showStatus(text) {
-    status.textContent = text;
+  function showStatus(message) {
+    status.textContent = message;
   }
 
-  function safeErrorMessage(error) {
-    console.error("Portal request failed:", error);
-    return "Request failed. Check your login and portal configuration.";
+  function getErrorMessage(error, data) {
+    if (data?.error) return data.error;
+
+    const context = error?.context;
+    if (context?.json) {
+      return context.json()
+        .then(body => body?.error || error.message || "Request failed.")
+        .catch(() => error.message || "Request failed.");
+    }
+
+    return Promise.resolve(
+      error?.message || "Request failed. Check the portal configuration."
+    );
   }
 
   async function showPrivateDocuments() {
     documents.replaceChildren();
 
-    // This folder must match the assigned company/location in Supabase.
+    // Folder names must match the actual Storage folder structure.
     const folder = `${plant.company}/${plant.location}`;
 
     showStatus("Loading authorized documents...");
@@ -249,22 +248,18 @@
         sortBy: { column: "name", order: "asc" }
       });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     const pdfs = (files || []).filter(file =>
-      file.name.toLowerCase().endsWith(".pdf") &&
-      file.name !== ".emptyFolderPlaceholder"
+      file.name.toLowerCase().endsWith(".pdf")
     );
 
-    if (pdfs.length === 0) {
+    if (!pdfs.length) {
       showStatus("No PDF documents are available for this plant yet.");
       return;
     }
 
     for (const file of pdfs) {
-      // Never build a public URL for a private PDF.
       const path = `${folder}/${file.name}`;
 
       const { data, error: urlError } = await supabase.storage
@@ -272,7 +267,7 @@
         .createSignedUrl(path, 60);
 
       if (urlError || !data?.signedUrl) {
-        console.error("Could not create document link:", urlError);
+        console.error("Signed URL creation failed:", urlError);
         continue;
       }
 
@@ -286,15 +281,15 @@
 
     showStatus(
       documents.childElementCount
-        ? "Login successful. Authorized documents are listed below."
-        : "Documents could not be opened. Check Storage permissions."
+        ? "Login successful. Your documents are listed below."
+        : "Could not create document links. Check Storage RLS policies."
     );
   }
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
-
     if (busy) return;
+
     busy = true;
     loginButton.disabled = true;
     documents.replaceChildren();
@@ -310,16 +305,36 @@
         { body: { username, password } }
       );
 
-      if (
-        error ||
-        !data?.access_token ||
-        !data?.refresh_token ||
-        !data?.user
-      ) {
-        throw new Error("Login failed");
+      // Log useful diagnostic details, never the password or tokens.
+      console.log("Portal login response:", {
+        success: data?.success,
+        username: data?.user?.username,
+        error: data?.error || error?.message || null
+      });
+
+      if (error || !data?.success) {
+        const message = await getErrorMessage(error, data);
+        throw new Error(message);
       }
 
-      // Never trust the URL alone to determine authorization.
+      // The Edge Function returns session tokens inside data.session.
+      const accessToken = data.session?.access_token;
+      const refreshToken = data.session?.refresh_token;
+
+      if (!accessToken || !refreshToken || !data.user?.id) {
+        throw new Error(
+          "Login response is incomplete. Check the username-login Edge Function response."
+        );
+      }
+
+      // Company/location must be supplied by the trusted server response.
+      // Do not trust URL parameters as proof of authorization.
+      if (!data.user.company || !data.user.location) {
+        throw new Error(
+          "The login service did not return the assigned company and plant. Update username-login before continuing."
+        );
+      }
+
       if (
         normalize(data.user.company) !== normalize(plant.company) ||
         normalize(data.user.location) !== normalize(plant.location)
@@ -328,17 +343,15 @@
       }
 
       const { error: sessionError } = await supabase.auth.setSession({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token
+        access_token: accessToken,
+        refresh_token: refreshToken
       });
 
       if (sessionError) throw sessionError;
 
-      // If an existing project page is configured, preserve its URL.
-      // The destination page must independently verify authorization.
       if (plant.projectUrl) {
         showStatus("Login successful. Opening project...");
-        window.location.assign(plant.projectUrl);
+        location.assign(plant.projectUrl);
         return;
       }
 
@@ -347,11 +360,8 @@
     } catch (error) {
       console.error("Portal login error:", error);
       documents.replaceChildren();
-      showStatus(
-        error.message?.includes("not assigned")
-          ? "Access denied: your account is not assigned to this plant."
-          : safeErrorMessage(error)
-      );
+
+      showStatus(error.message || "Login failed. Please try again.");
     } finally {
       busy = false;
       loginButton.disabled = false;
