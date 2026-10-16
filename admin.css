@@ -182,6 +182,34 @@
             color: #c9d5df;
             font-size: 20px;
         }
+		
+		.password-box .lock-icon {
+            right: 42px;
+            pointer-events: none;
+        }
+
+        .password-box .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 38px;
+            padding: 0;
+            border: 0;
+            border-radius: 5px;
+            background: transparent;
+            color: var(--orange-light);
+            font-size: 22px;
+            transform: translateY(-50%);
+        }
+
+        .toggle-password:focus-visible {
+            outline: 2px solid var(--orange);
+        }
 
         #adminEmail,
         #adminPassword {
@@ -369,82 +397,79 @@
    7. DASHBOARD FRAME
 ========================================= */
 #dashboard.admin-panel {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-    background-color: var(--bg);
-    background-image:
-        linear-gradient(
-            rgba(255, 255, 255, 0.12),
-            rgba(0, 0, 0, 0.16)
-        ),
-        url("images/Wallpaper2.jpeg");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            min-height: 0;
+            overflow: hidden;
+            background-color: #25252b;
+            background-image:
+                linear-gradient(rgba(255,255,255,.12), rgba(0,0,0,.16)),
+                url("images/Wallpaper2.jpeg");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
 }
 
 .dashboard-fixed-header {
-    position: relative;
-    z-index: 5;
-    flex: 0 0 auto;
-    width: 100%;
-    padding: 20px 28px 12px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(20, 20, 24, 0.88);
-    backdrop-filter: blur(8px);
+            position: relative;
+            z-index: 5;
+            flex: 0 0 auto;
+            width: 100%;
+            padding: 20px 28px 12px;
+            background: rgba(20, 20, 24, .88);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(8px);
 }
 
 #dashboard h1 {
-    margin: 0 0 12px;
-    color: var(--white);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(24px, 3vw, 38px);
-    line-height: 1.25;
-    letter-spacing: 1.5px;
-    text-align: center;
-    overflow-wrap: anywhere;
+            margin: 0 0 12px;
+            color: #fff;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(24px, 3vw, 38px);
+            line-height: 1.25;
+            letter-spacing: 1.5px;
+            text-align: center;
+            overflow-wrap: anywhere;
 }
 
 #dashboard h2 {
-    margin: 0 0 8px;
-    color: var(--orange-light);
-    font-family: Arial, sans-serif;
-    font-size: 21px;
-    letter-spacing: 0.5px;
-    overflow-wrap: anywhere;
+            margin: 0 0 8px;
+            color: var(--orange-light);
+            font-family: Arial, sans-serif;
+            font-size: 21px;
+            letter-spacing: .5px;
+            overflow-wrap: anywhere;
 }
 
 .dashboard-top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
 }
 
 /* Logout button */
 #logoutBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 40px;
-    margin: 0 0 0 auto;
-    padding: 9px 17px;
-    border: 1px solid #ff8a80;
-    border-radius: 7px;
-    background: var(--red);
-    color: var(--white);
-    font-size: 14px;
-    font-weight: 700;
-    white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 40px;
+            margin-left: auto;
+            margin-top: 0px;
+            padding: 9px 17px;
+            border: 1px solid #ff8a80;
+            border-radius: 7px;
+            background: var(--red);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
 }
 
 #logoutBtn:hover {
@@ -452,11 +477,11 @@
 }
 
 #adminStatus {
-    margin-top: 8px;
-    color: #f5e12e;
-    font-size: 13px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
+            margin-top: 8px;
+            color: #f5e12e;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
 }
 
 /* =========================================
