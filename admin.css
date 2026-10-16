@@ -285,7 +285,7 @@
 
         .forgot-btn {
             display: block;
-            margin: 15px auto 0;
+            margin: 10px auto 0;
             padding: 8px;
             background: transparent;
             border: none;
@@ -303,8 +303,8 @@
 
         #loginStatus {
             margin-top: 10px;
-            padding-left: 30px;
-            color: #eef536;
+            padding-left: 35px;
+            letter-spacing: 1px;
             font-size: 13px;
             line-height: 1.5;
             overflow-wrap: anywhere;
