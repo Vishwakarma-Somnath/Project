@@ -118,29 +118,31 @@
                     </h2>
                 </div>
 
+                <p id="adminStatus" role="status" aria-live="polite"></p>
+            </div>
+
+            <!-- LOGOUT + OPEN DASHBOARD IN SAME ROW -->
+            <!-- OPEN DASHBOARD + LOGOUT -->
+            <div class="dashboard-toolbar-row">
+
+                <div class="dashboard-view-filter">
+                    <label for="dashboardViewFilter">
+                        Open Dashboard:
+                    </label>
+
+                    <select id="dashboardViewFilter">
+                        <option value="feedback">Feedback Management</option>
+                        <option value="userCreation">User Creation</option>
+                        <option value="userManagement">User Management</option>
+                    </select>
+                </div>
+
                 <button id="logoutBtn" type="button">
                     <i class="bx bx-log-out" aria-hidden="true"></i>
                     Logout
                 </button>
             </div>
-
-            <p id="adminStatus" role="status" aria-live="polite"></p>
-
-            <!-- THREE-OPTION DROPDOWN -->
-            <div class="dashboard-view-filter">
-                <label for="dashboardViewFilter">
-                    Open Dashboard:
-                </label>
-
-                <select id="dashboardViewFilter">
-                    <option value="feedback">Feedback Management</option>
-                    <option value="userCreation">User Creation</option>
-                    <option value="userManagement">User Management</option>
-                </select>
-            </div>
-
         </header>
-
 
         <!-- ========================================
              SECTION 1: FEEDBACK MANAGEMENT
