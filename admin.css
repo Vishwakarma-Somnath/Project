@@ -132,7 +132,321 @@
             transform: rotate(0deg) skewY(0deg);
             transform-origin: bottom left;
         }
-        
+
+                /* LOGIN CONTAINER */
+        .container {
+            position: relative;
+            width: 850px;
+            max-width: calc(100% - 32px);
+            height: 450px;
+            margin: 45px auto;
+            border: 2px solid #e46033;
+            box-shadow: 0 0 25px #e46033;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        /* CURVED SHAPE 1 */
+        .curved-shape {
+            position: absolute;
+            top: -5px;
+            right: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(45deg, #000000, #e46033);
+            transform: rotate(10deg) skewY(40deg);
+            transform-origin: bottom right;
+            animation: curvedShapeEntry 1.5s ease-out forwards;
+            z-index: 1;
+        }
+
+        /* CURVED SHAPE 3 - OPPOSITE SIDE */
+        .curved-shape3 {
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(135deg, #000000, #47ff3a);
+            transform: rotate(0deg) skewY(-30deg);
+            transform-origin: bottom right;
+            animation: curvedShape3Entry 1.5s ease-out forwards;
+            z-index: 0;
+        }
+
+        @keyframes curvedShapeEntry {
+            from {
+                opacity: 0;
+                transform: translateX(100px) rotate(10deg) skewY(40deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(10deg) skewY(40deg);
+            }
+        }
+
+        @keyframes curvedShape3Entry {
+            from {
+                opacity: 0;
+                transform: translateX(-100px) rotate(0deg) skewY(-40deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(0deg) skewY(-40deg);
+            }
+        }
+
+        .curved-shape2 {
+            position: absolute;
+            top: 100%;
+            left: 250px;
+            width: 850px;
+            height: 700px;
+            background: #000000;
+            border-top: 3px solid #e46033;
+            transform: rotate(0deg) skewY(0deg);
+            transform-origin: bottom left;
+        }
+
+        /* LOGIN FORM AREA */
+        .form-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 105%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 35px 40px;
+            z-index: 2;
+        }
+
+        .form-box h2 {
+            font-size: 38px;
+            color: #ffffff;
+            word-spacing: 5px; /* Words ke beech gap */
+            letter-spacing: 10px; /* Letters ke beech gap */
+            text-align: center;            
+        }
+
+        #loginForm {
+            width: 100%;
+        }
+
+        .input-box {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            margin: 25px 0;
+        }
+
+        .input-box input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            border-bottom: 2px solid #fff;
+            color: #fff;
+            font-size: 16px;
+            padding-right: 35px;
+        }
+
+        .btn::before{
+            content: "";
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(#25252b, #e46033, #25252b, #e46033);
+            top: -100%;
+            left: 0;
+            z-index: -1;
+            transition: .5s;
+        }
+
+        .input-box input:focus,
+        .input-box input:valid {
+            border-bottom-color: #e46033;
+        }
+
+        .input-box label {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            font-size: 15px;
+            color: #c9d5df;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus ~ label,
+        .input-box input:valid ~ label {
+            top: -5px;
+            color: #e46033;
+            font-size: 12px;
+        }
+
+        .input-box i {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #c9d5df;
+        }
+
+        /* BUTTONS */
+        .btn {
+            position: relative;
+            width: 100%;
+            height: 45px;
+            color: #c0c0c0;
+            background: transparent;
+            font-size: 25px; /* Adjusted font size for better visibility */            
+            letter-spacing: 5px; /* Letters ke beech gap */
+            text-transform: uppercase;
+            border: 2px solid #e46033;
+            border-radius: 40px;
+            cursor: pointer;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            height: 300%;
+            background: linear-gradient( #25252b, #e46033, #25252b, #e46033 );
+            transform: translateY(-66.67%);
+            transition: transform 0.5s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            transform: translateY(0);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 4px;
+        }
+
+
+        .forgot-btn {
+            display: block;
+            margin: 15px auto 0;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: #55c8ef;
+            font-size: 20px;
+            word-spacing: 0.5px; /* Words ke beech gap */
+            letter-spacing: 1px; /* Letters ke beech gap */
+            cursor: pointer;
+        }
+
+        .forgot-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* LOGIN STATUS */
+        #loginStatus {
+            margin-top: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #eef536;
+            overflow-wrap: anywhere;
+            text-align: left 20px;
+            padding-left: 20px;
+        }
+
+        /* WELCOME AREA */
+        .info-content {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 70%;
+            height: 30%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 35px;
+            text-align: right;
+            z-index: 2;
+        }
+		
+        .info-content h2 {
+            font-size: 44px;
+            color: #ffffff;
+            word-spacing: 1px; /* Words ke beech gap */
+            letter-spacing: 2px; /* Letters ke beech gap */
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+
+        /* SIMPLE ENTRY ANIMATION */
+        .animation {
+                opacity: 0;
+                animation: fadeIn 0.8s ease forwards;
+            }
+
+            .form-box h2.animation {
+                animation-delay: 0.2s;
+            }
+
+            .form-box .input-box:nth-of-type(1) {
+                animation-delay: 0.4s;
+            }
+
+            .form-box .input-box:nth-of-type(2) {
+                animation-delay: 0.6s;
+            }
+
+            .form-box .input-box:nth-of-type(3) {
+                animation-delay: 0.8s;
+            }
+
+            .forgot-btn {
+                animation: fadeIn 0.8s ease 1s forwards;
+                opacity: 0;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+		
+	  /* WELCOME BACK! */
+        .info-content02 {
+            position: absolute;
+            top: 10%;
+            right: 0;
+            width: 35%;
+            height: 70%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 35px;
+            text-align: right;
+            z-index: 2;
+        }	
+		
+		        .info-content02 p {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-top: 16px;
+            color: #ffffff;
+        }
+
         .form-box {
             position: relative;
             z-index: 1;
