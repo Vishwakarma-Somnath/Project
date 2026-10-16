@@ -15,17 +15,23 @@ let documentSupabaseClient = null;
 async function getDocumentSupabaseClient() {
     if (!documentSupabaseClient) {
         if (
-            DOCUMENT_SUPABASE_URL.includes("YOUR_") ||
-            DOCUMENT_SUPABASE_ANON_KEY.includes("YOUR_")
+            !SUPABASE_URL ||
+            !SUPABASE_PUBLISHABLE_KEY ||
+            SUPABASE_URL.includes("YOUR_") ||
+            SUPABASE_PUBLISHABLE_KEY.includes("YOUR_")
         ) {
             throw new Error("Supabase URL/key are not configured.");
         }
 
-        const { createClient } = supabase;
+        if (!window.supabase?.createClient) {
+            throw new Error(
+                "Supabase library is not loaded. Check Madurai.html scripts."
+            );
+        }
 
-        documentSupabaseClient = createClient(
-            DOCUMENT_SUPABASE_URL,
-            DOCUMENT_SUPABASE_ANON_KEY
+        documentSupabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
         );
     }
 
