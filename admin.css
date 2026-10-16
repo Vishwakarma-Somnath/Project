@@ -73,7 +73,7 @@ button:disabled {
 .container {
     position: relative;
     width: min(850px, calc(100% - 32px));
-    min-height: 6000px;
+    min-height: 600px;
     margin: 45px auto;
     overflow: hidden;
     border: 2px solid var(--orange);
