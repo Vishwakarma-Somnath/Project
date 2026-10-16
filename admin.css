@@ -1150,7 +1150,6 @@
             .dashboard-toolbar-row #logoutBtn {
                 order: 2;
                 margin: 0;
-                align-items: right;
             }
 
             .admin-actions {
@@ -1566,3 +1565,75 @@
     }
 }
 
+/* FIX: Open Dashboard left, Logout right */
+.dashboard-toolbar-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.dashboard-toolbar-row .dashboard-view-filter {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 8px;
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0 !important;
+}
+
+.dashboard-toolbar-row .dashboard-view-filter label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.dashboard-toolbar-row .dashboard-view-filter select {
+    width: auto !important;
+    max-width: 350px;
+    min-width: 0;
+    flex: 0 1 350px;
+}
+
+.dashboard-toolbar-row #logoutBtn {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    order: 2;
+    margin: 0 !important;
+    margin-left: 0 !important;
+    white-space: nowrap;
+}
+
+/* Mobile: keep both controls on the same row */
+@media (max-width: 650px) {
+    .dashboard-toolbar-row {
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+    }
+
+    .dashboard-toolbar-row .dashboard-view-filter {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .dashboard-toolbar-row .dashboard-view-filter label {
+        display: none;
+    }
+
+    .dashboard-toolbar-row .dashboard-view-filter select {
+        width: 100% !important;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .dashboard-toolbar-row #logoutBtn {
+        width: auto !important;
+        min-width: 80px;
+        flex-shrink: 0;
+    }
+}
