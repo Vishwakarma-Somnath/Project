@@ -1150,6 +1150,7 @@
             .dashboard-toolbar-row #logoutBtn {
                 order: 2;
                 margin: 0;
+                align-items: right;
             }
 
             .admin-actions {
