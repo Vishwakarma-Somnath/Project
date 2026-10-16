@@ -441,8 +441,8 @@
             margin: 0 0 2px;
             color: rgb(255, 89, 0);
             font-family: Arial, sans-serif;
-            font-size: 21px;
-            letter-spacing: .5px;
+            font-size: 25px;
+            letter-spacing: 1px;
             overflow-wrap: anywhere;
 }
 
@@ -451,9 +451,9 @@
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            left: 0%;
+            width: 20%;
             color: #ffffff;
-            gap: 12px;
+            gap: 5px;
 }
 
 /* Logout button */
