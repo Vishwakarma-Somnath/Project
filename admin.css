@@ -429,7 +429,7 @@
 #dashboard h1 {
             margin: 0 0 12px;
             color: #fff;
-            font-family: Georgia, "Times New Roman", serif;
+            font-family: Algerian, sans-serif;
             font-size: clamp(24px, 3vw, 38px);
             line-height: 1.25;
             letter-spacing: 1.5px;
@@ -438,8 +438,8 @@
 }
 
 #dashboard h2 {
-            margin: 0 0 8px;
-            color: var(--orange-light);
+            margin: 0 0 2px;
+            color: rgb(255, 89, 0);
             font-family: Arial, sans-serif;
             font-size: 21px;
             letter-spacing: .5px;
@@ -451,6 +451,7 @@
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
+            left: 0%;
             color: #ffffff;
             gap: 12px;
 }
