@@ -1249,7 +1249,7 @@
             }
 
             .feedback-filter select {
-                width: 100%;
+                width: 40%;
             }
 
             #feedbackCount {
