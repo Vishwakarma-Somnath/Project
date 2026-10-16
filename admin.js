@@ -127,21 +127,21 @@ function showLoginMessage(message, isError = false) {
     if (!loginStatus) return;
 
     loginStatus.textContent = message;
-    loginStatus.style.color = isError ? "#dc2626" : "#15803d";
+    loginStatus.style.color = isError ? "#dc2626" : "#19e920ff";
 }
 
 function showAdminMessage(message, isError = false) {
     if (!adminStatus) return;
 
     adminStatus.textContent = message;
-    adminStatus.style.color = isError ? "#dc2626" : "#15803d";
+    adminStatus.style.color = isError ? "#dc2626" : "#19e920ff";
 }
 
 function showCreateStatus(message, isError = false) {
     if (!createStatus) return;
 
     createStatus.textContent = message;
-    createStatus.style.color = isError ? "#dc2626" : "#15803d";
+    createStatus.style.color = isError ? "#dc2626" : "#19e920ff";
 }
 
 function showUsersMessage(message, isError = false) {
@@ -902,7 +902,7 @@ function createProjectUserCard(user) {
         margin-top:5px;
         border-radius:15px;
         font-weight:700;
-        color:${user.is_active ? "#147d45" : "#b42318"};
+        color:${user.is_active ? "#19e920ff" : "#b42318"};
         background:${user.is_active ? "#e7f7ee" : "#fdecec"};
     `;
 
@@ -923,7 +923,7 @@ function createProjectUserCard(user) {
     /* ENABLE / DISABLE */
     const toggleButton = createActionButton(
         user.is_active ? "Disable Access" : "Enable Access",
-        user.is_active ? "#b42318" : "#147d45"
+        user.is_active ? "#b42318" : "#19e920ff"
     );
 
     toggleButton.className = "user-access-toggle";
