@@ -1321,3 +1321,226 @@
                 transition-duration: .01ms !important;
             }
         }
+        
+/* =========================================
+   13. UPDATED DASHBOARD VIEWS
+   Feedback Management / User Creation / User Management
+========================================= */
+
+/* Keep dropdown-controlled sections hidden */
+#feedbackSection[hidden],
+#userCreationSection[hidden],
+#userManagementSection[hidden] {
+    display: none !important;
+}
+
+/* Shared layout for the three dashboard views */
+#feedbackSection,
+#userCreationSection,
+#userManagementSection {
+    min-width: 0;
+    min-height: 0;
+}
+
+/* Feedback view fills remaining dashboard space */
+#feedbackSection {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Creation and management get their own scrolling area */
+#userCreationSection,
+#userManagementSection {
+    flex: 1 1 0;
+    min-height: 0;
+    margin: 18px 28px 24px;
+    padding: 22px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--orange);
+    border-radius: 12px;
+    background: rgba(20, 20, 24, .96);
+    color: var(--white);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .22);
+    scrollbar-width: thin;
+    scrollbar-color: var(--orange) rgba(255, 255, 255, .15);
+}
+
+#userCreationSection h2,
+#userManagementSection h2 {
+    margin-bottom: 10px;
+    color: var(--orange-light);
+    font-size: 22px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+/* Support the old section ID too, if it remains in HTML */
+#projectUserSection {
+    min-width: 0;
+}
+
+/* Creation form fields */
+#userCreationSection .project-user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
+}
+
+#userCreationSection .project-user-field {
+    min-width: 0;
+}
+
+#userCreationSection .project-user-field input,
+#userCreationSection .project-user-field select {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* User management filter controls */
+#userManagementSection .user-management-toolbar {
+    display: grid;
+    grid-template-columns:
+        minmax(160px, 1.4fr)
+        repeat(3, minmax(120px, 1fr))
+        auto;
+    gap: 10px;
+    width: 100%;
+}
+
+#userManagementSection .user-management-toolbar input,
+#userManagementSection .user-management-toolbar select {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* User account cards */
+#userManagementSection #allProjectUsersList {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+#userManagementSection .all-project-user-card {
+    min-width: 0;
+}
+
+#userManagementSection .all-project-user-info {
+    overflow-wrap: anywhere;
+}
+
+#userManagementSection .all-project-user-actions {
+    flex-wrap: wrap;
+}
+
+/* Focus accessibility */
+#userCreationSection button:focus-visible,
+#userManagementSection button:focus-visible,
+#userManagementSection input:focus-visible,
+#userManagementSection select:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 2px;
+}
+
+/* =========================================
+   14. UPDATED A4 PRINT RULES
+========================================= */
+
+@media print {
+    /* Never print user creation or account management */
+    #userCreationSection,
+    #userManagementSection,
+    #projectUserSection {
+        display: none !important;
+    }
+
+    /* Print feedback only when Feedback Management is selected */
+    #feedbackSection[hidden] {
+        display: none !important;
+    }
+
+    #feedbackSection:not([hidden]) {
+        display: block !important;
+        flex: none !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    #feedbackSection .dashboard-feedback-scroll {
+        display: block !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+
+    #feedbackSection #pendingList {
+        display: block !important;
+    }
+}
+
+/* =========================================
+   15. MOBILE RESPONSIVE DASHBOARD VIEWS
+========================================= */
+
+@media (max-width: 800px) {
+    #userManagementSection .user-management-toolbar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    #feedbackSection {
+        flex: 1 1 0;
+        min-height: 0;
+    }
+
+    #userCreationSection,
+    #userManagementSection {
+        margin: 12px;
+        padding: 15px;
+    }
+
+    #userCreationSection h2,
+    #userManagementSection h2 {
+        font-size: 19px;
+    }
+
+    #userCreationSection .project-user-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    #userManagementSection .user-management-toolbar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    #userManagementSection .all-project-user-card {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 14px;
+    }
+
+    #userManagementSection .all-project-user-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+    }
+
+    #userManagementSection .all-project-user-actions button {
+        width: 100%;
+        min-height: 42px;
+    }
+}
