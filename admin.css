@@ -410,8 +410,9 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            min-height: 100px;
+            min-height: 40px;
             margin-left: auto;
+            margin-top: 50px;
             padding: 9px 17px;
             border: 1px solid #ff8a80;
             border-radius: 7px;
