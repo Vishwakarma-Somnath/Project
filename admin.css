@@ -1133,6 +1133,25 @@
                 object-fit: contain !important;
             }
 
+            .dashboard-toolbar-row {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+                gap: 12px;
+                width: 100%;
+            }
+
+            .dashboard-toolbar-row .dashboard-view-filter {
+                order: 1;
+            }
+
+            .dashboard-toolbar-row #logoutBtn {
+                order: 2;
+                margin: 0;
+            }
+
             .admin-actions {
                 display: none !important;
             }
@@ -1546,21 +1565,3 @@
     }
 }
 
-.dashboard-toolbar-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 12px;
-    width: 100%;
-}
-
-.dashboard-toolbar-row .dashboard-view-filter {
-    order: 1;
-}
-
-.dashboard-toolbar-row #logoutBtn {
-    order: 2;
-    margin: 0;
-}
