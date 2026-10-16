@@ -18,7 +18,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "piyala",
       enabled: true,
-      projectUrl: "",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Piyala/Piyala.html",
       documentFolder: "bpcl/piyala"
     },
     {
@@ -26,7 +26,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "nashik",
       enabled: true,
-      projectUrl: "",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Nashik/Nashik.html",
       documentFolder: "bpcl/nashik"
     },
     {
@@ -34,7 +34,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "uran",
       enabled: true,
-      projectUrl: "",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Uran/Uran.html",
       documentFolder: "bpcl/uran"
     }
   ],
@@ -45,8 +45,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "hpcl",
       location: "madurai",
       enabled: true,
-      projectUrl:
-        "https://vishwakarma-somnath.github.io/Project/Projects/HPCL/Madurai/Madurai.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/HPCL/Madurai/Madurai.html",
       documentFolder: "hpcl/madurai"
     },
     {
