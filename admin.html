@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Admin Panel | Feedback Management</title>
+    <title>Admin Panel | Feedback & User Management</title>
 
     <link href="images/name-logo04 copy.png" rel="icon">
 
@@ -19,9 +19,7 @@
 
 <body>
 
-    <!-- =========================================
-         ADMIN LOGIN
-    ========================================== -->
+    <!-- ADMIN LOGIN -->
     <main class="container" id="loginSection">
 
         <div class="curved-shape" aria-hidden="true"></div>
@@ -58,10 +56,7 @@
 
                     <label for="adminPassword">Password</label>
 
-                    <i
-                        class="bx bxs-lock-alt lock-icon"
-                        aria-hidden="true"
-                    ></i>
+                    <i class="bx bxs-lock-alt lock-icon" aria-hidden="true"></i>
 
                     <button
                         type="button"
@@ -100,30 +95,26 @@
         <section class="info-content02 Login">
             <p class="animation">
                 Welcome to the Feedback Administrator Panel.
-                Review submitted feedback, approve the entries
-                you want to publish, and manage your feedback
-                dashboard securely.
+                Review feedback, approve entries for publication,
+                and manage Project Documents users securely.
             </p>
         </section>
 
     </main>
 
 
-    <!-- =========================================
-         ADMIN DASHBOARD
-    ========================================== -->
+    <!-- ADMIN DASHBOARD -->
     <section class="admin-panel" id="dashboard" hidden>
 
-        <!-- FIXED DASHBOARD HEADER -->
+        <!-- DASHBOARD HEADER -->
         <header class="dashboard-fixed-header">
 
             <h1>Feedback Administrator Panel</h1>
 
             <div class="dashboard-top-row">
-
                 <div>
                     <h2 id="dashboardSectionTitle">
-                        Pending Feedback
+                        Feedback Management
                     </h2>
                 </div>
 
@@ -131,11 +122,11 @@
                     <i class="bx bx-log-out" aria-hidden="true"></i>
                     Logout
                 </button>
-
             </div>
 
             <p id="adminStatus" role="status" aria-live="polite"></p>
 
+            <!-- THREE-OPTION DROPDOWN -->
             <div class="dashboard-view-filter">
                 <label for="dashboardViewFilter">
                     Open Dashboard:
@@ -143,33 +134,101 @@
 
                 <select id="dashboardViewFilter">
                     <option value="feedback">Feedback Management</option>
-                    <option value="projectUsers">
-                        Project Documents — User Management
-                    </option>
+                    <option value="userCreation">User Creation</option>
+                    <option value="userManagement">User Management</option>
                 </select>
             </div>
 
         </header>
 
 
-        <!-- =========================================
-             PROJECT DOCUMENTS USER MANAGEMENT
-        ========================================== -->
+        <!-- ========================================
+             SECTION 1: FEEDBACK MANAGEMENT
+        ========================================= -->
+        <section id="feedbackSection">
+
+            <!-- PRINT REPORT HEADER -->
+            <div id="printHeader">
+
+                <div class="print-heading">
+                    <div>
+                        <h1>Admin Dashboard</h1>
+                        <p>Feedback Management Report</p>
+                    </div>
+
+                    <div id="printQr"></div>
+                </div>
+
+                <div id="printMeta">
+                    <p>
+                        <strong>Admin:</strong>
+                        <span id="printUser">-</span>
+                    </p>
+
+                    <p>
+                        <strong>Date:</strong>
+                        <span id="printDate">-</span>
+                    </p>
+
+                    <p>
+                        <strong>Time:</strong>
+                        <span id="printTime">-</span>
+                    </p>
+
+                    <p>
+                        <strong>Location:</strong>
+                        <span id="printLocation">-</span>
+                    </p>
+                </div>
+
+                <hr>
+            </div>
+
+            <!-- FEEDBACK FILTER -->
+            <div class="feedback-filter" id="feedbackFilterSection">
+
+                <label for="statusFilter">Filter by Status:</label>
+
+                <select id="statusFilter">
+                    <option value="all">All Feedback</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+
+                <span id="feedbackCount">Total: 0 / 0</span>
+            </div>
+
+            <!-- FEEDBACK LIST -->
+            <div
+                class="dashboard-feedback-scroll"
+                id="feedbackScrollSection"
+            >
+                <div id="pendingList"></div>
+            </div>
+
+        </section>
+
+
+        <!-- ========================================
+             SECTION 2: USER CREATION
+        ========================================= -->
         <section
-            id="projectUserSection"
+            id="userCreationSection"
             class="project-user-section"
             hidden
         >
 
-            <h2>Project Documents — User Management</h2>
+            <h2>
+                <i class="bx bx-user-plus" aria-hidden="true"></i>
+                Create Project User
+            </h2>
 
             <p class="project-user-description">
-                Create a username and password and assign access
-                to a plant. No email notification will be sent.
+                Create login credentials and assign company
+                and plant access. No email notification will be sent.
             </p>
 
-
-            <!-- CREATE USER FORM -->
             <form id="createPortalUserForm" autocomplete="off">
 
                 <div class="project-user-grid">
@@ -197,6 +256,7 @@
                             name="password"
                             type="password"
                             minlength="8"
+                            maxlength="128"
                             autocomplete="new-password"
                             placeholder="Minimum 8 characters"
                             required
@@ -206,33 +266,11 @@
                     <div class="project-user-field">
                         <label for="newCompany">Company</label>
 
-                        <select
-                            id="newCompany"
-                            name="company"
-                            required
-                        >
+                        <select id="newCompany" name="company" required>
                             <option value="">Select company</option>
-
-                            <option
-                                value="BPCL"
-                                data-locations="URAN,PIYALA,NASHIK"
-                            >
-                                BPCL
-                            </option>
-
-                            <option
-                                value="HPCL"
-                                data-locations="MADURAI"
-                            >
-                                HPCL
-                            </option>
-
-                            <option
-                                value="IOCL"
-                                data-locations="VARANASI,JABALPUR"
-                            >
-                                IOCL
-                            </option>
+                            <option value="BPCL">BPCL</option>
+                            <option value="HPCL">HPCL</option>
+                            <option value="IOCL">IOCL</option>
                         </select>
                     </div>
 
@@ -245,9 +283,7 @@
                             required
                             disabled
                         >
-                            <option value="">
-                                Select company first
-                            </option>
+                            <option value="">Select company first</option>
                         </select>
                     </div>
 
@@ -270,144 +306,122 @@
 
             </form>
 
+        </section>
 
-            <!-- ALL USER ACCOUNTS -->
-            <section id="allProjectUsers">
 
-                <h2>
-                    <i class="bx bx-group" aria-hidden="true"></i>
-                    All User Accounts
-                </h2>
+        <!-- ========================================
+             SECTION 3: USER MANAGEMENT
+        ========================================= -->
+        <section
+            id="userManagementSection"
+            class="project-user-section"
+            hidden
+        >
 
-                <p class="all-users-description">
-                    All created Project Documents users will appear
-                    here. Refresh the list whenever you want to
-                    verify user accounts.
-                </p>
+            <h2>
+                <i class="bx bx-group" aria-hidden="true"></i>
+                Project User Management
+            </h2>
 
-                <div class="user-management-toolbar">
-                    <button
-                        type="button"
-                        id="refreshAllProjectUsers"
+            <p class="all-users-description">
+                Search and filter existing users. Manage account
+                status, reset passwords, or delete accounts.
+            </p>
+
+            <!-- USER FILTERS -->
+            <div class="user-management-filters">
+
+                <div class="project-user-field">
+                    <label for="filterUsername">Search Username</label>
+
+                    <input
+                        type="search"
+                        id="filterUsername"
+                        placeholder="Enter username..."
                     >
-                        <i class="bx bx-refresh" aria-hidden="true"></i>
-                        Refresh Users
-                    </button>
                 </div>
 
-                <p
-                    id="allProjectUsersStatus"
-                    role="status"
-                    aria-live="polite"
-                ></p>
+                <div class="project-user-field">
+                    <label for="filterCompany">Company</label>
 
-                <div class="all-users-summary">
-                    <span>
-                        Total:
-                        <strong id="allUsersTotal">0</strong>
-                    </span>
-
-                    <span>
-                        Active:
-                        <strong id="allUsersActive">0</strong>
-                    </span>
-
-                    <span>
-                        Disabled:
-                        <strong id="allUsersDisabled">0</strong>
-                    </span>
+                    <select id="filterCompany">
+                        <option value="">All Companies</option>
+                        <option value="BPCL">BPCL</option>
+                        <option value="HPCL">HPCL</option>
+                        <option value="IOCL">IOCL</option>
+                    </select>
                 </div>
 
-                <div id="allProjectUsersList">
-                    Log in to load user accounts.
+                <div class="project-user-field">
+                    <label for="filterLocation">Location</label>
+
+                    <select id="filterLocation">
+                        <option value="">All Locations</option>
+                    </select>
                 </div>
 
-            </section>
+                <div class="project-user-field">
+                    <label for="filterUserStatus">Account Status</label>
+
+                    <select id="filterUserStatus">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <!-- REFRESH BUTTON -->
+            <div class="user-management-toolbar">
+
+                <button
+                    type="button"
+                    id="refreshAllProjectUsers"
+                >
+                    <i class="bx bx-refresh" aria-hidden="true"></i>
+                    Refresh Users
+                </button>
+
+            </div>
+
+            <p
+                id="allProjectUsersStatus"
+                role="status"
+                aria-live="polite"
+            ></p>
+
+            <!-- USER SUMMARY -->
+            <div class="all-users-summary">
+
+                <span>
+                    Total:
+                    <strong id="allUsersTotal">0</strong>
+                </span>
+
+                <span>
+                    Active:
+                    <strong id="allUsersActive">0</strong>
+                </span>
+
+                <span>
+                    Disabled:
+                    <strong id="allUsersDisabled">0</strong>
+                </span>
+
+            </div>
+
+            <!-- EXISTING USER CARDS -->
+            <div id="allProjectUsersList">
+                Log in to load user accounts.
+            </div>
 
         </section>
-        <!-- END PROJECT DOCUMENTS USER MANAGEMENT -->
-
-
-        <!-- =========================================
-             PRINT REPORT HEADER
-             Kept outside the user-management section
-        ========================================== -->
-        <div id="printHeader">
-
-            <div class="print-heading">
-
-                <div>
-                    <h1>Admin Dashboard</h1>
-                    <p>Feedback Management Report</p>
-                </div>
-
-                <div id="printQr"></div>
-
-            </div>
-
-            <div id="printMeta">
-                <p>
-                    <strong>Admin:</strong>
-                    <span id="printUser">-</span>
-                </p>
-
-                <p>
-                    <strong>Date:</strong>
-                    <span id="printDate">-</span>
-                </p>
-
-                <p>
-                    <strong>Time:</strong>
-                    <span id="printTime">-</span>
-                </p>
-
-                <p>
-                    <strong>Location:</strong>
-                    <span id="printLocation">-</span>
-                </p>
-            </div>
-
-            <hr>
-
-        </div>
-
-
-        <!-- =========================================
-             FEEDBACK FILTER
-        ========================================== -->
-        <div class="feedback-filter" id="feedbackFilterSection">
-
-            <label for="statusFilter">Filter by Status:</label>
-
-            <select id="statusFilter">
-                <option value="all">All Feedback</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-            </select>
-
-            <span id="feedbackCount">Total: 0 / 0</span>
-
-        </div>
-
-
-        <!-- =========================================
-             FEEDBACK LIST
-        ========================================== -->
-        <div
-            class="dashboard-feedback-scroll"
-            id="feedbackScrollSection"
-        >
-            <div id="pendingList"></div>
-        </div>
 
     </section>
-    <!-- END ADMIN DASHBOARD -->
 
 
-    <!-- =========================================
-         INACTIVITY COUNTDOWN
-    ========================================== -->
+    <!-- INACTIVITY COUNTDOWN -->
     <div
         id="inactivityRing"
         hidden
@@ -432,15 +446,47 @@
     </div>
 
 
-    <!-- =========================================
-         EXTERNAL LIBRARIES
-    ========================================== -->
+    <!-- EXTERNAL LIBRARIES -->
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
     ></script>
 
-    <!-- Keep this as a module -->
     <script type="module" src="./admin.js"></script>
+
+    <!-- DASHBOARD DROPDOWN VIEW SWITCHING -->
+    <script>
+        (() => {
+            const dropdown = document.getElementById("dashboardViewFilter");
+            const feedback = document.getElementById("feedbackSection");
+            const creation = document.getElementById("userCreationSection");
+            const management = document.getElementById("userManagementSection");
+            const title = document.getElementById("dashboardSectionTitle");
+
+            if (!dropdown || !feedback || !creation || !management) return;
+
+            const titles = {
+                feedback: "Feedback Management",
+                userCreation: "User Creation",
+                userManagement: "User Management"
+            };
+
+            function switchView(view) {
+                feedback.hidden = view !== "feedback";
+                creation.hidden = view !== "userCreation";
+                management.hidden = view !== "userManagement";
+
+                if (title) {
+                    title.textContent = titles[view] || titles.feedback;
+                }
+            }
+
+            dropdown.addEventListener("change", () => {
+                switchView(dropdown.value);
+            });
+
+            switchView(dropdown.value);
+        })();
+    </script>
 
 </body>
 </html>
