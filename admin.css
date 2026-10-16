@@ -17,18 +17,21 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+	font-family: Algerian, sans-serif;
 }
 
 html {
     min-height: 100%;
     scroll-behavior: smooth;
+	min-height: 100%;
 }
 
 body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
-    background: var(--bg);
-    color: var(--white);
-    font-family: Arial, Helvetica, sans-serif;
+    background: #25252b;
 }
 
 [hidden] {
@@ -59,7 +62,7 @@ button:disabled {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: min(850px, calc(100% - 32px));
-    min-height: 500px;
+    min-height: 450px;
     margin: 45px auto;
     overflow: hidden;
     isolation: isolate;
@@ -73,7 +76,7 @@ button:disabled {
 .container {
     position: relative;
     width: min(850px, calc(100% - 32px));
-    min-height: 500px;
+    min-height: 450px;
     margin: 45px auto;
     overflow: hidden;
     border: 2px solid var(--orange);
@@ -181,23 +184,20 @@ button:disabled {
 .input-box {
     position: relative;
     width: 100%;
-    height: 54px;
-    margin: 24px 0;
+    height: 50px;
+    margin: 25px 0;
 }
 
 .input-box input {
-    width: 100%;
-    height: 100%;
-    padding: 15px 38px 8px 2px;
-    border: 0;
-    border-bottom: 2px solid #d5d5d5;
-    border-radius: 0;
-    outline: none;
-    background: transparent;
-    color: var(--white);
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    caret-color: var(--orange);
+            width: 100%;
+            height: 100%;
+            padding-right: 35px;
+            background: transparent;
+            border: none;
+            outline: none;
+            border-bottom: 2px solid #fff;
+            color: #fff;
+            font-size: 16px;
 }
 
 .input-box input:focus,
@@ -210,7 +210,7 @@ button:disabled {
     top: 50%;
     left: 0px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 15px;
     pointer-events: none;
     transform: translateY(-50%);
     transition: 0.3s ease;
@@ -346,13 +346,13 @@ button:disabled {
 
 /* Login status */
 #loginStatus {
-    min-height: 20px;
-    margin-top: 12px;
-    color: #f5e12e;
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
+            margin-top: 10px;
+            padding-left: 20px;
+            color: #eef536;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+            text-align: left;
 }
 
 /* =========================================
@@ -389,9 +389,9 @@ button:disabled {
 
 .info-content02 p {
             position: absolute;
-            top: 10%;
+            top: 120%;
             right: 0;
-            width: 35%;
+            width: 45%;
             height: 70%;
             display: flex;
             flex-direction: column;
