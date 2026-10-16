@@ -339,79 +339,75 @@
         </h1>
 
         <div class="buttons">
-
-            <a class="folder-btn"
-               href="CIMFR.pdf"
-               target="_blank"
-               aria-label="Open CIMFR Document">
+            
+            <button
+                class="folder-btn"
+                type="button"
+                onclick="openProjectDocument('HPCL/Madurai/CIMFR.pdf')">
                 📁 CIMFR (Central Institute of Mining and Fuel Research)
-            </a>
-
+            </button>
+            
             <a class="folder-btn"
-               href="PESO_1.pdf"
-               target="_blank"
-               aria-label="Open PESO 1 Document">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/PESO_1.pdf')">
                 📁 PESO_1 (Petroleum and Explosives Safety Organisation)
             </a>
 
             <a class="folder-btn"
-               href="PESO_2.pdf"
-               target="_blank"
-               aria-label="Open PESO 2 Document">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/PESO_2.pdf')">
                 📁 PESO_2 (Petroleum and Explosives Safety Organisation)
             </a>
 
             <a class="folder-btn"
-               href="Cold_Flaring.pdf"
-               target="_blank"
-               aria-label="Open Cold Flaring Document">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/Cold_Flaring.pdf')">
                 📁 Cold_Flaring
             </a>
 
             <a class="folder-btn"
-               href="Degasing_Unit.pdf"
-               target="_blank"
-               aria-label="Open Degasing Unit Document">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/Degasing_Unit.pdf')">
                 📁 Degasing_Unit
             </a>
 
             <a class="folder-btn"
-               href="HYDRO TESTING.pdf"
-               target="_blank"
-               aria-label="Open Hydro Testing Document">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/HYDRO TESTING.pdf')">
                 📁 HST (Hydro Testing Unit)
             </a>
 
             <a class="folder-btn"
-               href="Cold_Flaring.pdf"
-               target="_blank"
-               aria-label="Open Pneumatic Testing Unit">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/Cold_Flaring.pdf')">
                 📁 PNEUMATIC TESTING UNIT
             </a>
 
             <a class="folder-btn"
-               href="Degasing_Unit.pdf"
-               target="_blank"
-               aria-label="Open SC Valve Screwing Machine">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/Degasing_Unit.pdf')">
                 📁 SC Valve Screwing Machine
             </a>
 
             <a class="folder-btn"
-               href="HYDRO TESTING.pdf"
-               target="_blank"
-               aria-label="Open Punch Marking Machine">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/Degasing_Unit.pdf')">
                 📁 PUNCH (Marking) MACHINE
             </a>
 
             <a class="folder-btn"
-               href="HYDRO TESTING.pdf"
-               target="_blank"
-               aria-label="Open Foot Ring Machine">
+               type="button"
+               onclick="openProjectDocument('HPCL/Madurai/Degasing_Unit.pdf')">
                 📁 Foot Ring Machine
             </a>
 
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Private PDF access -->
+    <script src="../document-access.js"></script>
 
     <!-- JavaScript -->
     <script src="../../../heart.js"></script>
