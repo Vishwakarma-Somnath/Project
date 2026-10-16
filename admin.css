@@ -720,320 +720,425 @@
 /* =========================================
    13. PROJECT USER CREATION
 ========================================= */
+#projectUserSection,
+#userCreationSection,
+#userManagementSection {
+    min-width: 0;
+    min-height: 0;
+}
+
 #projectUserSection {
-            flex: 1 1 auto;
-            min-height: 0;
-            margin: 18px 28px 24px;
-            padding: 22px;
-            overflow-y: auto;
-            border: 1px solid var(--orange);
-            border-radius: 12px;
-            background: rgba(20,20,24,.96);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(0,0,0,.22);
-        }
+    flex: 1 1 auto;
+    margin: 18px 28px 24px;
+    padding: 22px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid var(--orange);
+    border-radius: 12px;
+    background: rgba(20, 20, 24, 0.96);
+    color: var(--white);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
+}
 
-        #projectUserSection h2 {
-            margin-bottom: 10px;
-            color: var(--orange-light);
-            font-size: 23px;
-            letter-spacing: .3px;
-        }
+#projectUserSection h2,
+#userCreationSection h2,
+#userManagementSection h2 {
+    margin-bottom: 10px;
+    color: var(--orange-light);
+    font-size: 22px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
 
-        .project-user-description {
-            margin-bottom: 20px;
-            color: #dedee4;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.7;
-        }
+.project-user-description {
+    margin-bottom: 20px;
+    color: #dedee4;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+}
 
-        .project-user-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 17px;
-        }
+.project-user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
+}
 
-        .project-user-field {
-            min-width: 0;
-        }
+.project-user-field {
+    min-width: 0;
+}
 
-        .project-user-field label {
-            display: block;
-            margin-bottom: 8px;
-            color: #f3f3f3;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-        }
+.project-user-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #f3f3f3;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+}
 
-        .project-user-field input,
-        .project-user-field select {
-            display: block;
-            width: 100%;
-            min-height: 45px;
-            padding: 11px 12px;
-            border: 1px solid #666;
-            border-radius: 7px;
-            outline: none;
-            background: #090909;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            font-size: 15px;
-        }
+.project-user-field input,
+.project-user-field select {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 45px;
+    padding: 11px 12px;
+    border: 1px solid #666;
+    border-radius: 7px;
+    outline: none;
+    background: #090909;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+}
 
-        .project-user-field input::placeholder {
-            color: #aaa;
-        }
+.project-user-field input::placeholder {
+    color: #aaa;
+}
 
-        .project-user-field input:focus,
-        .project-user-field select:focus {
-            border-color: var(--orange);
-            outline: 2px solid rgba(228,96,51,.35);
-            outline-offset: 1px;
-        }
+.project-user-field input:focus,
+.project-user-field select:focus {
+    border-color: var(--orange);
+    outline: 2px solid rgba(228, 96, 51, 0.35);
+    outline-offset: 1px;
+}
 
-        .project-user-field select:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+.project-user-field select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 
-        #createPortalUserBtn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            min-height: 46px;
-            margin-top: 20px;
-            padding: 12px 16px;
-            border: 0;
-            border-radius: 7px;
-            background: var(--orange);
-            color: #fff;
-            font-family: Arial, sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            transition: background .2s ease;
-        }
+#createPortalUserBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 46px;
+    margin-top: 20px;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--orange);
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    transition: background 0.2s ease;
+}
 
-        #createPortalUserBtn:hover {
-            background: #c94b22;
-        }
+#createPortalUserBtn:hover {
+    background: #c94b22;
+}
 
-        #createUserStatus {
-            min-height: 20px;
-            margin-top: 12px;
-            color: #f5e12e;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            overflow-wrap: anywhere;
-        }
+#createUserStatus {
+    min-height: 20px;
+    margin-top: 12px;
+    color: #f5e12e;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
 
-        /* =========================================
-           9. ALL USER ACCOUNT MANAGEMENT - NEW
-        ========================================= */
-        #allProjectUsers {
-            margin-top: 30px;
-            padding-top: 22px;
-            border-top: 1px solid var(--border);
-        }
+/* =========================================
+   14. USER MANAGEMENT
+========================================= */
+#allProjectUsers {
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+}
 
-        #allProjectUsers h2 {
-            margin-bottom: 8px;
-            color: var(--orange-light);
-            font-size: 22px;
-        }
+#allProjectUsers h2 {
+    margin-bottom: 8px;
+    color: var(--orange-light);
+    font-size: 22px;
+}
 
-        .all-users-description {
-            margin-bottom: 16px;
-            color: #dedee4;
-            font-size: 14px;
-            line-height: 1.7;
-        }
+.all-users-description {
+    margin-bottom: 16px;
+    color: #dedee4;
+    font-size: 14px;
+    line-height: 1.7;
+}
 
-        .user-management-toolbar {
-            display: grid;
-            grid-template-columns: minmax(180px, 1fr) minmax(140px, 200px) auto;
-            gap: 10px;
-            margin: 16px 0;
-        }
+.user-management-toolbar {
+    display: grid;
+    grid-template-columns:
+        minmax(160px, 1.4fr)
+        repeat(3, minmax(120px, 1fr))
+        auto;
+    gap: 10px;
+    width: 100%;
+    margin: 16px 0;
+}
 
-        .user-management-toolbar input,
-        .user-management-toolbar select {
-            width: 100%;
-            min-width: 0;
-            min-height: 43px;
-            padding: 10px 12px;
-            border: 1px solid #777;
-            border-radius: 7px;
-            background: #090909;
-            color: #fff;
-            outline: none;
-        }
+.user-management-toolbar input,
+.user-management-toolbar select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #777;
+    border-radius: 7px;
+    outline: none;
+    background: #090909;
+    color: #fff;
+}
 
-        .user-management-toolbar input::placeholder {
-            color: #aaa;
-        }
+.user-management-toolbar input::placeholder {
+    color: #aaa;
+}
 
-        .user-management-toolbar input:focus,
-        .user-management-toolbar select:focus {
-            border-color: var(--orange);
-            outline: 2px solid rgba(228,96,51,.3);
-        }
+.user-management-toolbar input:focus,
+.user-management-toolbar select:focus {
+    border-color: var(--orange);
+    outline: 2px solid rgba(228, 96, 51, 0.3);
+}
 
-        .user-management-toolbar button {
-            min-height: 43px;
-            padding: 10px 16px;
-            border: 0;
-            border-radius: 7px;
-            background: var(--orange);
-            color: #fff;
-            font-weight: 700;
-        }
+.user-management-toolbar button {
+    min-height: 43px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--orange);
+    color: #fff;
+    font-weight: 700;
+}
 
-        .user-management-toolbar button:hover {
-            background: #c94b22;
-        }
+.user-management-toolbar button:hover {
+    background: #c94b22;
+}
 
-        .all-users-summary {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 16px 0;
-        }
+.all-users-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+}
 
-        .all-users-summary span {
-            padding: 9px 13px;
-            border: 1px solid rgba(255,255,255,.18);
-            border-radius: 7px;
-            background: rgba(255,255,255,.07);
-            color: #fff;
-            font-size: 14px;
-        }
+.all-users-summary span {
+    padding: 9px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
+    font-size: 14px;
+}
 
-        .all-users-summary strong {
-            color: var(--orange-light);
-        }
+.all-users-summary strong {
+    color: var(--orange-light);
+}
 
-        #allProjectUsersStatus {
-            min-height: 20px;
-            margin: 10px 0;
-            color: #f5e12e;
-            font-size: 13px;
-            line-height: 1.6;
-            overflow-wrap: anywhere;
-        }
+#allProjectUsersStatus {
+    min-height: 20px;
+    margin: 10px 0;
+    color: #f5e12e;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
 
-        #allProjectUsersList {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
-            gap: 12px;
-        }
+#allProjectUsersList {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+}
 
-        .all-project-user-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            width: 100%;
-            min-width: 0;
-            padding: 16px;
-            border: 1px solid #e1e1e1;
-            border-radius: 10px;
-            background: #fff;
-            color: #222;
-            box-shadow: 0 3px 10px rgba(0,0,0,.16);
-        }
+.all-project-user-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e1e1e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #222;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+}
 
-        .all-project-user-info {
-            flex: 1 1 220px;
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
+.all-project-user-info {
+    flex: 1 1 220px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
 
-        .all-project-user-info strong {
-            display: block;
-            margin-bottom: 9px;
-            color: #222;
-            font-size: 17px;
-        }
+.all-project-user-info strong {
+    display: block;
+    margin-bottom: 9px;
+    color: #222;
+    font-size: 17px;
+}
 
-        .all-project-user-info p {
-            margin: 6px 0;
-            color: #333;
-            font-size: 13px;
-            line-height: 1.5;
-        }
+.all-project-user-info p {
+    margin: 6px 0;
+    color: #333;
+    font-size: 13px;
+    line-height: 1.5;
+}
 
-        .user-account-status {
-            display: inline-block;
-            margin-top: 5px;
-            padding: 5px 9px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-        }
+.user-account-status {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
 
-        .user-account-status.is-active {
-            background: #d9fbe5;
-            color: #116334;
-        }
+.user-account-status.is-active {
+    background: #d9fbe5;
+    color: #116334;
+}
 
-        .user-account-status.is-disabled {
-            background: #ffe0de;
-            color: #9f2018;
-        }
+.user-account-status.is-disabled {
+    background: #ffe0de;
+    color: #9f2018;
+}
 
-        .all-project-user-actions {
-            display: flex;
-            flex: 0 1 auto;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+.all-project-user-actions {
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    gap: 8px;
+}
 
-        .all-project-user-actions button {
-            min-height: 38px;
-            padding: 9px 12px;
-            border: 0;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
-            line-height: 1.35;
-        }
+.all-project-user-actions button {
+    min-height: 38px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
 
-        .user-access-toggle {
-            background: var(--orange);
-        }
+.user-access-toggle {
+    background: var(--orange);
+}
 
-        .user-access-toggle:hover {
-            background: #c94b22;
-        }
+.user-access-toggle:hover {
+    background: #c94b22;
+}
 
-        .user-password-reset {
-            background: #2459a9;
-        }
+.user-password-reset {
+    background: #2459a9;
+}
 
-        .user-password-reset:hover {
-            background: #17417e;
-        }
+.user-password-reset:hover {
+    background: #17417e;
+}
 
-        .user-delete-button {
-            background: var(--red);
-        }
+.user-delete-button {
+    background: var(--red);
+}
 
-        .user-delete-button:hover {
-            background: #8f1b13;
-        }
+.user-delete-button:hover {
+    background: #8f1b13;
+}
 
-        .all-project-user-actions button:disabled,
-        .user-management-toolbar button:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+.all-project-user-actions button:disabled,
+.user-management-toolbar button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   15. DASHBOARD VIEW VISIBILITY
+========================================= */
+#feedbackSection[hidden],
+#userCreationSection[hidden],
+#userManagementSection[hidden] {
+    display: none !important;
+}
+
+#feedbackSection,
+#userCreationSection,
+#userManagementSection {
+    min-width: 0;
+    min-height: 0;
+}
+
+#feedbackSection {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#userCreationSection,
+#userManagementSection {
+    display: block;
+    flex: 1 1 0;
+    min-height: 0;
+    margin: 18px 28px 24px;
+    padding: 22px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--orange);
+    border-radius: 12px;
+    background: rgba(20, 20, 24, 0.96);
+    color: var(--white);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
+    scrollbar-width: thin;
+    scrollbar-color: var(--orange) rgba(255, 255, 255, 0.15);
+}
+
+#userCreationSection .project-user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px;
+}
+
+#userCreationSection .project-user-field,
+#userManagementSection .all-project-user-info {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+#userCreationSection .project-user-field input,
+#userCreationSection .project-user-field select,
+#userManagementSection .user-management-toolbar input,
+#userManagementSection .user-management-toolbar select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+#userManagementSection #allProjectUsersList {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+#userManagementSection .all-project-user-card {
+    min-width: 0;
+}
+
+#userManagementSection .all-project-user-actions {
+    flex-wrap: wrap;
+}
+
+/* Accessibility */
+#userCreationSection button:focus-visible,
+#userManagementSection button:focus-visible,
+#userManagementSection input:focus-visible,
+#userManagementSection select:focus-visible {
+    outline: 2px solid var(--orange-light);
+    outline-offset: 2px;
+}
 
 /* =========================================
    16. INACTIVITY COUNTDOWN
