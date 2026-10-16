@@ -1,157 +1,108 @@
-/* =========================================
-   1. GLOBAL STYLES
-========================================= */
-:root {
-    --bg: #25252b;
-    --panel: #17171c;
-    --orange: #e46033;
-    --orange-light: #ff895c;
-    --white: #ffffff;
-    --muted: #c9c9d1;
-    --border: rgba(228, 96, 51, 0.65);
-    --green: #147d45;
-    --red: #b42318;
-}
+/* =====================================
+           1. GLOBAL STYLES
+        ===================================== */
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-	font-family: Algerian, sans-serif;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Algerian, sans-serif;
+        }
 
-html {
-    min-height: 100%;
-    scroll-behavior: smooth;
-	min-height: 100%;
-}
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
 
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: #25252b;
-}
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #25252b;
+        }
 
-[hidden] {
-    display: none !important;
-}
+        [hidden] {
+            display: none !important;
+        }
 
-button,
-input,
-select {
-    font: inherit;
-    -webkit-tap-highlight-color: transparent;
-}
 
-button {
-    cursor: pointer;
-}
+        /* =====================================
+           2. LOGIN CONTAINER
+        ===================================== */
 
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+        #loginSection {
+            position: relative;
+            width: 850px;
+            max-width: calc(100% - 32px);
+            height: 450px;
+            margin: 45px auto;
+            border: 2px solid #e46033;
+            border-radius: 12px;
+            box-shadow: 0 0 25px #e46033;
+            overflow: hidden;
+        }
 
-/* =========================================
-   2. LOGIN CONTAINER
-========================================= */
-#loginSection {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: min(850px, calc(100% - 32px));
-    min-height: 450px;
-    margin: 45px auto;
-    overflow: hidden;
-    isolation: isolate;
-    border: 2px solid var(--orange);
-    border-radius: 16px;
-    background: #1b1b20;
-    box-shadow: 0 0 25px rgba(228, 96, 51, 0.35);
-}
+        .curved-shape {
+            position: absolute;
+            top: -5px;
+            right: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(45deg, #000000, #e46033);
+            transform: rotate(10deg) skewY(40deg);
+            transform-origin: bottom right;
+            animation: curvedShapeEntry 1.5s ease-out forwards;
+            z-index: 1;
+        }
 
-/* Compatibility for existing HTML using .container */
-.container {
-    position: relative;
-    width: min(850px, calc(100% - 32px));
-    min-height: 450px;
-    margin: 45px auto;
-    overflow: hidden;
-    border: 2px solid var(--orange);
-    border-radius: 16px;
-    box-shadow: 0 0 25px rgba(228, 96, 51, 0.5);
-}
+        .curved-shape3 {
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 850px;
+            height: 600px;
+            background: linear-gradient(135deg, #000000, #f5ff3a);
+            transform: rotate(0deg) skewY(-40deg);
+            transform-origin: bottom right;
+            animation: curvedShape3Entry 1.5s ease-out forwards;
+            z-index: 0;
+        }
 
-/* =========================================
-   3. LOGIN BACKGROUND SHAPES
-========================================= */
-.curved-shape,
-.curved-shape2,
-.curved-shape3 {
-    position: absolute;
-    pointer-events: none;
-}
+        .curved-shape2 {
+            position: absolute;
+            top: 100%;
+            left: 250px;
+            width: 850px;
+            height: 700px;
+            background: #000000;
+            border-top: 3px solid #e46033;
+            transform-origin: bottom left;
+            z-index: 1;
+        }
 
-.curved-shape {
-    top: -5px;
-    right: 0;
-    z-index: 1;
-    width: 850px;
-    height: 600px;
-    background: linear-gradient(45deg, #000000, var(--orange));
-    transform: rotate(10deg) skewY(40deg);
-    transform-origin: bottom right;
-    animation: curvedShapeEntry 1.5s ease-out forwards;
-}
+        @keyframes curvedShapeEntry {
+            from {
+                opacity: 0;
+                transform: translateX(100px) rotate(10deg) skewY(40deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(10deg) skewY(40deg);
+            }
+        }
 
-.curved-shape3 {
-    top: -5px;
-    left: 0;
-    z-index: 0;
-    width: 850px;
-    height: 600px;
-    background: linear-gradient(135deg, #000000, #47ff3a);
-    transform: rotate(0deg) skewY(-30deg);
-    transform-origin: bottom right;
-    animation: curvedShape3Entry 1.5s ease-out forwards;
-}
-
-.curved-shape2 {
-    display: none;
-    top: 100%;
-    left: 250px;
-    width: 850px;
-    height: 600px;
-    background: #000000;
-    border-top: 3px solid var(--orange);
-    transform-origin: bottom left;
-}
-
-@keyframes curvedShapeEntry {
-    from {
-        opacity: 0;
-        transform: translateX(100px) rotate(10deg) skewY(40deg);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0) rotate(10deg) skewY(40deg);
-    }
-}
-
-@keyframes curvedShape3Entry {
-    from {
-        opacity: 0;
-        transform: translateX(-100px) rotate(0deg) skewY(-40deg);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0) rotate(0deg) skewY(-40deg);
-    }
-}
+        @keyframes curvedShape3Entry {
+            from {
+                opacity: 0;
+                transform: translateX(-100px) skewY(-40deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) skewY(-40deg);
+            }
+        }
 
 /* =========================================
    4. LOGIN FORM
