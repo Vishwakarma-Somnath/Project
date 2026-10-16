@@ -171,7 +171,7 @@ function createActionButton(label, backgroundColor) {
 
     button.style.cssText = `
         background: ${backgroundColor};
-        color: #fff;
+        color: #000000ff;
         border: 0;
         border-radius: 6px;
         padding: 9px 14px;
@@ -858,11 +858,11 @@ function createProjectUserCard(user) {
 
     card.style.cssText = `
         background: #fff;
-        color: #222;
+        color: #283e3eff;
         border: 1px solid #ddd;
         border-radius: 10px;
         padding: 16px;
-        margin: 12px 0;
+        margin: 8px 0;
         overflow-wrap: anywhere;
         box-shadow: 0 3px 12px rgba(0,0,0,.12);
     `;
@@ -903,7 +903,7 @@ function createProjectUserCard(user) {
         border-radius:15px;
         font-weight:700;
         color:${user.is_active ? "#19e920ff" : "#b42318"};
-        background:${user.is_active ? "#e7f7ee" : "#fdecec"};
+        background:${user.is_active ? "#000000ff" : "#000000ff"};
     `;
 
     company.style.cssText = "margin:8px 0;color:#333;";
@@ -1035,7 +1035,7 @@ function createProjectUserCard(user) {
     /* DELETE USER */
     const deleteButton = createActionButton(
         "Delete User",
-        "#6c757d"
+        "#9facb8ff"
     );
 
     deleteButton.className = "user-delete-button";
@@ -1193,7 +1193,7 @@ function createFeedbackCard(item) {
         border:1px solid #ddd;
         border-radius:10px;
         padding:16px;
-        margin:10px 0;
+        margin: 2px 0;
         background:#fff;
         color:#222;
         overflow-wrap:anywhere;
@@ -1317,7 +1317,7 @@ function createFeedbackCard(item) {
     `;
 
     if (item.status === "pending" || !item.status) {
-        const approve = createActionButton("Approve", "#198754");
+        const approve = createActionButton("Approve", "#16f13bff");
 
         approve.addEventListener("click", () => {
             approveFeedback(item.id);
@@ -1332,7 +1332,7 @@ function createFeedbackCard(item) {
         buttons.append(approve, reject);
     }
 
-    const deleteButton = createActionButton("Delete", "#6c757d");
+    const deleteButton = createActionButton("Delete", "#92a0abff");
 
     deleteButton.addEventListener("click", () => {
         deleteFeedback(item.id);
