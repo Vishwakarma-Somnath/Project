@@ -1581,10 +1581,10 @@
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    flex-wrap: nowrap !important;
     gap: 8px;
     flex: 0 1 auto;
     min-width: 0;
+    width: 100%;
     margin: 0 !important;
 }
 
@@ -1605,7 +1605,7 @@
     flex: 0 0 auto;
     order: 2;
     margin: 0 !important;
-    margin-left: -40% !important;
+    margin-left:auto !important;
     white-space: nowrap;
 }
 
