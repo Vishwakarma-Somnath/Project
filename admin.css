@@ -513,7 +513,7 @@
 
 .dashboard-toolbar-row .dashboard-view-filter label {
     flex: 0 0 auto;
-    color: var(--white);
+    color: white;
     font-size: 14px;
     font-weight: 700;
     white-space: nowrap;
@@ -599,7 +599,7 @@
 
 #feedbackCount {
     margin-left: auto;
-    color: var(--white);
+    color: white;
     font-size: 14px;
     font-weight: 700;
 }
@@ -737,7 +737,7 @@
     border: 1px solid var(--orange);
     border-radius: 12px;
     background: rgba(20, 20, 24, 0.96);
-    color: var(--white);
+    color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
 }
 
@@ -1090,7 +1090,7 @@
     border: 1px solid var(--orange);
     border-radius: 12px;
     background: rgba(20, 20, 24, 0.96);
-    color: var(--white);
+    color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
     scrollbar-width: thin;
     scrollbar-color: var(--orange) rgba(255, 255, 255, 0.15);
@@ -1661,7 +1661,7 @@
     border: 1px solid var(--orange);
     border-radius: 12px;
     background: rgba(20, 20, 24, .96);
-    color: var(--white);
+    color: white;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .22);
     scrollbar-width: thin;
     scrollbar-color: var(--orange) rgba(255, 255, 255, .15);
