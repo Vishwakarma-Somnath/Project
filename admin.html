@@ -5,19 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="images/name-logo04 copy.png" rel="icon">
     <title>Admin Panel | Feedback Management</title>
 
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="admin.css" />
-    
+    <link href="images/name-logo04 copy.png" rel="icon">
+
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="./admin.css">
 </head>
+
 <body>
 
     <!-- =========================================
          ADMIN LOGIN
     ========================================== -->
     <main class="container" id="loginSection">
+
         <div class="curved-shape" aria-hidden="true"></div>
         <div class="curved-shape3" aria-hidden="true"></div>
         <div class="curved-shape2" aria-hidden="true"></div>
@@ -26,9 +32,11 @@
             <h2 class="animation">Admin Login</h2>
 
             <form id="loginForm">
+
                 <div class="input-box animation">
                     <input
                         id="adminEmail"
+                        name="email"
                         type="email"
                         placeholder=" "
                         autocomplete="username"
@@ -41,6 +49,7 @@
                 <div class="input-box animation password-box">
                     <input
                         id="adminPassword"
+                        name="password"
                         type="password"
                         placeholder=" "
                         autocomplete="current-password"
@@ -48,7 +57,11 @@
                     >
 
                     <label for="adminPassword">Password</label>
-                    <i class="bx bxs-lock-alt lock-icon" aria-hidden="true"></i>
+
+                    <i
+                        class="bx bxs-lock-alt lock-icon"
+                        aria-hidden="true"
+                    ></i>
 
                     <button
                         type="button"
@@ -74,6 +87,7 @@
                 >
                     Forgot Password?
                 </button>
+
             </form>
 
             <p id="loginStatus" role="status" aria-live="polite"></p>
@@ -91,7 +105,9 @@
                 dashboard securely.
             </p>
         </section>
+
     </main>
+
 
     <!-- =========================================
          ADMIN DASHBOARD
@@ -100,47 +116,67 @@
 
         <!-- FIXED DASHBOARD HEADER -->
         <header class="dashboard-fixed-header">
+
             <h1>Feedback Administrator Panel</h1>
 
             <div class="dashboard-top-row">
+
                 <div>
-                    <h2 id="dashboardSectionTitle">Pending Feedback</h2>
+                    <h2 id="dashboardSectionTitle">
+                        Pending Feedback
+                    </h2>
                 </div>
 
                 <button id="logoutBtn" type="button">
                     <i class="bx bx-log-out" aria-hidden="true"></i>
                     Logout
                 </button>
+
             </div>
 
             <p id="adminStatus" role="status" aria-live="polite"></p>
 
-            <!-- Existing dashboard selector -->
             <div class="dashboard-view-filter">
-                <label for="dashboardViewFilter">Open Dashboard:</label>
+                <label for="dashboardViewFilter">
+                    Open Dashboard:
+                </label>
 
                 <select id="dashboardViewFilter">
                     <option value="feedback">Feedback Management</option>
-                    <option value="projectUsers">Project Documents — User Management</option>
+                    <option value="projectUsers">
+                        Project Documents — User Management
+                    </option>
                 </select>
             </div>
+
         </header>
 
-        <!-- PROJECT DOCUMENTS USER MANAGEMENT -->
-        <section id="projectUserSection" class="project-user-section" hidden>
+
+        <!-- =========================================
+             PROJECT DOCUMENTS USER MANAGEMENT
+        ========================================== -->
+        <section
+            id="projectUserSection"
+            class="project-user-section"
+            hidden
+        >
+
             <h2>Project Documents — User Management</h2>
 
             <p class="project-user-description">
-                Create a username and password and assign access to a plant.
-                No email notification will be sent.
+                Create a username and password and assign access
+                to a plant. No email notification will be sent.
             </p>
 
-            <!-- EXISTING USER CREATION FORM -->
+
+            <!-- CREATE USER FORM -->
             <form id="createPortalUserForm" autocomplete="off">
+
                 <div class="project-user-grid">
 
                     <div class="project-user-field">
                         <label for="newUsername">Custom Username</label>
+
                         <input
                             id="newUsername"
                             name="username"
@@ -155,6 +191,7 @@
 
                     <div class="project-user-field">
                         <label for="newPassword">Temporary Password</label>
+
                         <input
                             id="newPassword"
                             name="password"
@@ -168,25 +205,52 @@
 
                     <div class="project-user-field">
                         <label for="newCompany">Company</label>
-                        <select id="newCompany" name="company" required>
+
+                        <select
+                            id="newCompany"
+                            name="company"
+                            required
+                        >
                             <option value="">Select company</option>
-                            <option value="BPCL" data-locations="URAN,PIYALA,NASHIK">BPCL</option>
-                            <option value="HPCL" data-locations="MADURAI">HPCL</option>
-                            <option value="IOCL" data-locations="VARANASI,JABALPUR">IOCL</option>
+
+                            <option
+                                value="BPCL"
+                                data-locations="URAN,PIYALA,NASHIK"
+                            >
+                                BPCL
+                            </option>
+
+                            <option
+                                value="HPCL"
+                                data-locations="MADURAI"
+                            >
+                                HPCL
+                            </option>
+
+                            <option
+                                value="IOCL"
+                                data-locations="VARANASI,JABALPUR"
+                            >
+                                IOCL
+                            </option>
                         </select>
                     </div>
 
                     <div class="project-user-field">
                         <label for="newLocation">Plant / Location</label>
+
                         <select
                             id="newLocation"
                             name="location"
                             required
                             disabled
                         >
-                            <option value="">Select company first</option>
+                            <option value="">
+                                Select company first
+                            </option>
                         </select>
                     </div>
+
                 </div>
 
                 <button
@@ -198,26 +262,34 @@
                     Create Project User
                 </button>
 
-                <p id="createUserStatus" role="status" aria-live="polite"></p>
+                <p
+                    id="createUserStatus"
+                    role="status"
+                    aria-live="polite"
+                ></p>
+
             </form>
 
-            <!-- =========================================
-                 NEW: ALL USER ACCOUNT MANAGEMENT
-                 Existing creation form is preserved.
-            ========================================== -->
+
+            <!-- ALL USER ACCOUNTS -->
             <section id="allProjectUsers">
+
                 <h2>
                     <i class="bx bx-group" aria-hidden="true"></i>
                     All User Accounts
                 </h2>
 
                 <p class="all-users-description">
-                    All created Project Documents users will appear here automatically.
-                    Refresh the list whenever you want to verify user accounts.
+                    All created Project Documents users will appear
+                    here. Refresh the list whenever you want to
+                    verify user accounts.
                 </p>
 
                 <div class="user-management-toolbar">
-                    <button type="button" id="refreshAllProjectUsers">
+                    <button
+                        type="button"
+                        id="refreshAllProjectUsers"
+                    >
                         <i class="bx bx-refresh" aria-hidden="true"></i>
                         Refresh Users
                     </button>
@@ -231,47 +303,80 @@
 
                 <div class="all-users-summary">
                     <span>
-                        Total: <strong id="allUsersTotal">0</strong>
+                        Total:
+                        <strong id="allUsersTotal">0</strong>
                     </span>
 
                     <span>
-                        Active: <strong id="allUsersActive">0</strong>
+                        Active:
+                        <strong id="allUsersActive">0</strong>
                     </span>
 
                     <span>
-                        Disabled: <strong id="allUsersDisabled">0</strong>
+                        Disabled:
+                        <strong id="allUsersDisabled">0</strong>
                     </span>
                 </div>
 
                 <div id="allProjectUsersList">
-                    Loading user accounts...
+                    Log in to load user accounts.
                 </div>
+
             </section>
 
-        <!-- A4 PRINT HEADER: EXISTING -->
+        </section>
+        <!-- END PROJECT DOCUMENTS USER MANAGEMENT -->
+
+
+        <!-- =========================================
+             PRINT REPORT HEADER
+             Kept outside the user-management section
+        ========================================== -->
         <div id="printHeader">
+
             <div class="print-heading">
+
                 <div>
                     <h1>Admin Dashboard</h1>
                     <p>Feedback Management Report</p>
                 </div>
 
                 <div id="printQr"></div>
+
             </div>
 
             <div id="printMeta">
-                <p><strong>Admin:</strong> <span id="printUser">-</span></p>
-                <p><strong>Date:</strong> <span id="printDate">-</span></p>
-                <p><strong>Time:</strong> <span id="printTime">-</span></p>
-                <p><strong>Location:</strong> <span id="printLocation">-</span></p>
+                <p>
+                    <strong>Admin:</strong>
+                    <span id="printUser">-</span>
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    <span id="printDate">-</span>
+                </p>
+
+                <p>
+                    <strong>Time:</strong>
+                    <span id="printTime">-</span>
+                </p>
+
+                <p>
+                    <strong>Location:</strong>
+                    <span id="printLocation">-</span>
+                </p>
             </div>
 
             <hr>
+
         </div>
 
 
-        <!-- EXISTING FEEDBACK STATUS FILTER -->
+        <!-- =========================================
+             FEEDBACK FILTER
+        ========================================== -->
         <div class="feedback-filter" id="feedbackFilterSection">
+
             <label for="statusFilter">Filter by Status:</label>
 
             <select id="statusFilter">
@@ -281,11 +386,14 @@
                 <option value="rejected">Rejected</option>
             </select>
 
-            <span id="feedbackCount">Total: 0</span>
+            <span id="feedbackCount">Total: 0 / 0</span>
+
         </div>
 
 
-        <!-- EXISTING FEEDBACK SCROLL AREA -->
+        <!-- =========================================
+             FEEDBACK LIST
+        ========================================== -->
         <div
             class="dashboard-feedback-scroll"
             id="feedbackScrollSection"
@@ -294,20 +402,18 @@
         </div>
 
     </section>
+    <!-- END ADMIN DASHBOARD -->
 
 
-    <!-- QR CODE LIBRARY: EXISTING PRINT FUNCTIONALITY -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-    <!-- Existing admin JavaScript -->
-    <script type="module" src="./admin.js"></script>
-
-    <!-- EXISTING INACTIVITY COUNTDOWN -->
+    <!-- =========================================
+         INACTIVITY COUNTDOWN
+    ========================================== -->
     <div
         id="inactivityRing"
         hidden
         aria-label="Inactivity countdown"
     >
+
         <svg
             id="inactivityTimer"
             viewBox="0 0 100 100"
@@ -319,10 +425,22 @@
         </svg>
 
         <div class="inactivity-ring-content">
-            <span id="inactivityTime">00:00</span>
+            <span id="inactivityTime">02:00</span>
             <small>Auto Logout</small>
         </div>
+
     </div>
+
+
+    <!-- =========================================
+         EXTERNAL LIBRARIES
+    ========================================== -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+    ></script>
+
+    <!-- Keep this as a module -->
+    <script type="module" src="./admin.js"></script>
 
 </body>
 </html>
