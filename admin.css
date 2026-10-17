@@ -1407,7 +1407,7 @@
     /* Login form */
     .form-box {
         width: 100%;
-        padding: 30px 24px 22px;
+        padding: 10px 24px 22px;
     }
 
     .form-box h2 {
@@ -1417,9 +1417,7 @@
 
     /* Input fields */
     .input-box {
-        width: 100%;
         margin: 18px 0;
-        box-sizing: border-box;
     }
 
     .input-box input {
