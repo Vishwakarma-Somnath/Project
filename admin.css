@@ -1578,6 +1578,8 @@
     .form-box {
         width: 100%;
         padding: 10px 24px 150px;
+        position: relative;
+        z-index: 10;
     }
 
     .form-box h2 {
@@ -1609,9 +1611,8 @@
 
     .password-box .toggle-password {
         position: relative;
-        top: -35%;
+        top: -40%;
         right: -265px;
-        z-index: 10;
         }
 
     /* Welcome heading */
