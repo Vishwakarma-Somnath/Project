@@ -1855,17 +1855,3 @@
     }
 }
 
-@media (max-width: 650px) {
-    #loginSection .form-box {
-        position: relative;
-        z-index: 10;
-    }
-
-    #loginSection button,
-    #loginSection input[type="submit"] {
-        position: relative;
-        z-index: 11;
-        pointer-events: auto;
-        touch-action: manipulation;
-    }
-}
