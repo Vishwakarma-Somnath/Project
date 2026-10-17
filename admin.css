@@ -1610,7 +1610,7 @@
     .password-box .toggle-password {
         position: relative;
         top: 15%;
-        right: 0px;
+        right: -250px;
         z-index: 2;
         }
 
