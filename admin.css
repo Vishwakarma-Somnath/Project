@@ -1609,8 +1609,8 @@
 
     .password-box .toggle-password {
         position: absolute;
-        top: 40%;
-        right: 220;
+        top: 25%;
+        align-items: -220px;
         z-index: 2;
         }
 
