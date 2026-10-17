@@ -1394,7 +1394,7 @@
         flex-direction: column;
         width: calc(100% - 24px);
         min-height: 0;
-        margin: 18px auto;
+        margin: 5px auto;
     }
 
     .container {
