@@ -1564,6 +1564,7 @@
         flex-direction: column;
         width: calc(110% - 24px);
         min-height: 120%;
+        z-index: 10;
         margin: 18px auto;
     }
 
@@ -1860,5 +1861,3 @@
         transition-duration: 0.01ms !important;
     }
 }
-
-
