@@ -1608,6 +1608,13 @@
         touch-action: manipulation;
     }
 
+    .password-box .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        z-index: 2;
+        }
+
     /* Welcome heading */
     .info-content {
         display: flex;
