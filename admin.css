@@ -1609,6 +1609,31 @@
         touch-action: manipulation;
     }
 
+    .btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        height: 300%;
+        background: linear-gradient(
+            #25252b,
+            #e46033,
+            #25252b,
+            #e46033
+        );
+        transform: translateY(-66.67%);
+        transition: transform 0.5s ease;
+        z-index: -1;
+    }
+
+    .btn:hover::before {
+        transform: translateY(0);
+    }
+
+    .btn:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 4px;
+    }
+
     .password-box .toggle-password {
         position: relative;
         top: -40%;
