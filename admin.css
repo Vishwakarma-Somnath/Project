@@ -1564,7 +1564,6 @@
         flex-direction: column;
         width: calc(110% - 24px);
         min-height: 120%;
-        z-index: 10;
         margin: 18px auto;
     }
 
@@ -1610,8 +1609,8 @@
 
     .password-box .toggle-password {
         position: absolute;
-        top: 50%;
-        right: 0;
+        top: 40%;
+        right: 220;
         z-index: 2;
         }
 
