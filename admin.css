@@ -1425,6 +1425,10 @@
         box-sizing: border-box;
     }
 
+	.password-box .lock-icon {
+        display: none !important;
+    }
+
     /* Welcome heading */
     .info-content {
         display: flex;
