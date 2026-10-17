@@ -1436,6 +1436,7 @@
     .info-content02 {
         padding: 70px 24px 25px;
         text-align: center;
+        align-items: center;
     }
 
     .info-content02 p {
