@@ -1613,7 +1613,25 @@
         position: relative;
         top: -40%;
         right: -265px;
-        }
+    }
+
+    .forgot-btn {
+        display: block;
+        margin: 2px auto 0;
+        padding: 8px;
+        background: transparent;
+        border: none;
+        color: #55c8ef;
+        font-size: 14px;
+        letter-spacing: 1px;
+        cursor: pointer;
+        animation: fadeIn 0.8s ease 1s forwards;
+        opacity: 0;
+    }
+
+    .forgot-btn:hover {
+        text-decoration: underline;
+        }    
 
     /* Welcome heading */
     .info-content {
