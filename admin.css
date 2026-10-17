@@ -1388,36 +1388,13 @@
    19. MOBILE RESPONSIVE
 ========================================= */
 
-@media screen and (max-width: 650px) {
-
-    /* Main login section */
+@media (max-width: 650px) {
     #loginSection {
         display: flex;
         flex-direction: column;
-        align-items: stretch;
-        width: calc(100% - 28px);
-        max-width: 100%;
-        min-height: auto;
-        height: auto;
-        margin: 14px auto;
-        padding: 0;
-        box-sizing: border-box;
-        overflow: hidden;
-    }
-
-    /* Main container */
-    .container {
-        display: flex;
-        flex-direction: column;
-        width: calc(100% - 28px);
-        max-width: 100%;
-        min-width: 0;
-        min-height: auto;
-        height: auto;
-        margin: 14px auto;
-        padding: 0;
-        box-sizing: border-box;
-        overflow: hidden;
+        width: calc(100% - 24px);
+        min-height: 0;
+        margin: 18px auto;
     }
 
     /* Hide decorative curved shapes */
@@ -1430,18 +1407,12 @@
     /* Login form */
     .form-box {
         width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        padding: 28px 22px 24px;
-        box-sizing: border-box;
+        padding: 30px 24px 22px;
     }
 
     .form-box h2 {
-        font-size: clamp(23px, 6vw, 28px);
-        line-height: 1.3;
-        margin: 0 0 18px;
-        text-align: center;
-        overflow-wrap: anywhere;
+        margin-bottom: 18px;
+        font-size: 28px;
     }
 
     /* Input fields */
@@ -1504,7 +1475,7 @@
     .container * {
         max-width: 100%;
     }
-    
+
     /* Dashboard header */
     .dashboard-fixed-header {
         padding: 14px 13px 10px;
