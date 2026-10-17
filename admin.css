@@ -1425,7 +1425,7 @@
 
     .info-content {
     align-items: center;
-    padding: 0 22px 0;
+    padding: 18px 22px 0;
     margin-top: 25px;
     text-align: center;
     width: 100%;
@@ -1440,7 +1440,7 @@
     }
 
     .info-content02 {
-    padding: 0 24px 20px;
+    padding: 8px 24px 20px;
     margin-top: 12px;
     text-align: center;
     align-items: center;
