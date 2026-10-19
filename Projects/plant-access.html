@@ -189,7 +189,7 @@ heading.textContent = `${companyKey} — Plant Selection`;
 
 async function loadPlants() {
   plantSelection.hidden = false;
-  plantInfo.textContent = `Select a ${companyKey} plant to continue.`;
+  plantInfo.textContent = "";
   plantListStatus.textContent = "Loading plant locations...";
 
   try {
