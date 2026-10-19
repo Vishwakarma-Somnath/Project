@@ -38,7 +38,7 @@ window.PLANT_ACCESS_CONFIG = {
       enabled: true,
       projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Uran/Uran.html",
       documentFolder: "bpcl/uran"
-    }
+    },
 
     {
       name: "Durgapur",
@@ -47,7 +47,7 @@ window.PLANT_ACCESS_CONFIG = {
       enabled: true,
       projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Durgapur/Durgapur.html",
       documentFolder: "bpcl/durgapur"
-    }
+    },
 
     {
       name: "Kurnool",
@@ -56,7 +56,7 @@ window.PLANT_ACCESS_CONFIG = {
       enabled: true,
       projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Kurnool/Kurnool.html",
       documentFolder: "bpcl/kurnool"
-    }
+    },
 
   ],
 
@@ -87,7 +87,7 @@ window.PLANT_ACCESS_CONFIG = {
       enabled: true,
       projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/IOCL/Varanasi/Varanasi.html",
       documentFolder: "iocl/varanasi"
-    }
+    },
   ]
 };
 
