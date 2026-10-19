@@ -129,7 +129,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-(() => {
+(async () => {
   "use strict";
 
   const SUPABASE_URL =
@@ -140,20 +140,67 @@
 
   const BUCKET = "project-documents";
 
-  const params = new URLSearchParams(location.search);
-  const companyParam = params.get("company") || "";
-  const plantParam = params.get("plant") || "";
-  const companyKey = companyParam.toUpperCase();
+  
+const params = new URLSearchParams(location.search);
+const companyParam = params.get("company") || "";
+const plantParam = params.get("plant") || "";
+const companyKey = companyParam.toUpperCase();
 
-  const plantList =
-    window.PLANT_ACCESS_CONFIG?.[companyKey] || [];
-
-  const normalize = value =>
+const normalize = value =>
     String(value || "").trim().toLowerCase();
 
-  const plant = plantList.find(
-    item => normalize(item.name) === normalize(plantParam)
-  );
+let plant = null;
+
+try {
+    if (
+        !["BPCL", "HPCL", "IOCL"].includes(companyKey) ||
+        !plantParam
+    ) {
+        throw new Error("Invalid company or plant.");
+    }
+
+    const response = await fetch(
+        "https://ypxffgqjrckojzzldczm.supabase.co/functions/v1/list-public-plants",
+        {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY
+        },
+            body: JSON.stringify({ company: companyKey })
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || result.success !== true) {
+        throw new Error("Unable to load plant details.");
+    }
+
+    const match = (result.plants || []).find(item =>
+        normalize(item.company) === normalize(companyKey) &&
+        normalize(item.location_slug) === normalize(plantParam)
+    );
+
+    if (match) {
+        plant = {
+            name: match.location_name,
+            company: normalize(match.company),
+            location: match.location_slug,
+            enabled: true,
+            projectUrl: "",
+            documentFolder:
+                normalize(match.company) + "/" + match.location_slug
+        };
+    }
+
+        } catch (error) {
+            console.error("Plant lookup failed:", error);
+            window.plantLookupError =
+                error?.message || "Unable to load plant information.";
+        }
+
 
   const heading = document.getElementById("heading");
   const plantInfo = document.getElementById("plantInfo");
@@ -175,11 +222,13 @@
 
   if (!plant || plant.enabled === false) {
     form.hidden = true;
-    plantInfo.textContent = plant
-      ? "This plant is not enabled yet. Contact your administrator."
-      : "Plant configuration not found. Check plant-access.js and the URL.";
+
+    plantInfo.textContent = window.plantLookupError
+        ? "Could not load plant details. Please try again later."
+        : "Plant not found or inactive. Check the company and plant URL.";
+
     return;
-  }
+}
 
   plantInfo.textContent =
     `Sign in to access ${plant.name} documents.`;
