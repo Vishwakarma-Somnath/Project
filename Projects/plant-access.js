@@ -21,6 +21,7 @@ window.PLANT_ACCESS_CONFIG = {
       projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Piyala/Piyala.html",
       documentFolder: "bpcl/piyala"
     },
+
     {
       name: "Nashik",
       company: "bpcl",
@@ -29,6 +30,7 @@ window.PLANT_ACCESS_CONFIG = {
       projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Nashik/Nashik.html",
       documentFolder: "bpcl/nashik"
     },
+
     {
       name: "Uran",
       company: "bpcl",
@@ -37,6 +39,25 @@ window.PLANT_ACCESS_CONFIG = {
       projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Uran/Uran.html",
       documentFolder: "bpcl/uran"
     }
+
+    {
+      name: "Durgapur",
+      company: "bpcl",
+      location: "durgapur",
+      enabled: true,
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Durgapur/Durgapur.html",
+      documentFolder: "bpcl/durgapur"
+    }
+
+    {
+      name: "Kurnool",
+      company: "bpcl",
+      location: "kurnool",
+      enabled: true,
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Kurnool/Kurnool.html",
+      documentFolder: "bpcl/kurnool"
+    }
+
   ],
 
   HPCL: [
@@ -60,12 +81,12 @@ window.PLANT_ACCESS_CONFIG = {
 
   IOCL: [
     {
-      name: "Add your plant location",
+      name: "Varanasi",
       company: "iocl",
-      location: "add-location",
-      enabled: false,
-      projectUrl: "",
-      documentFolder: "iocl/add-location"
+      location: "varanasi",
+      enabled: true,
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/IOCL/Varanasi/Varanasi.html",
+      documentFolder: "iocl/varanasi"
     }
   ]
 };
