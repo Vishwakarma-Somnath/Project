@@ -326,6 +326,25 @@
                     display: none !important;
                 }
             }
+      
+            .folder-btn {
+                font-family: inherit;
+                width: 100%;
+            }
+
+            #plantLocationsSection[hidden] {
+                display: none !important;
+            }
+
+            #plantLocationsStatus {
+                color: #5fd6ee;
+                overflow-wrap: anywhere;
+            }
+
+            #plantLocationButtons {
+                margin-top: 20px;
+            }
+
     </style>
 </head>
 
@@ -344,28 +363,141 @@
             📂 My Latest Projects Documents
         </h1>
 
-        <div class="buttons">
+        
+    <div class="buttons">
 
-            <a class="folder-btn"
-               href="Projects/BPCL/index.html"
-               aria-label="Open BPCL project documents">
-                🏢 BPCL — Project Documents
-            </a>
+        <button class="folder-btn" type="button" data-company="BPCL">
+            🏢 BPCL — Project Documents
+        </button>
 
-            <a class="folder-btn"
-               href="Projects/HPCL/index.html"
-               aria-label="Open HPCL project documents">
-                🏢 HPCL — Project Documents
-            </a>
+        <button class="folder-btn" type="button" data-company="HPCL">
+            🏢 HPCL — Project Documents
+        </button>
 
-            <a class="folder-btn"
-               href="Projects/IOCL/index.html"
-               aria-label="Open IOCL project documents">
-                🏢 IOCL — Project Documents
-            </a>
+        <button class="folder-btn" type="button" data-company="IOCL">
+            🏢 IOCL — Project Documents
+        </button>
 
-        </div>
     </div>
+
+    <!-- Dynamic Plant / Location Section -->
+    <section id="plantLocationsSection" hidden
+            style="margin-top: 30px;">
+
+        <h2 id="plantLocationsTitle" class="algerian-title"
+            style="font-size: 30px;">
+            Select Plant / Location
+        </h2>
+
+        <p id="plantLocationsStatus" role="status"
+        aria-live="polite"></p>
+
+        <div id="plantLocationButtons" class="buttons"></div>
+
+    </section>
+
+    </div>
+
+    <script>
+    (() => {
+        const SUPABASE_URL =
+            "https://ypxffgqjrckojzzldczm.supabase.co";
+
+        // Apne current Supabase publishable/anon key ka use karein.
+        const SUPABASE_PUBLIC_KEY =
+            "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
+
+        // Is path ko apni actual plant-access.html location ke mutabik set karein.
+        const PLANT_ACCESS_PAGE = "Projects/plant-access.html";
+
+        const section = document.getElementById("plantLocationsSection");
+        const title = document.getElementById("plantLocationsTitle");
+        const status = document.getElementById("plantLocationsStatus");
+        const list = document.getElementById("plantLocationButtons");
+
+        if (!section || !title || !status || !list) return;
+
+        async function loadPlants(company) {
+            section.hidden = false;
+            title.textContent = company + " — Select Plant / Location";
+            status.textContent = "Loading locations...";
+            list.replaceChildren();
+
+            try {
+                const response = await fetch(
+                    SUPABASE_URL + "/functions/v1/list-public-plants",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "apikey": SUPABASE_PUBLIC_KEY,
+                            "Authorization": "Bearer " + SUPABASE_PUBLIC_KEY
+                        },
+                        body: JSON.stringify({ company })
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || result.success !== true) {
+                    throw new Error(result.error || "Could not load locations.");
+                }
+
+                const plants = Array.isArray(result.plants)
+                    ? result.plants
+                    : [];
+
+                if (plants.length === 0) {
+                    status.textContent =
+                        "No active locations found for " + company + ".";
+                    return;
+                }
+
+                plants.forEach((plant) => {
+                    if (
+                        plant.company !== company ||
+                        !plant.location_name ||
+                        !plant.location_slug
+                    ) {
+                        return;
+                    }
+
+                    const button = document.createElement("a");
+                    button.className = "folder-btn";
+                    button.href =
+                        PLANT_ACCESS_PAGE +
+                        "?company=" + encodeURIComponent(plant.company) +
+                        "&plant=" + encodeURIComponent(plant.location_slug);
+
+                    button.textContent = "📍 " + plant.location_name;
+                    button.setAttribute(
+                        "aria-label",
+                        "Open " + plant.location_name + " plant login"
+                    );
+
+                    list.appendChild(button);
+                });
+
+                status.textContent = list.children.length
+                    ? "Select your plant / location."
+                    : "No valid locations are available.";
+            } catch (error) {
+                console.error("Plant location loading failed:", error);
+                status.textContent =
+                    "Locations could not be loaded. Please try again later.";
+            }
+        }
+
+        document.querySelectorAll("[data-company]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const company = button.dataset.company;
+                if (["BPCL", "HPCL", "IOCL"].includes(company)) {
+                    loadPlants(company);
+                }
+            });
+        });
+    })();
+    </script>
 
     <!-- JavaScript -->
     <script src="heart.js"></script>
