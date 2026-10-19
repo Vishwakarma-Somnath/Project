@@ -104,6 +104,12 @@
   <p class="intro" id="plantInfo">
     Sign in with the username and password provided by your administrator.
   </p>
+  
+    <section id="plantSelection" hidden>
+      <p class="intro">Select your plant or location.</p>
+      <div id="plantLocationButtons" class="docs"></div>
+      <p id="plantListStatus" role="status" aria-live="polite"></p>
+    </section>
 
   <form id="portalLoginForm">
     <label for="portalUsername">Username</label>
@@ -141,76 +147,194 @@
   const BUCKET = "project-documents";
 
   
+
 const params = new URLSearchParams(location.search);
 const companyParam = params.get("company") || "";
 const plantParam = params.get("plant") || "";
-const companyKey = companyParam.toUpperCase();
+const companyKey = companyParam.trim().toUpperCase();
 
 const normalize = value =>
-    String(value || "").trim().toLowerCase();
+  String(value || "").trim().toLowerCase();
 
 let plant = null;
+let plantLookupError = "";
 
-try {
-    if (
-        !["BPCL", "HPCL", "IOCL"].includes(companyKey) ||
-        !plantParam
-    ) {
-        throw new Error("Invalid company or plant.");
-    }
+const heading = document.getElementById("heading");
+const plantInfo = document.getElementById("plantInfo");
+const form = document.getElementById("portalLoginForm");
+const status = document.getElementById("loginStatus");
+const documents = document.getElementById("documents");
+const backLink = document.getElementById("backLink");
 
+const plantSelection = document.getElementById("plantSelection");
+const plantLocationButtons =
+  document.getElementById("plantLocationButtons");
+const plantListStatus = document.getElementById("plantListStatus");
+
+form.hidden = true;
+documents.replaceChildren();
+
+backLink.href = "../Documents.html";
+
+if (!["BPCL", "HPCL", "IOCL"].includes(companyKey)) {
+  heading.textContent = "Invalid Company";
+  plantInfo.textContent =
+    "Please return to Documents and select a valid company.";
+  plantListStatus.textContent = "";
+  plantSelection.hidden = true;
+  return;
+}
+
+heading.textContent = `${companyKey} — Plant Selection`;
+
+async function loadPlants() {
+  plantSelection.hidden = false;
+  plantInfo.textContent = `Select a ${companyKey} plant to continue.`;
+  plantListStatus.textContent = "Loading plant locations...";
+
+  try {
     const response = await fetch(
-        "https://ypxffgqjrckojzzldczm.supabase.co/functions/v1/list-public-plants",
-        {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": "Bearer " + SUPABASE_ANON_KEY
+      `${SUPABASE_URL}/functions/v1/list-public-plants`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
         },
-            body: JSON.stringify({ company: companyKey })
-        }
+        body: JSON.stringify({ company: companyKey })
+      }
     );
 
     const result = await response.json();
 
     if (!response.ok || result.success !== true) {
-        throw new Error("Unable to load plant details.");
+      throw new Error(
+        result.error || `Plant service returned HTTP ${response.status}`
+      );
     }
 
-    const match = (result.plants || []).find(item =>
-        normalize(item.company) === normalize(companyKey) &&
-        normalize(item.location_slug) === normalize(plantParam)
+    const plants = (result.plants || []).filter(item =>
+      normalize(item.company) === normalize(companyKey) &&
+      item.is_active !== false &&
+      item.location_name &&
+      item.location_slug
     );
 
-    if (match) {
-        plant = {
-            name: match.location_name,
-            company: normalize(match.company),
-            location: match.location_slug,
-            enabled: true,
-            projectUrl: "",
-            documentFolder:
-                normalize(match.company) + "/" + match.location_slug
-        };
+    plantLocationButtons.replaceChildren();
+
+    if (!plants.length) {
+      plantListStatus.textContent =
+        `No active locations were returned for ${companyKey}. ` +
+        "Check the project_portal_plants table and list-public-plants function.";
+      return;
     }
 
-        } catch (error) {
-            console.error("Plant lookup failed:", error);
-            window.plantLookupError =
-                error?.message || "Unable to load plant information.";
-        }
+    for (const item of plants) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = item.location_name;
 
+      button.addEventListener("click", () => {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set("company", companyKey);
+        nextUrl.searchParams.set("plant", item.location_slug);
+        window.location.assign(nextUrl.href);
+      });
 
-  const heading = document.getElementById("heading");
-  const plantInfo = document.getElementById("plantInfo");
-  const form = document.getElementById("portalLoginForm");
+      plantLocationButtons.appendChild(button);
+    }
+
+    plantListStatus.textContent =
+      "Choose your assigned plant or location.";
+  } catch (error) {
+    console.error("Plant list loading failed:", error);
+    plantListStatus.textContent =
+      "Could not load locations. Please check the plant-list service configuration.";
+  }
+}
+
+if (!plantParam) {
+  await loadPlants();
+  return;
+}
+
+try {
+  if (!/^[a-z0-9-]+$/i.test(plantParam)) {
+    throw new Error("Invalid plant slug in URL.");
+  }
+
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/list-public-plants`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ company: companyKey })
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok || result.success !== true) {
+    throw new Error(
+      result.error || `Plant service returned HTTP ${response.status}`
+    );
+  }
+
+  const match = (result.plants || []).find(item =>
+    normalize(item.company) === normalize(companyKey) &&
+    normalize(item.location_slug) === normalize(plantParam) &&
+    item.is_active !== false
+  );
+
+  if (!match) {
+    throw new Error(
+      `Plant '${plantParam}' was not found in the active ${companyKey} locations.`
+    );
+  }
+
+  plant = {
+    name: match.location_name,
+    company: normalize(match.company),
+    location: normalize(match.location_slug),
+    enabled: true,
+    projectUrl:
+      "https://vishwakarma-somnath.github.io/Project/Projects/" +
+      encodeURIComponent(companyKey) + "/" +
+      encodeURIComponent(match.location_name) + "/" +
+      encodeURIComponent(match.location_name) + ".html",
+    documentFolder:
+      normalize(match.company) + "/" +
+      normalize(match.location_slug)
+  };
+} catch (error) {
+  console.error("Plant lookup failed:", error);
+  plantLookupError = error.message || "Unable to load plant information.";
+}
+
+heading.textContent = plant
+  ? `${companyKey} — ${plant.name}`
+  : "Plant Not Found";
+
+plantSelection.hidden = true;
+
+if (!plant) {
+  form.hidden = true;
+  plantInfo.textContent = plantLookupError;
+  return;
+}
+
+form.hidden = false;
+plantInfo.textContent =
+  `Sign in to access ${plant.name} project.`;
+
   const usernameInput = document.getElementById("portalUsername");
   const passwordInput = document.getElementById("portalPassword");
   const loginButton = document.getElementById("loginButton");
-  const status = document.getElementById("loginStatus");
-  const documents = document.getElementById("documents");
-  const backLink = document.getElementById("backLink");
 
   heading.textContent = plant
     ? `${companyKey} — ${plant.name}`
@@ -388,11 +512,9 @@ try {
 
       if (sessionError) throw sessionError;
 
-      if (plant.projectUrl) {
-        showStatus("Login successful. Opening project...");
-        location.assign(plant.projectUrl);
-        return;
-      }
+      showStatus("Login successful. Opening project...");
+      window.location.assign(plant.projectUrl);
+      return;
 
       await showPrivateDocuments();
 
