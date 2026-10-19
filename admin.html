@@ -422,6 +422,103 @@
         </section>
 
     </section>
+ 
+    <!-- ========================================
+        SECTION 4: PLANT & LOCATION MANAGEMENT
+    ========================================= -->
+    <section
+        id="plantLocationSection"
+        class="project-user-section"
+        hidden
+    >
+        <h2>
+            <i class="bx bx-buildings" aria-hidden="true"></i>
+            Plant & Location Management
+        </h2>
+
+        <p class="project-user-description">
+            Create plants dynamically and manage their access status.
+        </p>
+
+        <!-- CREATE PLANT -->
+        <form id="createPlantForm" autocomplete="off">
+
+            <div class="project-user-grid">
+
+                <div class="project-user-field">
+                    <label for="plantCompany">Company</label>
+
+                    <select id="plantCompany" name="company" required>
+                        <option value="">Select company</option>
+                        <option value="BPCL">BPCL</option>
+                        <option value="HPCL">HPCL</option>
+                        <option value="IOCL">IOCL</option>
+                    </select>
+                </div>
+
+                <div class="project-user-field">
+                    <label for="plantLocationName">Plant / Location Name</label>
+
+                    <input
+                        id="plantLocationName"
+                        name="location"
+                        type="text"
+                        minlength="2"
+                        maxlength="100"
+                        placeholder="e.g. Madurai"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                id="createPlantBtn"
+                class="create-user-btn"
+            >
+                <i class="bx bx-plus-circle" aria-hidden="true"></i>
+                Create Plant
+            </button>
+
+            <p id="createPlantStatus" role="status" aria-live="polite"></p>
+
+        </form>
+
+        <hr>
+
+        <!-- PLANT FILTERS -->
+        <h3>Manage Existing Plants</h3>
+
+        <div class="user-management-filters">
+
+            <div class="project-user-field">
+                <label for="plantFilterCompany">Filter by Company</label>
+
+                <select id="plantFilterCompany">
+                    <option value="">All Companies</option>
+                    <option value="BPCL">BPCL</option>
+                    <option value="HPCL">HPCL</option>
+                    <option value="IOCL">IOCL</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="user-management-toolbar">
+            <button type="button" id="refreshPlantsBtn">
+                <i class="bx bx-refresh" aria-hidden="true"></i>
+                Refresh Plants
+            </button>
+        </div>
+
+        <p id="plantListStatus" role="status" aria-live="polite"></p>
+
+        <div id="plantLocationList">
+            Plants will appear here after the database is connected.
+        </div>
+
+    </section>
 
 
     <!-- INACTIVITY COUNTDOWN -->

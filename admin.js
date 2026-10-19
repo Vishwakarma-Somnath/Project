@@ -52,6 +52,17 @@ const feedbackSection = $("feedbackSection");
 const userCreationSection = $("userCreationSection");
 const userManagementSection = $("userManagementSection");
 
+const plantLocationSection = $("plantLocationSection");
+const createPlantForm = $("createPlantForm");
+const plantCompanySelect = $("plantCompany");
+const plantLocationNameInput = $("plantLocationName");
+const createPlantStatus = $("createPlantStatus");
+const createPlantBtn = $("createPlantBtn");
+const plantFilterCompany = $("plantFilterCompany");
+const plantListStatus = $("plantListStatus");
+const plantLocationList = $("plantLocationList");
+const refreshPlantsBtn = $("refreshPlantsBtn");
+
 const pendingList = $("pendingList");
 const statusFilter = $("statusFilter");
 const feedbackCount = $("feedbackCount");
@@ -96,10 +107,13 @@ const CIRCLE_CY = 50;
  * admin-create-user Edge Function.
  */
 const COMPANY_LOCATIONS = {
-    BPCL: ["URAN", "PIYALA", "NASHIK"],
-    HPCL: ["MADURAI"],
-    IOCL: ["VARANASI", "JABALPUR"]
+    BPCL: [],
+    HPCL: [],
+    IOCL: []
 };
+
+let allPlantLocations = [];
+let isLoadingPlantLocations = false;
 
 /* =========================================================
    STATE
@@ -505,16 +519,15 @@ document.addEventListener("keydown", (event) => {
 function switchDashboardView() {
     if (!dashboardViewFilter) return;
 
-    const view = dashboardViewFilter.value;
-
     const validViews = [
         "feedback",
         "userCreation",
-        "userManagement"
+        "userManagement",
+        "Plant&Location_Addition"
     ];
 
-    const selectedView = validViews.includes(view)
-        ? view
+    const selectedView = validViews.includes(dashboardViewFilter.value)
+        ? dashboardViewFilter.value
         : "feedback";
 
     if (feedbackSection) {
@@ -526,14 +539,19 @@ function switchDashboardView() {
     }
 
     if (userManagementSection) {
-        userManagementSection.hidden =
-            selectedView !== "userManagement";
+        userManagementSection.hidden = selectedView !== "userManagement";
+    }
+
+    if (plantLocationSection) {
+        plantLocationSection.hidden =
+            selectedView !== "Plant&Location_Addition";
     }
 
     const titles = {
-        feedback: "Feedback Management",
-        userCreation: "User Creation",
-        userManagement: "User Management"
+    feedback: "Feedback Management",
+    userCreation: "User Creation",
+    userManagement: "User Management",
+    "Plant&Location_Addition": "Plant & Location Management"
     };
 
     if (dashboardSectionTitle) {
@@ -548,13 +566,13 @@ function switchDashboardView() {
     ) {
         loadProjectUsers();
     }
-}
 
-if (dashboardViewFilter) {
-    dashboardViewFilter.addEventListener(
-        "change",
-        switchDashboardView
-    );
+    if (
+        selectedView === "Plant&Location_Addition" &&
+        auth.currentUser
+    ) {
+        loadPlantLocations();
+    }
 }
 
 /* =========================================================
@@ -1541,34 +1559,33 @@ function updateLocationOptions() {
     if (!companySelect || !locationSelect) return;
 
     const company = companySelect.value;
-    const locations = COMPANY_LOCATIONS[company] || [];
+
+    const locations = allPlantLocations.filter(
+        (plant) =>
+            plant.company === company &&
+            plant.is_active === true
+    );
 
     locationSelect.replaceChildren();
 
     const placeholder = document.createElement("option");
-
     placeholder.value = "";
     placeholder.textContent = locations.length
         ? "Select Location"
-        : "Select company first";
+        : "No active locations available";
 
     locationSelect.appendChild(placeholder);
 
-    locations.forEach((location) => {
+    locations.forEach((plant) => {
         const option = document.createElement("option");
 
-        option.value = location;
-        option.textContent = location;
+        option.value = plant.location_slug;
+        option.textContent = plant.location_name;
 
         locationSelect.appendChild(option);
     });
 
     locationSelect.disabled = locations.length === 0;
-}
-
-if (companySelect && locationSelect) {
-    companySelect.addEventListener("change", updateLocationOptions);
-    updateLocationOptions();
 }
 
 /* =========================================================
@@ -1599,14 +1616,18 @@ if (createForm) {
             return;
         }
 
-        if (!Object.hasOwn(COMPANY_LOCATIONS, company)) {
-            showCreateStatus("Please select a valid company.", true);
-            return;
-        }
+        const validCompany = ["BPCL", "HPCL", "IOCL"].includes(company);
 
-        if (!COMPANY_LOCATIONS[company].includes(location)) {
+        const validLocation = allPlantLocations.some(
+            (plant) =>
+                plant.company === company &&
+                plant.location_slug === location &&
+                plant.is_active === true
+        );
+
+        if (!validCompany || !validLocation) {
             showCreateStatus(
-                "The selected location does not belong to this company.",
+                "Please select a valid company and active location.",
                 true
             );
             return;
@@ -1960,6 +1981,179 @@ document.addEventListener("keydown", (event) => {
         printAdminDashboard();
     }
 });
+
+
+
+async function callPlantManagement(action, extra = {}) {
+    if (!auth.currentUser) {
+        throw new Error("Please log in again.");
+    }
+
+    const token = await auth.currentUser.getIdToken(true);
+
+    const { data, error } = await supabase.functions.invoke(
+        "admin-manage-plants",
+        {
+            body: { action, ...extra },
+            headers: {
+                "x-firebase-id-token": token
+            }
+        }
+    );
+
+    if (error) {
+        throw new Error(error.message || "Plant management request failed.");
+    }
+
+    if (!data || data.success === false || data.error) {
+        throw new Error(data?.error || "Plant management request failed.");
+    }
+
+    return data;
+}
+
+function setPlantStatus(message, isError = false) {
+    if (!createPlantStatus) return;
+
+    createPlantStatus.textContent = message;
+    createPlantStatus.style.color = isError ? "#dc2626" : "#16803c";
+}
+
+function setPlantListStatus(message, isError = false) {
+    if (!plantListStatus) return;
+
+    plantListStatus.textContent = message;
+    plantListStatus.style.color = isError ? "#dc2626" : "#16803c";
+}
+
+function renderPlantLocations() {
+    if (!plantLocationList) return;
+
+    plantLocationList.replaceChildren();
+
+    const selectedCompany = plantFilterCompany?.value || "";
+
+    const plants = allPlantLocations.filter((plant) => {
+        return !selectedCompany || plant.company === selectedCompany;
+    });
+
+    if (!plants.length) {
+        plantLocationList.textContent = "No plants found.";
+        return;
+    }
+
+    plants.forEach((plant) => {
+        const item = document.createElement("div");
+        item.className = "plant-location-item";
+
+        const heading = document.createElement("h3");
+        heading.textContent = plant.company + " — " + plant.location_name;
+
+        const details = document.createElement("p");
+        details.textContent =
+            "Location ID: " + plant.location_slug +
+            " | Status: " + (plant.is_active ? "Active" : "Inactive");
+
+        item.append(heading, details);
+        plantLocationList.appendChild(item);
+    });
+}
+
+async function loadPlantLocations() {
+    if (
+        !plantLocationList ||
+        isLoadingPlantLocations ||
+        !auth.currentUser
+    ) {
+        return;
+    }
+
+    isLoadingPlantLocations = true;
+
+    setPlantListStatus("Loading plants and locations...");
+
+    if (refreshPlantsBtn) {
+        refreshPlantsBtn.disabled = true;
+    }
+
+    try {
+        const data = await callPlantManagement("list");
+
+        allPlantLocations = Array.isArray(data.plants)
+            ? data.plants
+            : [];
+
+        renderPlantLocations();
+        updateLocationOptions();
+
+        populateLocationFilter();
+
+        setPlantListStatus(
+            `Loaded ${allPlantLocations.length} plant/location records.`
+        );
+    } catch (error) {
+        console.error("Load plant locations failed:", error);
+
+        setPlantListStatus(
+            error.message || "Could not load plants.",
+            true
+        );
+    } finally {
+        isLoadingPlantLocations = false;
+
+        if (refreshPlantsBtn) {
+            refreshPlantsBtn.disabled = false;
+        }
+    }
+}
+
+if (createPlantForm) {
+    createPlantForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const company = plantCompanySelect?.value;
+        const locationName = plantLocationNameInput?.value.trim();
+
+        if (!["BPCL", "HPCL", "IOCL"].includes(company)) {
+            setPlantStatus("Please select a valid company.", true);
+            return;
+        }
+
+        if (!locationName || locationName.length < 2 || locationName.length > 100) {
+            setPlantStatus("Location name must be 2–100 characters.", true);
+            return;
+        }
+
+        if (createPlantBtn) createPlantBtn.disabled = true;
+        setPlantStatus("Creating plant/location...");
+
+        try {
+            await callPlantManagement("create", {
+                company,
+                location_name: locationName
+            });
+
+            createPlantForm.reset();
+            setPlantStatus("Plant/location created successfully.");
+
+            await loadPlantLocations();
+        } catch (error) {
+            console.error("Create plant failed:", error);
+            setPlantStatus(error.message || "Could not create plant/location.", true);
+        } finally {
+            if (createPlantBtn) createPlantBtn.disabled = false;
+        }
+    });
+}
+
+if (refreshPlantsBtn) {
+    refreshPlantsBtn.addEventListener("click", loadPlantLocations);
+}
+
+if (plantFilterCompany) {
+    plantFilterCompany.addEventListener("change", renderPlantLocations);
+}
+
 
 /* =========================================================
    END OF ADMIN.JS
