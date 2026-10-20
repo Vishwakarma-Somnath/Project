@@ -24,7 +24,7 @@
     }
 
     main {
-      width: min(500px, 100%);
+      width: min(900px, 100%);
       background: transparent;
       border: none;
       border-radius: 0;
@@ -160,14 +160,14 @@
 </head>
 
 <body>
-<main>
+<section id="plantSelection" hidden>
   <h1 id="heading">Plant Document Portal</h1>
 
   <p class="intro" id="plantInfo">
     Sign in with the username and password provided by your administrator.
   </p>
       
-  <section id="plantSelection" hidden>
+  
     <p class="intro">Select your plant or location.</p>
 
     <div id="plantLocationButtons" class="selectbtn"></div>
@@ -177,7 +177,7 @@
       role="status"
       aria-live="polite"></p>
   </section>
-
+<main>
   <section id="loginSection" hidden>
     <form id="portalLoginForm">
       <label for="portalUsername">Username</label>
