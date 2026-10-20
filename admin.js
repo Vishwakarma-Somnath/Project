@@ -577,7 +577,6 @@ function switchDashboardView() {
     if (
         selectedView === "userCreation" &&
         auth.currentUser &&
-        allPlantLocations.length === 0 &&
         !isLoadingPlantLocations
     ) {
         loadPlantLocations();
