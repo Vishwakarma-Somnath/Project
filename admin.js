@@ -583,6 +583,7 @@ function switchDashboardView() {
         loadPlantLocations();
     }
 }
+
 /* =========================================================
    SECURE USER MANAGEMENT EDGE FUNCTION
    Never expose the Supabase service-role key in browser code.
