@@ -116,7 +116,7 @@ window.PLANT_ACCESS_CONFIG = {
             .forEach(plant => {
                 const option = document.createElement("option");
                 option.value = plant.location;
-                option.textContent = plant.name;
+                option.textContent = "📍 " + plant.name;
                 locationSelect.appendChild(option);
             });
 
