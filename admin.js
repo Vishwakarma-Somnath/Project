@@ -333,7 +333,7 @@ function resetInactivityTimer() {
 
         try {
             await signOut(auth);
-            showLoginMessage("Session expired due to inactivity.");
+            showLoginMessage("Session expired.");
         } catch (error) {
             console.error("Auto logout failed:", error);
 
