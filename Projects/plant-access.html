@@ -412,8 +412,8 @@ plantInfo.textContent = "";
     : "Plant Not Found";
 
   backLink.href = companyParam
-    ? `${encodeURIComponent(companyParam)}../Documents.html`
-    : "../Documents.html";
+    ? `${encodeURIComponent(companyParam)}/Project/Documents.html`
+    : "/Project/Documents.html";
 
   if (!plant || plant.enabled === false) {
     form.hidden = true;
