@@ -2074,13 +2074,22 @@ function renderPlantLocations() {
     });
 }
 
+
 async function loadPlantLocations() {
-    if (
-        !plantLocationList ||
-        isLoadingPlantLocations ||
-        !auth.currentUser
-    ) {
+    if (isLoadingPlantLocations || !auth.currentUser) {
         return;
+    }
+
+    // User Creation dropdown ko loading state mein rakhein.
+    if (companySelect && locationSelect) {
+        locationSelect.replaceChildren();
+
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Loading locations...";
+
+        locationSelect.appendChild(option);
+        locationSelect.disabled = true;
     }
 
     isLoadingPlantLocations = true;
@@ -2094,18 +2103,36 @@ async function loadPlantLocations() {
     try {
         const data = await callPlantManagement("list");
 
-        allPlantLocations = Array.isArray(data.plants)
-            ? data.plants
-            : [];
+        if (!Array.isArray(data.plants)) {
+            throw new Error("Invalid plant list received from server.");
+        }
 
+        allPlantLocations = data.plants;
+
+        // Update Plant & Location Addition panel, if present.
         renderPlantLocations();
+
+        // Update User Creation dropdown immediately.
         updateLocationOptions();
 
+        // Update User Management location filter.
         populateLocationFilter();
 
+        const activeCount = allPlantLocations.filter(
+            (plant) => plant.is_active === true
+        ).length;
+
         setPlantListStatus(
-            `Loaded ${allPlantLocations.length} plant/location records.`
+            `Loaded ${allPlantLocations.length} plant/location records; ${activeCount} active.`
         );
+
+        if (companySelect && locationSelect) {
+            showCreateStatus(
+                activeCount > 0
+                    ? "Plant locations refreshed successfully."
+                    : "No active locations found. Add or activate a location first."
+            );
+        }
     } catch (error) {
         console.error("Load plant locations failed:", error);
 
@@ -2113,6 +2140,23 @@ async function loadPlantLocations() {
             error.message || "Could not load plants.",
             true
         );
+
+        if (companySelect && locationSelect) {
+            locationSelect.replaceChildren();
+
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Could not load locations";
+
+            locationSelect.appendChild(option);
+            locationSelect.disabled = true;
+
+            showCreateStatus(
+                "Could not load plant locations: " +
+                (error.message || "Please try again."),
+                true
+            );
+        }
     } finally {
         isLoadingPlantLocations = false;
 
