@@ -100,7 +100,6 @@
     }
 
     .selectbtn {
-      display: flex;
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
       gap:16px;
@@ -166,29 +165,36 @@
   <p class="intro" id="plantInfo">
     Sign in with the username and password provided by your administrator.
   </p>
-  
-    <section id="plantSelection" hidden>
-      <p class="intro">Select your plant or location.</p>
-      <div class="selectbtn" id="plantLocationButtons" class="docs"></div>
-      <p class="plantListStatus" id="plantListStatus" role="status" aria-live="polite"></p>
-    </section>
+      
+  <section id="plantSelection" hidden>
+    <p class="intro">Select your plant or location.</p>
 
-  <form id="portalLoginForm">
-    <label for="portalUsername">Username</label>
-    <input id="portalUsername" type="text"
-      autocomplete="username" minlength="3" maxlength="40" required>
+    <div id="plantLocationButtons" class="selectbtn"></div>
 
-    <label for="portalPassword">Password</label>
-    <input id="portalPassword" type="password"
-      autocomplete="current-password" required>
+    <p class="plantListStatus"
+      id="plantListStatus"
+      role="status"
+      aria-live="polite"></p>
+  </section>
 
-    <button id="loginButton" type="submit">
-      Login &amp; View Documents
-    </button>
-  </form>
+  <section id="loginSection" hidden>
+    <form id="portalLoginForm">
+      <label for="portalUsername">Username</label>
+      <input id="portalUsername" type="text"
+        autocomplete="username" minlength="3" maxlength="40" required>
 
-  <p id="loginStatus" role="status" aria-live="polite"></p>
-  <div id="documents" class="docs"></div>
+      <label for="portalPassword">Password</label>
+      <input id="portalPassword" type="password"
+        autocomplete="current-password" required>
+
+      <button id="loginButton" type="submit">
+        Login &amp; View Documents
+      </button>
+    </form>
+
+    <p id="loginStatus" role="status" aria-live="polite"></p>
+    <div id="documents" class="docs"></div>
+  </section>
 
   <a class="back" id="backLink" href="../Documents.html">← Back</a>
 </main>
@@ -232,8 +238,10 @@ const plantSelection = document.getElementById("plantSelection");
 const plantLocationButtons =
   document.getElementById("plantLocationButtons");
 const plantListStatus = document.getElementById("plantListStatus");
+const loginSection = document.getElementById("loginSection");
 
 form.hidden = true;
+loginSection.hidden = true;
 documents.replaceChildren();
 
 backLink.href = "../Documents.html";
@@ -391,8 +399,8 @@ if (!plant) {
 }
 
 form.hidden = false;
-plantInfo.textContent =
-  `Sign in to access ${plant.name} project.`;
+loginSection.hidden = false;
+plantInfo.textContent = "";
 
   const usernameInput = document.getElementById("portalUsername");
   const passwordInput = document.getElementById("portalPassword");
