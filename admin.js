@@ -566,14 +566,22 @@ function switchDashboardView() {
     ) {
         loadProjectUsers();
     }
-
+   
     if (
         selectedView === "Plant&Location_Addition" &&
         auth.currentUser
     ) {
         loadPlantLocations();
     }
-}
+
+    if (
+        selectedView === "userCreation" &&
+        auth.currentUser &&
+        allPlantLocations.length === 0 &&
+        !isLoadingPlantLocations
+    ) {
+        loadPlantLocations();
+    }
 
 /* =========================================================
    SECURE USER MANAGEMENT EDGE FUNCTION
@@ -1586,6 +1594,13 @@ function updateLocationOptions() {
     });
 
     locationSelect.disabled = locations.length === 0;
+}
+
+// Update the location dropdown whenever the company changes.
+if (companySelect) {
+    companySelect.addEventListener("change", () => {
+        updateLocationOptions();
+    });
 }
 
 /* =========================================================
