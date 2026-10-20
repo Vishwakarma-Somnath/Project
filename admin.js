@@ -581,6 +581,13 @@ function switchDashboardView() {
     ) {
         loadPlantLocations();
     }
+    
+    if (dashboardViewFilter) {
+        dashboardViewFilter.addEventListener(
+            "change",
+            switchDashboardView
+        );
+    }
 }
 
 /* =========================================================
@@ -1795,10 +1802,14 @@ onAuthStateChanged(
 
             resetInactivityTimer();
 
+            // Automatically load plant locations immediately after login.
+            loadPlantLocations();
+
             loadFeedback();
             switchDashboardView();
 
             showAdminMessage("Admin session active.");
+
         } else {
             if (feedbackUnsubscribe) {
                 feedbackUnsubscribe();
