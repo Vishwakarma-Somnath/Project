@@ -551,7 +551,7 @@ function switchDashboardView() {
     feedback: "Feedback Management",
     userCreation: "User Creation",
     userManagement: "User Management",
-    "Plant&Location_Addition": "Plant & Location Management"
+    "Plant&Location_Addition": "Plant Addition"
     };
 
     if (dashboardSectionTitle) {
