@@ -54,7 +54,7 @@ function runMatter() {
     Math.max(dimensions.width / 25, dimensions.height / 25) / 2,
     {
       render: {
-        fillStyle: `#000`,
+        fillStyle: `#7bf2da`,
         strokeStyle: `#000`,
         lineWidth: 0,
       },
