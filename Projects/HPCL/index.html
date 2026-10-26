@@ -1,37 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
- <!-- Favicons -->
- <link rel="icon" type="image/png" href="/Project/Projects/icon.png">
-<title>HPCL Plant Documents</title>
-<style>
-*{box-sizing:border-box} body{margin:0;min-height:100vh;background:#090909;color:#fff;font-family:Segoe UI,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
-main{width:min(900px,100%);text-align:center} h1{font-size:clamp(28px,5vw,46px);color:#4fc3f7;margin-bottom:8px} p{color:#cbd5e1} .locations{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-top:28px}
-button,.btn{display:block;width:100%;padding:18px 14px;border:0;border-radius:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer}
-button:hover,.btn:hover{filter:brightness(1.15);transform:translateY(-2px)} .back{display:inline-block;margin-top:28px;color:#93c5fd} 
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="/Project/Projects/icon.png">
+
+    <title>HPCL Plant Documents</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #090909;
+            color: #fff;
+            font-family: Segoe UI, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        main {
+            width: min(900px, 100%);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            color: #4fc3f7;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #cbd5e1;
+        }
+
+        .locations {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(210px, 1fr)
+            );
+            gap: 16px;
+            margin-top: 28px;
+        }
+
+        button,
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px 14px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #1d4ed8
+            );
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: filter 0.2s, transform 0.2s;
+        }
+
+        button:hover,
+        .btn:hover {
+            filter: brightness(1.15);
+            transform: translateY(-2px);
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 28px;
+            color: #93c5fd;
+        }
+
+        .message {
+            grid-column: 1 / -1;
+            padding: 16px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            color: #cbd5e1;
+            overflow-wrap: anywhere;
+        }
+    </style>
 </head>
-<body><main>
-<h1>HPCL — Plant Selection</h1>
-<p>Select your plant/location to continue to verification.</p>
-<div id="locations" class="locations"></div>
-<a class="back" href="../../Documents.html">← Back to company selection</a>
-</main>
-<script src="../plant-access.js"></script>
-<script>
-const company = "HPCL";
-const list = (window.PLANT_ACCESS_CONFIG && window.PLANT_ACCESS_CONFIG[company]) || [];
-const root = document.getElementById("locations");
-list.forEach((plant, index) => {
-  const a = document.createElement("a");
-  a.className = "btn";
-  a.href = "../plant-access.html?company=" + encodeURIComponent(company) + "&plant=" + encodeURIComponent(plant.name);
-  a.textContent = "📍 " + plant.name;
-  root.appendChild(a);
-});
-if (!list.length) root.textContent = "No locations configured yet. Edit Projects/plant-access.js.";
-</script>
+
+<body>
+    <main>
+        <h1>HPCL — Plant Selection</h1>
+
+        <p>Select your plant/location to continue to verification.</p>
+
+        <div id="locations" class="locations">
+            <div class="message">Loading plant locations...</div>
+        </div>
+
+        <a class="back" href="../../Documents.html">
+            ← Back to company selection
+        </a>
+    </main>
+
+    <script src="../plant-access.js"></script>
+
+    <script>
+        "use strict";
+
+        const company = "HPCL";
+        const root = document.getElementById("locations");
+
+        const config = window.PLANT_ACCESS_CONFIG;
+        const list =
+            config && Array.isArray(config[company])
+                ? config[company]
+                : [];
+
+        root.replaceChildren();
+
+        if (list.length > 0) {
+            list.forEach((plant) => {
+                if (
+                    !plant ||
+                    typeof plant.name !== "string" ||
+                    !plant.name.trim()
+                ) {
+                    return;
+                }
+
+                const link = document.createElement("a");
+
+                link.className = "btn";
+
+                link.href =
+                    "../plant-access.html?company=" +
+                    encodeURIComponent(company) +
+                    "&plant=" +
+                    encodeURIComponent(plant.name);
+
+                link.textContent = "📍 " + plant.name;
+
+                root.appendChild(link);
+            });
+        }
+
+        if (!root.children.length) {
+            const message = document.createElement("div");
+
+            message.className = "message";
+            message.textContent =
+                "No locations configured yet. Please check " +
+                "Projects/plant-access.js.";
+
+            root.appendChild(message);
+        }
+    </script>
 </body>
 </html>
