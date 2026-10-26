@@ -96,7 +96,7 @@ async function openProjectDocument(path) {
 
         // Viewer URL ko current page ke relative resolve karein.
         const viewerUrl = new URL(
-            "../pdf-viewer.html",
+            "../index.html",
             window.location.href
         );
 
