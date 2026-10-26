@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HPCL Project Document Viewer</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #25252b;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px;
+            background: #17171b;
+            border-bottom: 1px solid #444;
+        }
+
+        button {
+            padding: 9px 14px;
+            border: 0;
+            border-radius: 5px;
+            background: #1788ae;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #pageInfo {
+            min-width: 100px;
+            text-align: center;
+        }
+
+        #status {
+            padding: 24px;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        #pages {
+            padding: 16px 8px 30px;
+        }
+
+        .pdf-page {
+            margin: 0 auto 18px;
+            text-align: center;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: auto;
+            background: white;
+            box-shadow: 0 2px 12px #0008;
+        }
+
+        @media print {
+            header {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <button id="prev" disabled>Previous</button>
+        <span id="pageInfo">Loading PDF...</span>
+        <button id="next" disabled>Next</button>
+        <button id="zoomOut">− Zoom</button>
+        <button id="zoomIn">+ Zoom</button>
+    </header>
+
+    <div id="status">Verifying document link...</div>
+    <main id="pages"></main>
+
+    <script type="module">
+        import * as pdfjsLib from
+            "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
+
+        const status = document.getElementById("status");
+        const pages = document.getElementById("pages");
+        const pageInfo = document.getElementById("pageInfo");
+        const prev = document.getElementById("prev");
+        const next = document.getElementById("next");
+
+        let pdf = null;
+        let currentPage = 1;
+        let zoom = 1;
+        let renderId = 0;
+
+        function showError(message) {
+            status.textContent = message;
+            status.style.color = "#ffb4b4";
+        }
+
+        async function renderPage() {
+            if (!pdf) return;
+
+            const thisRender = ++renderId;
+            const page = await pdf.getPage(currentPage);
+
+            if (thisRender !== renderId) return;
+
+            const original = page.getViewport({ scale: 1 });
+            const width = Math.min(window.innerWidth - 24, 1200);
+            const scale = Math.min(
+                Math.max((width / original.width) * zoom, 0.35),
+                3
+            );
+            const viewport = page.getViewport({ scale });
+
+            pages.replaceChildren();
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "pdf-page";
+
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+            canvas.width = Math.floor(viewport.width * ratio);
+            canvas.height = Math.floor(viewport.height * ratio);
+            canvas.style.width = `${viewport.width}px`;
+            canvas.style.height = `${viewport.height}px`;
+
+            wrapper.appendChild(canvas);
+            pages.appendChild(wrapper);
+
+            await page.render({
+                canvasContext: context,
+                viewport,
+                transform: [ratio, 0, 0, ratio, 0, 0]
+            }).promise;
+
+            if (thisRender !== renderId) return;
+
+            status.textContent = "";
+            pageInfo.textContent = `Page ${currentPage} / ${pdf.numPages}`;
+            prev.disabled = currentPage <= 1;
+            next.disabled = currentPage >= pdf.numPages;
+        }
+
+        async function startViewer() {
+            try {
+                if (!location.hash) {
+                    throw new Error(
+                        "Document URL missing. Please open the PDF from the portal."
+                    );
+                }
+
+                const pdfUrl = decodeURIComponent(
+                    location.hash.slice(1)
+                );
+                const url = new URL(pdfUrl);
+
+                if (
+                    url.protocol !== "https:" ||
+                    url.hostname !== "ypxffgqjrckojzzldczm.supabase.co" ||
+                    !url.pathname.startsWith(
+                        "/storage/v1/object/sign/project-documents/"
+                    )
+                ) {
+                    throw new Error("Invalid PDF link.");
+                }
+
+                const task = pdfjsLib.getDocument({
+                    url: pdfUrl
+                });
+
+                pdf = await task.promise;
+                await renderPage();
+
+            } catch (error) {
+                console.error("PDF viewer error:", error);
+                showError(
+                    "PDF could not be opened. Check your login, access permission, " +
+                    "signed URL expiry, and browser console."
+                );
+            }
+        }
+
+        prev.addEventListener("click", async () => {
+            if (pdf && currentPage > 1) {
+                currentPage--;
+                await renderPage();
+            }
+        });
+
+        next.addEventListener("click", async () => {
+            if (pdf && currentPage < pdf.numPages) {
+                currentPage++;
+                await renderPage();
+            }
+        });
+
+        document.getElementById("zoomIn").addEventListener("click", async () => {
+            zoom = Math.min(zoom + 0.15, 2.5);
+            await renderPage();
+        });
+
+        document.getElementById("zoomOut").addEventListener("click", async () => {
+            zoom = Math.max(zoom - 0.15, 0.5);
+            await renderPage();
+        });
+
+        startViewer();
+    </script>
+</body>
+</html>
