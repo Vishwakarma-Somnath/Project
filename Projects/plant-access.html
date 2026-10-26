@@ -503,6 +503,11 @@ plantInfo.textContent = "";
         continue;
       }
 
+      const pdfTab = window.open(data.signedUrl, "_blank");
+      if (!pdfTab) {
+        alert("Please allow pop-ups to open the PDF.");
+      }
+
       const link = document.createElement("a");
       link.href = data.signedUrl;
       link.target = "_blank";
