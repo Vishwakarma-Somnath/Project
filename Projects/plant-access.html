@@ -495,10 +495,11 @@ plantInfo.textContent = "";
 
       const { data, error: urlError } = await supabase.storage
         .from(BUCKET)
-        .createSignedUrl(path, 60);
+        .createSignedUrl(path, 30);
 
       if (urlError || !data?.signedUrl) {
         console.error("Signed URL creation failed:", urlError);
+        alert("PDF link could not be generated. Please try again.");
         continue;
       }
 
