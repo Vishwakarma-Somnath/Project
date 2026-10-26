@@ -95,8 +95,8 @@ async function openProjectDocument(path) {
 
         // Use the short-lived URL returned by the server.
         const viewerUrl = new URL(
-            "../pdf-viewer.html",
-            window.location.href
+            "/Project/Projects/HPCL/pdf-viewer.html",
+            window.location.origin
         );
 
         pdfTab.location.replace(

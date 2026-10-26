@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Favicons -->
-    <link rel="icon" type="image/png" href="/Project/Projects/icon.png">
-
-    <title>HPCL Plant Documents</title>
+    <title>HPCL Project Document Viewer</title>
 
     <style>
         * {
@@ -16,151 +12,227 @@
 
         body {
             margin: 0;
-            min-height: 100vh;
-            background: #090909;
+            background: #25252b;
             color: #fff;
-            font-family: Segoe UI, Arial, sans-serif;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px;
+            background: #17171b;
+            border-bottom: 1px solid #444;
         }
 
-        main {
-            width: min(900px, 100%);
+        button {
+            padding: 9px 14px;
+            border: 0;
+            border-radius: 5px;
+            background: #1788ae;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #pageInfo {
+            min-width: 100px;
             text-align: center;
         }
 
-        h1 {
-            font-size: clamp(28px, 5vw, 46px);
-            color: #4fc3f7;
-            margin-bottom: 8px;
-        }
-
-        p {
-            color: #cbd5e1;
-        }
-
-        .locations {
-            display: grid;
-            grid-template-columns: repeat(
-                auto-fit,
-                minmax(210px, 1fr)
-            );
-            gap: 16px;
-            margin-top: 28px;
-        }
-
-        button,
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 18px 14px;
-            border: 0;
-            border-radius: 12px;
-            background: linear-gradient(
-                135deg,
-                #2563eb,
-                #1d4ed8
-            );
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: filter 0.2s, transform 0.2s;
-        }
-
-        button:hover,
-        .btn:hover {
-            filter: brightness(1.15);
-            transform: translateY(-2px);
-        }
-
-        .back {
-            display: inline-block;
-            margin-top: 28px;
-            color: #93c5fd;
-        }
-
-        .message {
-            grid-column: 1 / -1;
-            padding: 16px;
-            border: 1px solid #333;
-            border-radius: 10px;
-            color: #cbd5e1;
+        #status {
+            padding: 24px;
+            text-align: center;
             overflow-wrap: anywhere;
+        }
+
+        #pages {
+            padding: 16px 8px 30px;
+        }
+
+        .pdf-page {
+            margin: 0 auto 18px;
+            text-align: center;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: auto;
+            background: white;
+            box-shadow: 0 2px 12px #0008;
+        }
+
+        @media print {
+            header {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
         }
     </style>
 </head>
 
 <body>
-    <main>
-        <h1>HPCL — Plant Selection</h1>
+    <header>
+        <button id="prev" disabled>Previous</button>
+        <span id="pageInfo">Loading PDF...</span>
+        <button id="next" disabled>Next</button>
+        <button id="zoomOut">− Zoom</button>
+        <button id="zoomIn">+ Zoom</button>
+    </header>
 
-        <p>Select your plant/location to continue to verification.</p>
+    <div id="status">Verifying document link...</div>
+    <main id="pages"></main>
 
-        <div id="locations" class="locations">
-            <div class="message">Loading plant locations...</div>
-        </div>
+    <script type="module">
+        import * as pdfjsLib from
+            "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
 
-        <a class="back" href="../../Documents.html">
-            ← Back to company selection
-        </a>
-    </main>
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
 
-    <script src="../plant-access.js"></script>
+        const status = document.getElementById("status");
+        const pages = document.getElementById("pages");
+        const pageInfo = document.getElementById("pageInfo");
+        const prev = document.getElementById("prev");
+        const next = document.getElementById("next");
 
-    <script>
-        "use strict";
+        let pdf = null;
+        let currentPage = 1;
+        let zoom = 1;
+        let renderId = 0;
 
-        const company = "HPCL";
-        const root = document.getElementById("locations");
+        function showError(message) {
+            status.textContent = message;
+            status.style.color = "#ffb4b4";
+        }
 
-        const config = window.PLANT_ACCESS_CONFIG;
-        const list =
-            config && Array.isArray(config[company])
-                ? config[company]
-                : [];
+        async function renderPage() {
+            if (!pdf) return;
 
-        root.replaceChildren();
+            const thisRender = ++renderId;
+            const page = await pdf.getPage(currentPage);
 
-        if (list.length > 0) {
-            list.forEach((plant) => {
-                if (
-                    !plant ||
-                    typeof plant.name !== "string" ||
-                    !plant.name.trim()
-                ) {
-                    return;
+            if (thisRender !== renderId) return;
+
+            const original = page.getViewport({ scale: 1 });
+            const width = Math.min(window.innerWidth - 24, 1200);
+            const scale = Math.min(
+                Math.max((width / original.width) * zoom, 0.35),
+                3
+            );
+            const viewport = page.getViewport({ scale });
+
+            pages.replaceChildren();
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "pdf-page";
+
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+            canvas.width = Math.floor(viewport.width * ratio);
+            canvas.height = Math.floor(viewport.height * ratio);
+            canvas.style.width = `${viewport.width}px`;
+            canvas.style.height = `${viewport.height}px`;
+
+            wrapper.appendChild(canvas);
+            pages.appendChild(wrapper);
+
+            await page.render({
+                canvasContext: context,
+                viewport,
+                transform: [ratio, 0, 0, ratio, 0, 0]
+            }).promise;
+
+            if (thisRender !== renderId) return;
+
+            status.textContent = "";
+            pageInfo.textContent = `Page ${currentPage} / ${pdf.numPages}`;
+            prev.disabled = currentPage <= 1;
+            next.disabled = currentPage >= pdf.numPages;
+        }
+
+        async function startViewer() {
+            try {
+                if (!location.hash) {
+                    throw new Error(
+                        "Document URL missing. Please open the PDF from the portal."
+                    );
                 }
 
-                const link = document.createElement("a");
+                const pdfUrl = decodeURIComponent(
+                    location.hash.slice(1)
+                );
+                const url = new URL(pdfUrl);
 
-                link.className = "btn";
+                if (
+                    url.protocol !== "https:" ||
+                    url.hostname !== "ypxffgqjrckojzzldczm.supabase.co" ||
+                    !url.pathname.startsWith(
+                        "/storage/v1/object/sign/project-documents/"
+                    )
+                ) {
+                    throw new Error("Invalid PDF link.");
+                }
 
-                link.href =
-                    "../plant-access.html?company=" +
-                    encodeURIComponent(company) +
-                    "&plant=" +
-                    encodeURIComponent(plant.name);
+                const task = pdfjsLib.getDocument({
+                    url: pdfUrl
+                });
 
-                link.textContent = "📍 " + plant.name;
+                pdf = await task.promise;
+                await renderPage();
 
-                root.appendChild(link);
-            });
+            } catch (error) {
+                console.error("PDF viewer error:", error);
+                showError(
+                    "PDF could not be opened. Check your login, access permission, " +
+                    "signed URL expiry, and browser console."
+                );
+            }
         }
 
-        if (!root.children.length) {
-            const message = document.createElement("div");
+        prev.addEventListener("click", async () => {
+            if (pdf && currentPage > 1) {
+                currentPage--;
+                await renderPage();
+            }
+        });
 
-            message.className = "message";
-            message.textContent =
-                "No locations configured yet. Please check " +
-                "Projects/plant-access.js.";
+        next.addEventListener("click", async () => {
+            if (pdf && currentPage < pdf.numPages) {
+                currentPage++;
+                await renderPage();
+            }
+        });
 
-            root.appendChild(message);
-        }
+        document.getElementById("zoomIn").addEventListener("click", async () => {
+            zoom = Math.min(zoom + 0.15, 2.5);
+            await renderPage();
+        });
+
+        document.getElementById("zoomOut").addEventListener("click", async () => {
+            zoom = Math.max(zoom - 0.15, 0.5);
+            await renderPage();
+        });
+
+        startViewer();
     </script>
 </body>
 </html>
