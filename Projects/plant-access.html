@@ -495,17 +495,11 @@ plantInfo.textContent = "";
 
       const { data, error: urlError } = await supabase.storage
         .from(BUCKET)
-        .createSignedUrl(path, 30);
+        .createSignedUrl(path, 3600);
 
       if (urlError || !data?.signedUrl) {
         console.error("Signed URL creation failed:", urlError);
-        alert("PDF link could not be generated. Please try again.");
         continue;
-      }
-
-      const pdfTab = window.open(data.signedUrl, "_blank");
-      if (!pdfTab) {
-        alert("Please allow pop-ups to open the PDF.");
       }
 
       const link = document.createElement("a");
