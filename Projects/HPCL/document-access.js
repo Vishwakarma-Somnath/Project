@@ -94,7 +94,14 @@ async function openProjectDocument(path) {
         }
 
         // Use the short-lived URL returned by the server.
-        pdfTab.location.replace(data.url);
+        const viewerUrl = new URL(
+            "../pdf-viewer.html",
+            window.location.href
+        );
+
+        pdfTab.location.replace(
+            viewerUrl.href + "#" + encodeURIComponent(data.url)
+        );
 
     } catch (error) {
         console.error("Document access error:", error);
