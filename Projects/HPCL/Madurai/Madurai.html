@@ -296,76 +296,58 @@
         }
         
         /* ==============================
-        WARRANTY COUNTDOWN
+        WARRANTY COUNTDOWN - SINGLE LINE
         ============================== */
 
         .warranty-box {
-            margin: 25px auto;
-            padding: 20px;
-            max-width: 400px;
+            margin: 20px auto;
+            padding: 12px 18px;
+            width: 100%;
+            max-width: 1200px;
             border: 2px solid #00ffff;
-            border-radius: 15px;
+            border-radius: 12px;
             background: rgba(0, 0, 0, 0.75);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.35);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.25);
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: nowrap;
         }
 
         .warranty-box h2 {
-            margin: 0 0 15px;
+            margin: 0;
             color: #00ffff;
-            font-size: 26px;
+            font-size: 20px;
+            white-space: nowrap;
         }
 
         .warranty-info {
-            margin: 10px 0;
-            font-size: 18px;
-            overflow-wrap: anywhere;
+            margin: 0;
+            font-size: 16px;
+            white-space: nowrap;
         }
 
         #warrantyDays {
             color: #00ff66;
-            font-size: 38px;
+            font-size: 24px;
             font-weight: bold;
         }
 
         #warrantyStatus {
-            margin-top: 12px;
-            font-size: 20px;
+            margin: 0;
+            font-size: 17px;
             font-weight: bold;
             color: #00ff66;
+            white-space: nowrap;
         }
 
         #warrantyStatus.expired {
             color: #ff3333;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
         }
-
-        @media (max-width: 500px) {
-            .warranty-box h2 {
-                font-size: 21px;
-            }
-
-            .warranty-info {
-                font-size: 15px;
-            }
-
-            #warrantyDays {
-                font-size: 32px;
-            }
-        }
-
-        @media (max-width: 500px) {
-            .buttons {
-                grid-template-columns: 1fr;
-            }
-
-            .algerian-title {
-                font-size: 28px;
-            }
-
-            .container {
-                padding: 25px;
-            }
-        }
+            
             /* =========================================
                MOBILE MODE - HIDE NAMES
              ========================================= */
@@ -377,7 +359,26 @@
                 #heart-name03 {
                     display: none !important;
                 }
+/* Mobile: allow horizontal scrolling to preserve one line */
+            .warranty-box {
+                justify-content: flex-start;
+                overflow-x: auto;
+                gap: 18px;
             }
+
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .algerian-title {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 25px;
+            }
+            
+        }
     </style>
 </head>
 
@@ -398,17 +399,17 @@
         
         <!-- Warranty Countdown Section -->
         <div class="warranty-box">
-            <h2>🛡️ Warranty Details</h2>
+
+            <h2>🛡️ Warranty</h2>
 
             <p class="warranty-info">
-                Warranty Start Date:
+                Start Date:
                 <strong id="warrantyStartDate">Loading...</strong>
             </p>
 
             <p class="warranty-info">
-                Remaining Days:
-                <br>
-                <span id="warrantyDays">365</span>
+                Remaining:
+                <span id="warrantyDays">365</span> Days
             </p>
 
             <p id="warrantyStatus">Warranty Active</p>
