@@ -345,22 +345,37 @@
            Only this section scrolls
            ========================================= */
 
+        
+/* =========================================
+   HIDDEN SCROLLBAR - SCROLL STILL WORKS
+   ========================================= */
+
         .buttons {
             display: grid;
             grid-template-columns: repeat(2, minmax(250px, 1fr));
+
+            /* Original button spacing preserved */
             gap: 15px 800px;
 
+            /* Scroll only the document buttons */
             flex: 1;
             min-height: 0;
-
             overflow-y: auto;
             overflow-x: hidden;
-
             align-content: start;
+
             padding: 10px;
 
-            scrollbar-width: thin;
-            scrollbar-color: #00ffff #111;
+            /* Hide scrollbar in Firefox and Internet Explorer */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        /* Hide scrollbar in Chrome, Edge and Safari */
+        .buttons::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
         }
 
         /* DOCUMENT BUTTON */
