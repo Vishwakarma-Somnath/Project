@@ -294,6 +294,64 @@
         .folder-btn:active {
             transform: scale(0.97);
         }
+        
+        /* ==============================
+        WARRANTY COUNTDOWN
+        ============================== */
+
+        .warranty-box {
+            margin: 25px auto;
+            padding: 20px;
+            max-width: 600px;
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.75);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.35);
+        }
+
+        .warranty-box h2 {
+            margin: 0 0 15px;
+            color: #00ffff;
+            font-size: 26px;
+        }
+
+        .warranty-info {
+            margin: 10px 0;
+            font-size: 18px;
+            overflow-wrap: anywhere;
+        }
+
+        #warrantyDays {
+            color: #00ff66;
+            font-size: 38px;
+            font-weight: bold;
+        }
+
+        #warrantyStatus {
+            margin-top: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ff66;
+        }
+
+        #warrantyStatus.expired {
+            color: #ff3333;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+        }
+
+        @media (max-width: 500px) {
+            .warranty-box h2 {
+                font-size: 21px;
+            }
+
+            .warranty-info {
+                font-size: 15px;
+            }
+
+            #warrantyDays {
+                font-size: 32px;
+            }
+        }
 
         @media (max-width: 500px) {
             .buttons {
@@ -337,6 +395,24 @@
         <h1 class="algerian-title">
             📂 My Latest Projects Documents
         </h1>
+        
+        <!-- Warranty Countdown Section -->
+        <div class="warranty-box">
+            <h2>🛡️ Warranty Details</h2>
+
+            <p class="warranty-info">
+                Warranty Start Date:
+                <strong id="warrantyStartDate">Loading...</strong>
+            </p>
+
+            <p class="warranty-info">
+                Remaining Days:
+                <br>
+                <span id="warrantyDays">365</span>
+            </p>
+
+            <p id="warrantyStatus">Warranty Active</p>
+        </div>
 
         <div class="buttons">
             
@@ -424,5 +500,95 @@
     <!-- JavaScript -->
     <script src="../../../heart.js"></script>
 
+    
+    <script>
+        /* =========================================
+        WARRANTY COUNTDOWN - 365 DAYS
+
+        IMPORTANT:
+        Set the actual warranty start date below.
+        The countdown will not reset on page reload.
+        When remaining days reach 0, warranty expires.
+        ========================================= */
+
+        // Change this date to your actual warranty start date.
+        const WARRANTY_START_DATE = "2026-10-10";
+
+        const WARRANTY_DURATION_DAYS = 365;
+
+        function updateWarrantyCountdown() {
+            const startParts = WARRANTY_START_DATE.split("-").map(Number);
+
+            const startDate = new Date(
+                Date.UTC(
+                    startParts[0],
+                    startParts[1] - 1,
+                    startParts[2]
+                )
+            );
+
+            // Use UTC calendar dates to avoid daylight-saving/time
+            // differences changing the number of remaining days.
+            const today = new Date();
+            const todayDate = new Date(
+                Date.UTC(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate()
+                )
+            );
+
+            const elapsedDays = Math.floor(
+                (todayDate.getTime() - startDate.getTime()) /
+                (1000 * 60 * 60 * 24)
+            );
+
+            const remainingDays = Math.max(
+                0,
+                Math.min(
+                    WARRANTY_DURATION_DAYS,
+                    WARRANTY_DURATION_DAYS - elapsedDays
+                )
+            );
+
+            const formattedDate =
+                String(startParts[2]).padStart(2, "0") + "-" +
+                String(startParts[1]).padStart(2, "0") + "-" +
+                startParts[0];
+
+            document.getElementById("warrantyStartDate").textContent =
+                formattedDate;
+
+            document.getElementById("warrantyDays").textContent =
+                remainingDays;
+
+            const statusElement =
+                document.getElementById("warrantyStatus");
+
+            if (elapsedDays >= WARRANTY_DURATION_DAYS) {
+                statusElement.textContent = "Warranty Expired";
+                statusElement.classList.add("expired");
+
+                // Add an HTML comment when the warranty expires.
+                if (!document.getElementById("warrantyExpiredComment")) {
+                    const comment = document.createComment(
+                        "Warranty Expired"
+                    );
+                    comment.id = "warrantyExpiredComment";
+                    document.body.appendChild(comment);
+                }
+            } else if (elapsedDays < 0) {
+                statusElement.textContent = "Warranty Not Started";
+                statusElement.classList.remove("expired");
+            } else {
+                statusElement.textContent = "Warranty Active";
+                statusElement.classList.remove("expired");
+            }
+        }
+
+        // Run immediately and refresh periodically.
+        updateWarrantyCountdown();
+        setInterval(updateWarrantyCountdown, 60 * 1000);
+</script>
 </body>
 </html>
