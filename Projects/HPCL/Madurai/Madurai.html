@@ -347,6 +347,83 @@
         #warrantyStatus.expired {
             color: #ff3333;
         }
+
+        
+        /* =====================================
+        FIXED HEADER + SCROLLABLE DOCUMENTS
+        ===================================== */
+
+        body {
+            overflow: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1800px;
+            height: 100vh;
+            height: 100dvh;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Title stays fixed */
+        .algerian-title {
+            flex-shrink: 0;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        /* Warranty stays fixed */
+        .warranty-box {
+            flex-shrink: 0;
+            margin: 10px auto 20px;
+            width: 100%;
+        }
+
+        /* Only the document buttons scroll */
+        .buttons {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            align-content: start;
+            padding: 10px;
+            gap: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: #00ffff #111;
+        }
+
+        /* Chrome / Edge scrollbar */
+        .buttons::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .buttons::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        .buttons::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 10px;
+        }
+
+        /* Mobile layout */
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 15px;
+            }
+
+            .buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .algerian-title {
+                font-size: 28px;
+            }
+        }
             
             /* =========================================
                MOBILE MODE - HIDE NAMES
