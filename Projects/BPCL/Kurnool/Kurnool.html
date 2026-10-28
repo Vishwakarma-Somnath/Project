@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,30 +12,39 @@
     <title>My_Latest_Projects_Documents</title>
 
     <style>
+        /* =========================================
+           GLOBAL STYLES
+           ========================================= */
+
         * {
             box-sizing: border-box;
         }
 
         html,
         body {
+            width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
-            min-height: 100%;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: black;
+            background: #000;
+            color: #fff;
+
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            color: #fff;
+
+            overflow: hidden;
             position: relative;
-            overflow-x: hidden;
         }
 
-        /* Heart animation canvas */
+        /* =========================================
+           HEART ANIMATION CANVAS
+           ========================================= */
+
         #heart {
             position: fixed;
             top: 0;
@@ -44,7 +54,12 @@
             z-index: 0;
             pointer-events: none;
         }
-		#heart-name,
+
+        /* =========================================
+           FLOATING NAMES
+           ========================================= */
+
+        #heart-name,
         #heart-name01,
         #heart-name02,
         #heart-name03 {
@@ -56,234 +71,339 @@
             font-family: "Algerian", serif;
             font-size: 32px;
             font-weight: bold;
+            white-space: nowrap;
 
-        /* Animation */
             animation:
-        nameFloat 3s ease-in-out infinite,
-        nameGlow 1.8s ease-in-out infinite alternate;
+                nameFloat 3s ease-in-out infinite,
+                nameGlow 1.8s ease-in-out infinite alternate;
+        }
 
-    white-space: nowrap;
-    }
+        /* SOMNATH */
 
-/* ------------------------------
-   SOMNATH
-   ------------------------------ */
+        #heart-name01 {
+            left: 35%;
+            top: 13%;
+            color: #fff;
+            animation-delay: 0s;
 
-#heart-name01 {
-    left: 35%;
-    top: 20%;
-    color: #ffffff;
+            text-shadow:
+                0 0 5px red,
+                0 0 10px red,
+                0 0 15px red,
+                0 0 25px red;
+        }
 
-    animation-delay: 0s;
+        /* VISHWAKARMA_01 */
 
-    text-shadow:
-        0 0 5px red,
-        0 0 10px red,
-        0 0 15px red,
-        0 0 25px red;
-}
+        #heart-name02 {
+            left: 65%;
+            top: 13%;
+            color: #fff;
+            animation-delay: 0.5s;
 
-/* ------------------------------
-   VISHWAKARMA_01
-   ------------------------------ */
+            text-shadow:
+                0 0 5px #5fd6ee,
+                0 0 10px #5fd6ee,
+                0 0 15px #5fd6ee,
+                0 0 25px #5fd6ee;
+        }
 
-#heart-name02 {
-    left: 65%;
-    top: 20%;
-    color: #ffffff;
+        /* ROHIT */
 
-    animation-delay: 0.5s;
+        #heart-name {
+            left: 35%;
+            top: 83%;
+            color: #23f3f0;
+            animation-delay: 1s;
 
-    text-shadow:
-        0 0 5px #5fd6ee,
-        0 0 10px #5fd6ee,
-        0 0 15px #5fd6ee,
-        0 0 25px #5fd6ee;
-}
+            text-shadow:
+                0 0 5px red,
+                0 0 10px red,
+                0 0 15px red,
+                0 0 25px red;
+        }
 
-/* ------------------------------
-   ROHIT
-   ------------------------------ */
+        /* VISHWAKARMA_2 */
 
-#heart-name {
-    left: 35%;
-    top: 83%;
-    color: #23f3f0;
+        #heart-name03 {
+            left: 65%;
+            top: 83%;
+            color: #fef603;
+            animation-delay: 1.5s;
 
-    animation-delay: 1s;
+            text-shadow:
+                0 0 5px #ff5e00,
+                0 0 10px #ff5e00,
+                0 0 15px #ff5e00,
+                0 0 25px #ff5e00;
+        }
 
-    text-shadow:
-        0 0 5px red,
-        0 0 10px red,
-        0 0 15px red,
-        0 0 25px red;
-}
+        /* FLOATING ANIMATION */
 
-/* ------------------------------
-   VISHWAKARMA_2
-   ------------------------------ */
+        @keyframes nameFloat {
+            0% {
+                transform: translate(-50%, 0) rotate(0deg);
+            }
 
-#heart-name03 {
-    left: 65%;
-    top: 83%;
-    color: #fef603;
+            25% {
+                transform: translate(-50%, -8px) rotate(-1deg);
+            }
 
-    animation-delay: 1.5s;
+            50% {
+                transform: translate(-50%, -15px) rotate(0deg);
+            }
 
-    text-shadow:
-        0 0 5px #ff5e00,
-        0 0 10px #ff5e00,
-        0 0 15px #ff5e00,
-        0 0 25px #ff5e00;
-}
+            75% {
+                transform: translate(-50%, -8px) rotate(1deg);
+            }
 
+            100% {
+                transform: translate(-50%, 0) rotate(0deg);
+            }
+        }
 
-/* ==============================
-   FLOATING ANIMATION
-   ============================== */
+        /* GLOW ANIMATION */
 
-@keyframes nameFloat {
+        @keyframes nameGlow {
+            0% {
+                opacity: 0.75;
+                letter-spacing: 1px;
+                filter: brightness(0.9);
+            }
 
-    0% {
-        transform: translate(-50%, 0px) rotate(0deg);
-    }
+            50% {
+                opacity: 1;
+                letter-spacing: 3px;
+                filter: brightness(1.4);
+            }
 
-    25% {
-        transform: translate(-50%, -8px) rotate(-1deg);
-    }
+            100% {
+                opacity: 0.85;
+                letter-spacing: 1px;
+                filter: brightness(1);
+            }
+        }
 
-    50% {
-        transform: translate(-50%, -15px) rotate(0deg);
-    }
-
-    75% {
-        transform: translate(-50%, -8px) rotate(1deg);
-    }
-
-    100% {
-        transform: translate(-50%, 0px) rotate(0deg);
-    }
-}
-
-
-/* ==============================
-   GLOW / PULSE ANIMATION
-   ============================== */
-
-@keyframes nameGlow {
-
-    0% {
-        opacity: 0.75;
-        letter-spacing: 1px;
-        filter: brightness(0.9);
-    }
-
-    50% {
-        opacity: 1;
-        letter-spacing: 3px;
-        filter: brightness(1.4);
-    }
-
-    100% {
-        opacity: 0.85;
-        letter-spacing: 1px;
-        filter: brightness(1);
-    }
-}
+        /* =========================================
+           MAIN CONTAINER
+           Fixed height; inner document list scrolls
+           ========================================= */
 
         .container {
             width: 90%;
             max-width: 1800px;
+
+            height: 100vh;
+            height: 100dvh;
+
+            padding: 20px 30px;
             text-align: center;
+
             background: transparent;
-            padding: 40px;
             border-radius: 20px;
-            backdrop-filter: none;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 
-            /* Keep content above canvas */
             position: relative;
             z-index: 1;
+
+            display: flex;
+            flex-direction: column;
+
+            overflow: hidden;
         }
 
+        /* =========================================
+           PROJECT TITLE
+           Fixed above the scrolling buttons
+           ========================================= */
+
         .algerian-title {
-    font-family: "Algerian", serif;
-    font-size: 50px;
-    font-weight: normal;
-    margin-bottom: 30px;
+            flex-shrink: 0;
 
-    background: linear-gradient(
-        90deg,
-        #ff0000,
-        #ffff00,
-        #00ffff,
-        #00ff00,
-        #ff00ff,
-        #ff0000
-    );
+            font-family: "Algerian", serif;
+            font-size: 50px;
+            font-weight: normal;
 
-    background-size: 400% 100%;
+            margin: 0 0 15px;
 
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+            background: linear-gradient(
+                90deg,
+                #ff0000,
+                #ffff00,
+                #00ffff,
+                #00ff00,
+                #ff00ff,
+                #ff0000
+            );
 
-    animation:
-        titleColor 5s linear infinite,
-        titleFloat 3s ease-in-out infinite;
+            background-size: 400% 100%;
 
-    text-shadow: none;
-    letter-spacing: 3px;
-}
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
 
-@keyframes titleColor {
-    0% {
-        background-position: 0% 50%;
-    }
+            animation:
+                titleColor 5s linear infinite,
+                titleFloat 3s ease-in-out infinite;
 
-    50% {
-        background-position: 100% 50%;
-    }
+            text-shadow: none;
+            letter-spacing: 3px;
+        }
 
-    100% {
-        background-position: 0% 50%;
-    }
-}
+        @keyframes titleColor {
+            0% {
+                background-position: 0% 50%;
+            }
 
-@keyframes titleFloat {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
+            50% {
+                background-position: 100% 50%;
+            }
 
-    50% {
-        transform: translateY(-8px);
-    }
-}
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes titleFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* =========================================
+           WARRANTY COUNTDOWN
+           Single line; stays fixed
+           ========================================= */
+
+        .warranty-box {
+            flex-shrink: 0;
+
+            margin: 0px auto 40px;
+            padding: 12px 18px;
+
+            width: 100%;
+            max-width: 1400px;
+
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+
+            background: rgba(0, 0, 0, 0.75);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.25);
+
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: nowrap;
+
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #00ffff #111;
+        }
+
+        .warranty-box h2 {
+            margin: 0;
+            color: #00ffff;
+            font-size: 20px;
+            white-space: nowrap;
+        }
+
+        .warranty-info {
+            margin: 0;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        #warrantyDays {
+            color: #00ff66;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #warrantyStatus {
+            margin: 0;
+            font-size: 17px;
+            font-weight: bold;
+            color: #00ff66;
+            white-space: nowrap;
+        }
+
+        #warrantyStatus.expired {
+            color: #ff3333;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+        }
+
+        /* =========================================
+           DOCUMENT BUTTON GRID
+           Original width, gap and animation retained
+           Only this section scrolls
+           ========================================= */
+
+        
+/* =========================================
+   HIDDEN SCROLLBAR - SCROLL STILL WORKS
+   ========================================= */
 
         .buttons {
             display: grid;
             grid-template-columns: repeat(2, minmax(250px, 1fr));
+
+            /* Original button spacing preserved */
             gap: 15px 800px;
-			
+
+            /* Scroll only the document buttons */
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            align-content: start;
+
+            padding: 10px;
+
+            /* Hide scrollbar in Firefox and Internet Explorer */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
+
+        /* Hide scrollbar in Chrome, Edge and Safari */
+        .buttons::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        /* DOCUMENT BUTTON */
 
         .folder-btn {
             padding: 20px;
             border: none;
             border-radius: 12px;
+
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: #fff;
+
             font-size: 16px;
             font-weight: bold;
+
             cursor: pointer;
             text-decoration: none;
+
             transition: all 0.3s ease;
+
             display: flex;
             align-items: center;
             justify-content: center;
+
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
+
+        /* BUTTON HOVER ANIMATION */
 
         .folder-btn:hover {
             background: linear-gradient(135deg, #d81dcc, #a21caf);
@@ -291,35 +411,60 @@
             box-shadow: 0 10px 18px rgba(0, 0, 0, 0.3);
         }
 
+        /* BUTTON CLICK ANIMATION */
+
         .folder-btn:active {
             transform: scale(0.97);
+        }
+
+        /* DOCUMENT SCROLLBAR - CHROME / EDGE */
+
+        .buttons::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .buttons::-webkit-scrollbar-track {
+            background: #111;
+        }
+
+        .buttons::-webkit-scrollbar-thumb {
+            background: #00ffff;
+            border-radius: 10px;
+        }
+
+        /* =========================================
+           MOBILE RESPONSIVENESS
+           ========================================= */
+
+        @media (max-width: 768px) {
+            #heart-name,
+            #heart-name01,
+            #heart-name02,
+            #heart-name03 {
+                display: none !important;
+            }
+
+            .container {
+                width: 100%;
+                padding: 15px;
+            }
+
+            .algerian-title {
+                font-size: 28px;
+                letter-spacing: 1px;
+            }
+
+            .warranty-box {
+                justify-content: flex-start;
+                gap: 18px;
+            }
         }
 
         @media (max-width: 500px) {
             .buttons {
                 grid-template-columns: 1fr;
             }
-
-            .algerian-title {
-                font-size: 28px;
-            }
-
-            .container {
-                padding: 25px;
-            }
         }
-            /* =========================================
-               MOBILE MODE - HIDE NAMES
-             ========================================= */
-
-            @media (max-width: 768px) {
-                #heart-name,
-                #heart-name01,
-                #heart-name02,
-                #heart-name03 {
-                    display: none !important;
-                }
-            }
     </style>
 </head>
 
@@ -327,17 +472,41 @@
 
     <!-- Animated Heart Canvas -->
     <canvas id="heart"></canvas>
-	<div id="heart-name01">Somnath</div>
-	<div id="heart-name02">Vishwakarma</div>
-	<div id="heart-name">Rohit</div>
-	<div id="heart-name03">Vishwakarma</div>
 
-    <div class="container" role="main" aria-label="Project Documents">
+    <!-- Floating Names -->
+    <div id="heart-name01">Somnath</div>
+    <div id="heart-name02">Vishwakarma</div>
+    <div id="heart-name">Rohit</div>
+    <div id="heart-name03">Vishwakarma</div>
 
+    <!-- Main Project Documents Container -->
+    <main class="container" role="main" aria-label="Project Documents">
+
+        <!-- Warranty Countdown - Fixed -->
+        <div class="warranty-box">
+
+            <h2>🛡️ Warranty Details </h2>
+
+            <p class="warranty-info">
+                Start Date:
+                <strong id="warrantyStartDate">Loading...</strong>
+            </p>
+
+            <p class="warranty-info">
+                Remaining:
+                <span id="warrantyDays">365</span> Days
+            </p>
+
+            <p id="warrantyStatus">Warranty Active</p>
+
+        </div>
+
+        <!-- Project Title - Fixed -->
         <h1 class="algerian-title">
             📂 My Latest Projects Documents
         </h1>
 
+        <!-- Only this section scrolls -->
         <div class="buttons">
             
             <button
@@ -414,15 +583,119 @@
             </a>
 
         </div>
-    </div>
+    </main>
 
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Private PDF access -->
+    <!-- Private PDF Access - Existing File -->
     <script src="../document-access.js"></script>
 
-    <!-- JavaScript -->
+    <!-- Heart Animation - Existing File -->
     <script src="../../../heart.js"></script>
+
+    <!-- =========================================
+         WARRANTY COUNTDOWN - 365 DAYS
+         ========================================= -->
+
+    <script>
+        /*
+         * WARRANTY CONFIGURATION
+         *
+         * Change WARRANTY_START_DATE to the actual
+         * warranty start date in YYYY-MM-DD format.
+         *
+         * Countdown is calculated from the calendar date,
+         * so reloading the page will not reset it.
+         *
+         * When remaining days reach zero, the status
+         * changes to "Warranty Expired".
+         */
+
+        const WARRANTY_START_DATE = "2026-10-10";
+        const WARRANTY_DURATION_DAYS = 365;
+
+        let warrantyExpiredCommentAdded = false;
+
+        function updateWarrantyCountdown() {
+            const startParts = WARRANTY_START_DATE.split("-").map(Number);
+
+            const startDate = new Date(
+                Date.UTC(
+                    startParts[0],
+                    startParts[1] - 1,
+                    startParts[2]
+                )
+            );
+
+            const today = new Date();
+
+            const todayDate = new Date(
+                Date.UTC(
+                    today.getFullYear(),
+                    today.getMonth(),
+                    today.getDate()
+                )
+            );
+
+            const elapsedDays = Math.floor(
+                (todayDate.getTime() - startDate.getTime()) /
+                (1000 * 60 * 60 * 24)
+            );
+
+            const remainingDays = Math.max(
+                0,
+                Math.min(
+                    WARRANTY_DURATION_DAYS,
+                    WARRANTY_DURATION_DAYS - elapsedDays
+                )
+            );
+
+            const formattedDate =
+                String(startParts[2]).padStart(2, "0") + "-" +
+                String(startParts[1]).padStart(2, "0") + "-" +
+                startParts[0];
+
+            document.getElementById("warrantyStartDate").textContent =
+                formattedDate;
+
+            document.getElementById("warrantyDays").textContent =
+                remainingDays;
+
+            const statusElement =
+                document.getElementById("warrantyStatus");
+
+            if (elapsedDays >= WARRANTY_DURATION_DAYS) {
+
+                statusElement.textContent = "Warranty Expired";
+                statusElement.classList.add("expired");
+
+                // Add the HTML comment once after expiry.
+                if (!warrantyExpiredCommentAdded) {
+                    document.body.appendChild(
+                        document.createComment("Warranty Expired")
+                    );
+
+                    warrantyExpiredCommentAdded = true;
+                }
+
+            } else if (elapsedDays < 0) {
+
+                statusElement.textContent = "Warranty Not Started";
+                statusElement.classList.remove("expired");
+
+            } else {
+
+                statusElement.textContent = "Warranty Active";
+                statusElement.classList.remove("expired");
+
+            }
+        }
+
+        // Update immediately and recheck every minute.
+        updateWarrantyCountdown();
+        setInterval(updateWarrantyCountdown, 60 * 1000);
+    </script>
 
 </body>
 </html>
