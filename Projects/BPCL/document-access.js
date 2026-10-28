@@ -95,7 +95,7 @@ async function openProjectDocument(path) {
 
         // Use the short-lived URL returned by the server.
         const viewerUrl = new URL(
-            "/Project/Projects/HPCL/pdf-viewer.html",
+            "/Project/Projects/BPCL/pdf-viewer.html",
             window.location.origin
         );
 
