@@ -18,7 +18,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "piyala",
       enabled: true,
-      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Piyala.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/BPCL/Piyala.html",
       documentFolder: "bpcl/piyala"
     },
 
@@ -27,7 +27,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "nashik",
       enabled: true,
-      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Nashik.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/BPCL/Nashik.html",
       documentFolder: "bpcl/nashik"
     },
 
@@ -36,7 +36,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "uran",
       enabled: true,
-      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Uran.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/BPCL/Uran.html",
       documentFolder: "bpcl/uran"
     },
 
@@ -45,7 +45,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "durgapur",
       enabled: true,
-      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Durgapur.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/BPCL/Durgapur.html",
       documentFolder: "bpcl/durgapur"
     },
 
@@ -54,7 +54,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "bpcl",
       location: "kurnool",
       enabled: true,
-      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/Kurnool.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/BPCL/BPCL/Kurnool.html",
       documentFolder: "bpcl/kurnool"
     },
 
@@ -66,7 +66,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "hpcl",
       location: "madurai",
       enabled: true,
-      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/HPCL/Madurai.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/HPCL/HPCL/Madurai.html",
       documentFolder: "hpcl/madurai"
     },
     {
@@ -85,7 +85,7 @@ window.PLANT_ACCESS_CONFIG = {
       company: "iocl",
       location: "varanasi",
       enabled: true,
-      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/IOCL/Varanasi.html",
+      projectUrl: "https://vishwakarma-somnath.github.io/Project/Projects/IOCL/IOCL/Varanasi.html",
       documentFolder: "iocl/varanasi"
     },
   ]
