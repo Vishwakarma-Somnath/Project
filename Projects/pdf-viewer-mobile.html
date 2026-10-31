@@ -1,37 +1,234 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-   <!-- Favicons -->
-  <link rel="icon" type="image/png" href="/Project/Projects/icon.png">
-<title>IOCL Plant Documents</title>
-<style>
-*{box-sizing:border-box} body{margin:0;min-height:100vh;background:#090909;color:#fff;font-family:Segoe UI,Arial,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
-main{width:min(900px,100%);text-align:center} h1{font-size:clamp(28px,5vw,46px);color:#4fc3f7;margin-bottom:8px} p{color:#cbd5e1} .locations{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-top:28px}
-button,.btn{display:block;width:100%;padding:18px 14px;border:0;border-radius:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer}
-button:hover,.btn:hover{filter:brightness(1.15);transform:translateY(-2px)} .back{display:inline-block;margin-top:28px;color:#93c5fd}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png"
+        href="/Project/Projects/icon.png">
+
+    <title>Plant Selection | Project Documents</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #090909;
+            color: #fff;
+            font-family: Segoe UI, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        main {
+            width: min(900px, 100%);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 46px);
+            color: #4fc3f7;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #cbd5e1;
+        }
+
+        .locations {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(210px, 1fr)
+            );
+            gap: 16px;
+            margin-top: 28px;
+        }
+
+        button,
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 18px 14px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #1d4ed8
+            );
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover,
+        .btn:hover {
+            filter: brightness(1.15);
+            transform: translateY(-2px);
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 28px;
+            color: #93c5fd;
+            text-decoration: none;
+        }
+
+        .back:hover {
+            color: #fff;
+        }
+
+        .error {
+            color: #ff8585;
+            margin-top: 20px;
+        }
+    </style>
 </head>
-<body><main>
-<h1>IOCL — Plant Selection</h1>
-<p>Select your plant/location to continue to verification.</p>
-<div id="locations" class="locations"></div>
-<a class="back" href="../../Documents.html">← Back to company selection</a>
+
+<body>
+
+<main>
+
+    <h1 id="pageTitle">Plant Selection</h1>
+
+    <p id="description">
+        Select your plant/location to continue to verification.
+    </p>
+
+    <div id="locations" class="locations"></div>
+
+    <div id="errorMessage" class="error"></div>
+
+    <a class="back" href="/Project/Projects/Documents.html">
+        ← Back to company selection
+    </a>
+
 </main>
-<script src="./plant-access.js"></script>
+
+<!-- Common Plant Access Configuration -->
+<script src="/Project/Projects/plant-access.js"></script>
+
 <script>
-const company = "IOCL";
-const list = (window.PLANT_ACCESS_CONFIG && window.PLANT_ACCESS_CONFIG[company]) || [];
-const root = document.getElementById("locations");
-list.forEach((plant, index) => {
-  const a = document.createElement("a");
-  a.className = "btn";
-  a.href = "../plant-access.html?company=" + encodeURIComponent(company) + "&plant=" + encodeURIComponent(plant.name);
-  a.textContent = "📍 " + plant.name;
-  root.appendChild(a);
-});
-if (!list.length) root.textContent = "No locations configured yet. Edit Projects/plant-access.js.";
+
+(function () {
+
+    // Get company name from URL.
+    const params = new URLSearchParams(
+        window.location.search
+    );
+
+    const company = (
+        params.get("company") || "IOCL"
+    ).trim().toUpperCase();
+
+    const allowedCompanies = [
+        "BPCL",
+        "HPCL",
+        "IOCL"
+    ];
+
+    const title = document.getElementById("pageTitle");
+    const description = document.getElementById("description");
+    const root = document.getElementById("locations");
+    const errorMessage = document.getElementById("errorMessage");
+
+    // Validate company.
+    if (!allowedCompanies.includes(company)) {
+
+        title.textContent = "Invalid Company";
+
+        errorMessage.textContent =
+            "Invalid company selection.";
+
+        return;
+    }
+
+    // Update page title.
+    document.title =
+        company + " Plant Documents";
+
+    title.textContent =
+        company + " — Plant Selection";
+
+    description.textContent =
+        "Select your " + company +
+        " plant/location to continue to verification.";
+
+    // Check configuration file.
+    if (
+        !window.PLANT_ACCESS_CONFIG ||
+        typeof window.PLANT_ACCESS_CONFIG !== "object"
+    ) {
+
+        errorMessage.textContent =
+            "Plant configuration could not be loaded. Please check plant-access.js.";
+
+        console.error(
+            "PLANT_ACCESS_CONFIG not found."
+        );
+
+        return;
+    }
+
+    // Get company locations.
+    const list =
+        window.PLANT_ACCESS_CONFIG[company] || [];
+
+    if (!Array.isArray(list) || list.length === 0) {
+
+        errorMessage.textContent =
+            "No locations configured for " + company + ".";
+
+        return;
+    }
+
+    // Generate plant buttons.
+    list.forEach(function (plant) {
+
+        if (!plant || !plant.name) {
+            return;
+        }
+
+        const a = document.createElement("a");
+
+        a.className = "btn";
+
+        a.href =
+            "/Project/Projects/plant-access.html?company=" +
+            encodeURIComponent(company) +
+            "&plant=" +
+            encodeURIComponent(plant.name);
+
+        a.textContent =
+            "📍 " + plant.name;
+
+        root.appendChild(a);
+
+    });
+
+    if (root.children.length === 0) {
+
+        errorMessage.textContent =
+            "No valid plant locations found.";
+
+    }
+
+})();
+
 </script>
+
 </body>
 </html>
