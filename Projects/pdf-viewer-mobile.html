@@ -7,7 +7,7 @@
 
     <title>Mobile PDF Viewer</title>
 
-    <!-- Official PDF.js Text Layer CSS -->
+    <!-- PDF.js Official Text Layer CSS -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/web/pdf_viewer.css">
 
@@ -75,23 +75,31 @@
             font-size: 14px;
         }
 
+        /* PDF CONTAINER */
         #pages {
             width: 100%;
             min-height: calc(100vh - 60px);
-            padding: 8px 0 25px;
+            padding: 8px 8px 25px;
+
             display: flex;
             flex-direction: column;
             align-items: center;
+
             overflow: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* PDF PAGE */
         .pdf-page {
             position: relative;
             flex: 0 0 auto;
+
             margin: 0 auto 15px;
+
             background: white;
             box-shadow: 0 2px 12px #0008;
+
+            overflow: hidden;
         }
 
         /* PDF CANVAS */
@@ -99,29 +107,43 @@
             position: absolute;
             top: 0;
             left: 0;
+
             display: block;
             z-index: 1;
         }
 
-        /* TEXT LAYER */
+        /*
+           TEXT LAYER
+           Do not override PDF.js span positioning.
+        */
         .pdf-page .textLayer {
             position: absolute;
-            inset: 0;
-            z-index: 2;
+            top: 0;
+            left: 0;
 
+            width: 100%;
+            height: 100%;
+
+            z-index: 2;
             overflow: hidden;
-            line-height: 1;
-            text-align: initial;
+
+            cursor: text;
 
             user-select: text;
             -webkit-user-select: text;
             -webkit-touch-callout: default;
 
-            cursor: text;
             pointer-events: auto;
         }
 
-        /* Selection Highlight */
+        /* Allow text selection on mobile */
+        .pdf-page .textLayer span {
+            user-select: text;
+            -webkit-user-select: text;
+            cursor: text;
+        }
+
+        /* Selection highlight */
         .pdf-page .textLayer ::selection {
             background: rgba(0, 120, 215, 0.45);
             color: transparent;
@@ -171,6 +193,10 @@
 
 <script type="module">
 
+/* =====================================
+   PDF.JS IMPORT
+===================================== */
+
 import * as pdfjsLib from
     "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
 
@@ -199,7 +225,12 @@ let pdf = null;
 let pdfUrl = "";
 let currentPage = 1;
 let renderId = 0;
+let resizeTimer;
 
+
+/* =====================================
+   ERROR MESSAGE
+===================================== */
 
 function showError(message) {
 
@@ -219,6 +250,11 @@ async function renderPage() {
 
     const thisRender = ++renderId;
 
+    prev.disabled = true;
+    next.disabled = true;
+
+    status.textContent = "Rendering page...";
+
     try {
 
         const page = await pdf.getPage(currentPage);
@@ -228,18 +264,23 @@ async function renderPage() {
 
         /* Original PDF dimensions */
 
-        const original = page.getViewport({
+        const originalViewport = page.getViewport({
             scale: 1
         });
 
 
-        /* Fit PDF to available width */
+        /* Available display width */
 
-        const availableWidth =
-            Math.max(pages.clientWidth - 16, 200);
+        const availableWidth = Math.max(
+            pages.clientWidth - 16,
+            200
+        );
+
+
+        /* Fit PDF to screen */
 
         const scale = Math.min(
-            availableWidth / original.width,
+            availableWidth / originalViewport.width,
             3
         );
 
@@ -261,12 +302,12 @@ async function renderPage() {
         wrapper.style.width = viewport.width + "px";
         wrapper.style.height = viewport.height + "px";
 
-        /* PDF.js scale variable */
-
         wrapper.style.setProperty(
             "--scale-factor",
             viewport.scale
         );
+
+        pages.appendChild(wrapper);
 
 
         /* =====================================
@@ -295,11 +336,9 @@ async function renderPage() {
 
         wrapper.appendChild(canvas);
 
-        pages.appendChild(wrapper);
-
 
         /* =====================================
-           RENDER PDF PAGE
+           RENDER CANVAS
         ===================================== */
 
         await page.render({
@@ -320,7 +359,7 @@ async function renderPage() {
 
 
         /* =====================================
-           GET REAL PDF TEXT
+           GET PDF TEXT CONTENT
         ===================================== */
 
         const textContent = await page.getTextContent();
@@ -344,17 +383,22 @@ async function renderPage() {
         textLayerDiv.style.width = viewport.width + "px";
         textLayerDiv.style.height = viewport.height + "px";
 
+        textLayerDiv.style.setProperty(
+            "--scale-factor",
+            viewport.scale
+        );
+
         wrapper.appendChild(textLayerDiv);
 
 
         /* =====================================
-           PDF.JS TEXT LAYER RENDERING
+           PDF.JS TEXT LAYER
         ===================================== */
 
-        if (!pdfjsLib.TextLayer) {
+        if (typeof pdfjsLib.TextLayer !== "function") {
 
             throw new Error(
-                "PDF.js TextLayer is not available."
+                "PDF.js TextLayer API is not available."
             );
 
         }
@@ -398,6 +442,9 @@ async function renderPage() {
                 "Page Render Error: " + error.message
             );
 
+            prev.disabled = false;
+            next.disabled = false;
+
         }
 
         console.error(error);
@@ -429,7 +476,11 @@ async function startViewer() {
 
         const url = new URL(pdfUrl);
 
+
+        /* Validate Supabase signed URL */
+
         if (
+
             url.protocol !== "https:" ||
 
             url.hostname !==
@@ -445,10 +496,16 @@ async function startViewer() {
 
         }
 
+
         status.textContent = "Loading PDF...";
 
+
+        /* Load PDF */
+
         const task = pdfjsLib.getDocument({
+
             url: pdfUrl
+
         });
 
         pdf = await task.promise;
@@ -575,8 +632,6 @@ downloadBtn.addEventListener("click", async () => {
    RESIZE HANDLING
 ===================================== */
 
-let resizeTimer;
-
 window.addEventListener("resize", () => {
 
     if (!pdf) return;
@@ -587,7 +642,7 @@ window.addEventListener("resize", () => {
 
         renderPage();
 
-    }, 200);
+    }, 250);
 
 });
 
