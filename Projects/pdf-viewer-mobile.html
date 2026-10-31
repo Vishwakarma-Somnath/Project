@@ -85,7 +85,7 @@
             overflow: auto;
         }
 
-        /* PDF Page */
+        /* PDF PAGE */
         .pdf-page {
             position: relative;
             flex: 0 0 auto;
@@ -94,6 +94,7 @@
             box-shadow: 0 2px 12px #0008;
         }
 
+        /* PDF CANVAS */
         .pdf-page canvas {
             position: absolute;
             top: 0;
@@ -102,16 +103,10 @@
             z-index: 1;
         }
 
-        /* =====================================
-           SELECTABLE PDF TEXT LAYER
-        ===================================== */
-
+        /* TEXT LAYER */
         .pdf-page .textLayer {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             z-index: 2;
 
             overflow: hidden;
@@ -126,20 +121,13 @@
             pointer-events: auto;
         }
 
-        .pdf-page .textLayer span,
-        .pdf-page .textLayer br {
-            color: transparent !important;
-            cursor: text;
-            user-select: text;
-            -webkit-user-select: text;
-        }
-
+        /* Selection Highlight */
         .pdf-page .textLayer ::selection {
-            background: rgba(0, 120, 215, 0.35);
+            background: rgba(0, 120, 215, 0.45);
+            color: transparent;
         }
 
         @media (max-width: 480px) {
-
             header {
                 padding: 8px 4px;
             }
@@ -222,7 +210,7 @@ function showError(message) {
 
 
 /* =====================================
-   RENDER PDF PAGE + TEXT LAYER
+   RENDER PDF PAGE
 ===================================== */
 
 async function renderPage() {
@@ -237,9 +225,15 @@ async function renderPage() {
 
         if (thisRender !== renderId) return;
 
+
+        /* Original PDF dimensions */
+
         const original = page.getViewport({
             scale: 1
         });
+
+
+        /* Fit PDF to available width */
 
         const availableWidth =
             Math.max(pages.clientWidth - 16, 200);
@@ -250,15 +244,15 @@ async function renderPage() {
         );
 
         const viewport = page.getViewport({
-            scale
+            scale: scale
         });
-
-        pages.replaceChildren();
 
 
         /* =====================================
-           PAGE WRAPPER
+           CREATE PAGE WRAPPER
         ===================================== */
+
+        pages.replaceChildren();
 
         const wrapper = document.createElement("div");
 
@@ -267,9 +261,16 @@ async function renderPage() {
         wrapper.style.width = viewport.width + "px";
         wrapper.style.height = viewport.height + "px";
 
+        /* PDF.js scale variable */
+
+        wrapper.style.setProperty(
+            "--scale-factor",
+            viewport.scale
+        );
+
 
         /* =====================================
-           CANVAS
+           CREATE CANVAS
         ===================================== */
 
         const canvas = document.createElement("canvas");
@@ -298,7 +299,7 @@ async function renderPage() {
 
 
         /* =====================================
-           RENDER CANVAS
+           RENDER PDF PAGE
         ===================================== */
 
         await page.render({
@@ -319,12 +320,17 @@ async function renderPage() {
 
 
         /* =====================================
-           GET PDF TEXT CONTENT
+           GET REAL PDF TEXT
         ===================================== */
 
         const textContent = await page.getTextContent();
 
         if (thisRender !== renderId) return;
+
+        console.log(
+            "PDF Text Items:",
+            textContent.items.length
+        );
 
 
         /* =====================================
@@ -342,13 +348,13 @@ async function renderPage() {
 
 
         /* =====================================
-           PDF.JS TEXT LAYER
+           PDF.JS TEXT LAYER RENDERING
         ===================================== */
 
-        if (typeof pdfjsLib.TextLayer !== "function") {
+        if (!pdfjsLib.TextLayer) {
 
             throw new Error(
-                "PDF.js TextLayer API is unavailable. Please check the PDF.js version."
+                "PDF.js TextLayer is not available."
             );
 
         }
