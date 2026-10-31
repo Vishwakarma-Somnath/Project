@@ -7,6 +7,10 @@
 
     <title>Mobile PDF Viewer</title>
 
+    <!-- Official PDF.js Text Layer CSS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/web/pdf_viewer.css">
+
     <style>
         * {
             box-sizing: border-box;
@@ -81,51 +85,56 @@
             overflow: auto;
         }
 
+        /* PDF Page */
         .pdf-page {
             position: relative;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .pdf-page canvas {
-            display: block;
-            max-width: 100%;
-            height: auto;
+            flex: 0 0 auto;
+            margin: 0 auto 15px;
             background: white;
             box-shadow: 0 2px 12px #0008;
         }
 
-        /* =====================================
-           PDF TEXT SELECTION LAYER
-        ===================================== */
-
-        .textLayer {
+        .pdf-page canvas {
             position: absolute;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
+            display: block;
+            z-index: 1;
+        }
+
+        /* =====================================
+           SELECTABLE PDF TEXT LAYER
+        ===================================== */
+
+        .pdf-page .textLayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+
             overflow: hidden;
             line-height: 1;
             text-align: initial;
-            transform-origin: 0 0;
+
             user-select: text;
             -webkit-user-select: text;
             -webkit-touch-callout: default;
+
+            cursor: text;
             pointer-events: auto;
         }
 
-        .textLayer span,
-        .textLayer br {
-            position: absolute;
-            color: transparent;
-            white-space: pre;
-            transform-origin: 0 0;
+        .pdf-page .textLayer span,
+        .pdf-page .textLayer br {
+            color: transparent !important;
             cursor: text;
+            user-select: text;
+            -webkit-user-select: text;
         }
 
-        .textLayer ::selection {
+        .pdf-page .textLayer ::selection {
             background: rgba(0, 120, 215, 0.35);
         }
 
@@ -177,11 +186,6 @@
 import * as pdfjsLib from
     "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
 
-import {
-    TextLayer
-} from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
-
-
 pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
 
@@ -218,7 +222,7 @@ function showError(message) {
 
 
 /* =====================================
-   RENDER PDF PAGE WITH TEXT LAYER
+   RENDER PDF PAGE + TEXT LAYER
 ===================================== */
 
 async function renderPage() {
@@ -251,11 +255,22 @@ async function renderPage() {
 
         pages.replaceChildren();
 
+
+        /* =====================================
+           PAGE WRAPPER
+        ===================================== */
+
         const wrapper = document.createElement("div");
 
         wrapper.className = "pdf-page";
 
+        wrapper.style.width = viewport.width + "px";
         wrapper.style.height = viewport.height + "px";
+
+
+        /* =====================================
+           CANVAS
+        ===================================== */
 
         const canvas = document.createElement("canvas");
 
@@ -283,7 +298,7 @@ async function renderPage() {
 
 
         /* =====================================
-           RENDER PDF CANVAS
+           RENDER CANVAS
         ===================================== */
 
         await page.render({
@@ -304,29 +319,41 @@ async function renderPage() {
 
 
         /* =====================================
-           CREATE TEXT LAYER
+           GET PDF TEXT CONTENT
         ===================================== */
 
         const textContent = await page.getTextContent();
 
         if (thisRender !== renderId) return;
 
+
+        /* =====================================
+           CREATE TEXT LAYER
+        ===================================== */
+
         const textLayerDiv = document.createElement("div");
 
         textLayerDiv.className = "textLayer";
 
         textLayerDiv.style.width = viewport.width + "px";
-
         textLayerDiv.style.height = viewport.height + "px";
 
         wrapper.appendChild(textLayerDiv);
 
 
         /* =====================================
-           RENDER SELECTABLE TEXT
+           PDF.JS TEXT LAYER
         ===================================== */
 
-        const textLayer = new TextLayer({
+        if (typeof pdfjsLib.TextLayer !== "function") {
+
+            throw new Error(
+                "PDF.js TextLayer API is unavailable. Please check the PDF.js version."
+            );
+
+        }
+
+        const textLayer = new pdfjsLib.TextLayer({
 
             textContentSource: textContent,
 
@@ -342,7 +369,7 @@ async function renderPage() {
 
 
         /* =====================================
-           UPDATE PAGE CONTROLS
+           UPDATE CONTROLS
         ===================================== */
 
         status.textContent = "";
@@ -355,7 +382,6 @@ async function renderPage() {
         next.disabled = currentPage >= pdf.numPages;
 
         pages.scrollTop = 0;
-
         pages.scrollLeft = 0;
 
     } catch (error) {
@@ -416,9 +442,7 @@ async function startViewer() {
         status.textContent = "Loading PDF...";
 
         const task = pdfjsLib.getDocument({
-
             url: pdfUrl
-
         });
 
         pdf = await task.promise;
