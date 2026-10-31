@@ -112,10 +112,10 @@
             z-index: 1;
         }
 
-        /*
-           TEXT LAYER
-           Do not override PDF.js span positioning.
-        */
+        /* =====================================
+           PDF TEXT LAYER
+        ===================================== */
+
         .pdf-page .textLayer {
             position: absolute;
             top: 0;
@@ -127,6 +127,11 @@
             z-index: 2;
             overflow: hidden;
 
+            border: 0 !important;
+            outline: 0 !important;
+            box-shadow: none !important;
+            background: transparent !important;
+
             cursor: text;
 
             user-select: text;
@@ -136,16 +141,45 @@
             pointer-events: auto;
         }
 
-        /* Allow text selection on mobile */
+        /* TEXT SPANS */
         .pdf-page .textLayer span {
+            border: 0 !important;
+            outline: 0 !important;
+            box-shadow: none !important;
+
             user-select: text;
             -webkit-user-select: text;
+
             cursor: text;
         }
 
-        /* Selection highlight */
+        /* Remove unwanted pseudo elements */
+        .pdf-page .textLayer::before,
+        .pdf-page .textLayer::after {
+            content: none !important;
+            display: none !important;
+        }
+
+        /*
+          PDF.js selection helper:
+          Keep it from creating an unwanted
+          visible selection artifact.
+        */
+        .pdf-page .textLayer .endOfContent {
+            display: none !important;
+            border: none !important;
+            outline: none !important;
+            background: transparent !important;
+        }
+
+        /* TEXT SELECTION */
         .pdf-page .textLayer ::selection {
-            background: rgba(0, 120, 215, 0.45);
+            background: rgba(0, 120, 215, 0.40);
+            color: transparent;
+        }
+
+        .pdf-page .textLayer ::-moz-selection {
+            background: rgba(0, 120, 215, 0.40);
             color: transparent;
         }
 
@@ -442,8 +476,8 @@ async function renderPage() {
                 "Page Render Error: " + error.message
             );
 
-            prev.disabled = false;
-            next.disabled = false;
+            prev.disabled = currentPage <= 1;
+            next.disabled = currentPage >= pdf.numPages;
 
         }
 
