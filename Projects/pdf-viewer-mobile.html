@@ -82,13 +82,14 @@
         }
 
         .pdf-page {
+            position: relative;
             display: flex;
             justify-content: center;
             width: 100%;
             margin-bottom: 15px;
         }
 
-        canvas {
+        .pdf-page canvas {
             display: block;
             max-width: 100%;
             height: auto;
@@ -96,7 +97,40 @@
             box-shadow: 0 2px 12px #0008;
         }
 
+        /* =====================================
+           PDF TEXT SELECTION LAYER
+        ===================================== */
+
+        .textLayer {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden;
+            line-height: 1;
+            text-align: initial;
+            transform-origin: 0 0;
+            user-select: text;
+            -webkit-user-select: text;
+            -webkit-touch-callout: default;
+            pointer-events: auto;
+        }
+
+        .textLayer span,
+        .textLayer br {
+            position: absolute;
+            color: transparent;
+            white-space: pre;
+            transform-origin: 0 0;
+            cursor: text;
+        }
+
+        .textLayer ::selection {
+            background: rgba(0, 120, 215, 0.35);
+        }
+
         @media (max-width: 480px) {
+
             header {
                 padding: 8px 4px;
             }
@@ -143,6 +177,11 @@
 import * as pdfjsLib from
     "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
 
+import {
+    TextLayer
+} from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
+
+
 pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
 
@@ -179,7 +218,7 @@ function showError(message) {
 
 
 /* =====================================
-   RENDER PDF PAGE
+   RENDER PDF PAGE WITH TEXT LAYER
 ===================================== */
 
 async function renderPage() {
@@ -213,9 +252,13 @@ async function renderPage() {
         pages.replaceChildren();
 
         const wrapper = document.createElement("div");
+
         wrapper.className = "pdf-page";
 
+        wrapper.style.height = viewport.height + "px";
+
         const canvas = document.createElement("canvas");
+
         const context = canvas.getContext("2d");
 
         const ratio = Math.min(
@@ -235,11 +278,18 @@ async function renderPage() {
         canvas.style.height = viewport.height + "px";
 
         wrapper.appendChild(canvas);
+
         pages.appendChild(wrapper);
+
+
+        /* =====================================
+           RENDER PDF CANVAS
+        ===================================== */
 
         await page.render({
 
             canvasContext: context,
+
             viewport: viewport,
 
             transform: [
@@ -252,21 +302,70 @@ async function renderPage() {
 
         if (thisRender !== renderId) return;
 
+
+        /* =====================================
+           CREATE TEXT LAYER
+        ===================================== */
+
+        const textContent = await page.getTextContent();
+
+        if (thisRender !== renderId) return;
+
+        const textLayerDiv = document.createElement("div");
+
+        textLayerDiv.className = "textLayer";
+
+        textLayerDiv.style.width = viewport.width + "px";
+
+        textLayerDiv.style.height = viewport.height + "px";
+
+        wrapper.appendChild(textLayerDiv);
+
+
+        /* =====================================
+           RENDER SELECTABLE TEXT
+        ===================================== */
+
+        const textLayer = new TextLayer({
+
+            textContentSource: textContent,
+
+            container: textLayerDiv,
+
+            viewport: viewport
+
+        });
+
+        await textLayer.render();
+
+        if (thisRender !== renderId) return;
+
+
+        /* =====================================
+           UPDATE PAGE CONTROLS
+        ===================================== */
+
         status.textContent = "";
 
         pageInfo.textContent =
             `Page ${currentPage} / ${pdf.numPages}`;
 
         prev.disabled = currentPage <= 1;
+
         next.disabled = currentPage >= pdf.numPages;
 
         pages.scrollTop = 0;
+
         pages.scrollLeft = 0;
 
     } catch (error) {
 
         if (thisRender === renderId) {
-            showError("Page Render Error: " + error.message);
+
+            showError(
+                "Page Render Error: " + error.message
+            );
+
         }
 
         console.error(error);
@@ -300,10 +399,14 @@ async function startViewer() {
 
         if (
             url.protocol !== "https:" ||
-            url.hostname !== "ypxffgqjrckojzzldczm.supabase.co" ||
+
+            url.hostname !==
+                "ypxffgqjrckojzzldczm.supabase.co" ||
+
             !url.pathname.startsWith(
                 "/storage/v1/object/sign/project-documents/"
             )
+
         ) {
 
             throw new Error("Invalid PDF link.");
@@ -313,7 +416,9 @@ async function startViewer() {
         status.textContent = "Loading PDF...";
 
         const task = pdfjsLib.getDocument({
+
             url: pdfUrl
+
         });
 
         pdf = await task.promise;
@@ -324,7 +429,10 @@ async function startViewer() {
 
     } catch (error) {
 
-        console.error("Mobile PDF Viewer Error:", error);
+        console.error(
+            "Mobile PDF Viewer Error:",
+            error
+        );
 
         showError(
             "PDF Loading Error: " +
@@ -345,6 +453,7 @@ prev.addEventListener("click", async () => {
     if (pdf && currentPage > 1) {
 
         currentPage--;
+
         await renderPage();
 
     }
@@ -361,6 +470,7 @@ next.addEventListener("click", async () => {
     if (pdf && currentPage < pdf.numPages) {
 
         currentPage++;
+
         await renderPage();
 
     }
@@ -379,12 +489,15 @@ downloadBtn.addEventListener("click", async () => {
     try {
 
         downloadBtn.disabled = true;
+
         downloadBtn.textContent = "Downloading...";
 
         const response = await fetch(pdfUrl);
 
         if (!response.ok) {
+
             throw new Error("Unable to download PDF.");
+
         }
 
         const blob = await response.blob();
@@ -394,14 +507,19 @@ downloadBtn.addEventListener("click", async () => {
         const link = document.createElement("a");
 
         link.href = blobUrl;
+
         link.download = "Project-Document.pdf";
 
         document.body.appendChild(link);
+
         link.click();
+
         link.remove();
 
         setTimeout(() => {
+
             URL.revokeObjectURL(blobUrl);
+
         }, 60000);
 
     } catch (error) {
@@ -415,6 +533,7 @@ downloadBtn.addEventListener("click", async () => {
     } finally {
 
         downloadBtn.disabled = false;
+
         downloadBtn.textContent = "Download";
 
     }
@@ -435,7 +554,9 @@ window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
 
     resizeTimer = setTimeout(() => {
+
         renderPage();
+
     }, 200);
 
 });
