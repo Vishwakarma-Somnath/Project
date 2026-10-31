@@ -1,16 +1,11 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png"
-        href="/Project/Projects/icon.png">
-
-    <title>Plant Selection | Project Documents</title>
+    <title>Mobile PDF Viewer</title>
 
     <style>
         * {
@@ -19,214 +14,342 @@
 
         body {
             margin: 0;
-            min-height: 100vh;
-            background: #090909;
-            color: #fff;
-            font-family: Segoe UI, Arial, sans-serif;
+            background: #25252b;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #17171b;
+            padding: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .page-controls {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
-        main {
-            width: min(900px, 100%);
-            text-align: center;
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
 
-        h1 {
-            font-size: clamp(28px, 5vw, 46px);
-            color: #4fc3f7;
-            margin-bottom: 8px;
-        }
-
-        p {
-            color: #cbd5e1;
-        }
-
-        .locations {
-            display: grid;
-            grid-template-columns: repeat(
-                auto-fit,
-                minmax(210px, 1fr)
-            );
-            gap: 16px;
-            margin-top: 28px;
-        }
-
-        button,
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 18px 14px;
-            border: 0;
-            border-radius: 12px;
-            background: linear-gradient(
-                135deg,
-                #2563eb,
-                #1d4ed8
-            );
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
-            text-decoration: none;
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        button:hover,
-        .btn:hover {
-            filter: brightness(1.15);
-            transform: translateY(-2px);
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
-        .back {
-            display: inline-block;
-            margin-top: 28px;
-            color: #93c5fd;
-            text-decoration: none;
+        #pageInfo {
+            min-width: 100px;
+            text-align: center;
+            font-size: 14px;
         }
 
-        .back:hover {
-            color: #fff;
+        #status {
+            padding: 10px;
+            text-align: center;
+            color: #cbd5e1;
+            font-size: 14px;
         }
 
-        .error {
-            color: #ff8585;
-            margin-top: 20px;
+        #pages {
+            width: 100%;
+            padding: 8px 0 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .pdf-page {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            background: white;
+            box-shadow: 0 2px 12px #0008;
         }
     </style>
 </head>
 
 <body>
 
-<main>
+<header>
 
-    <h1 id="pageTitle">Plant Selection</h1>
+    <div class="page-controls">
+        <button id="prev" disabled>Previous</button>
 
-    <p id="description">
-        Select your plant/location to continue to verification.
-    </p>
+        <span id="pageInfo">Loading PDF...</span>
 
-    <div id="locations" class="locations"></div>
+        <button id="next" disabled>Next</button>
+    </div>
 
-    <div id="errorMessage" class="error"></div>
+    <div class="zoom-controls">
+        <button id="zoomOut">− Zoom</button>
+        <button id="zoomIn">+ Zoom</button>
+    </div>
 
-    <a class="back" href="/Project/Projects/Documents.html">
-        ← Back to company selection
-    </a>
+</header>
 
-</main>
+<div id="status">Loading PDF document...</div>
 
-<!-- Common Plant Access Configuration -->
-<script src="/Project/Projects/plant-access.js"></script>
+<main id="pages"></main>
 
-<script>
+<script type="module">
 
-(function () {
+import * as pdfjsLib from
+    "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
 
-    // Get company name from URL.
-    const params = new URLSearchParams(
-        window.location.search
-    );
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
 
-    const company = (
-        params.get("company") || "IOCL"
-    ).trim().toUpperCase();
+const status = document.getElementById("status");
+const pages = document.getElementById("pages");
+const pageInfo = document.getElementById("pageInfo");
 
-    const allowedCompanies = [
-        "BPCL",
-        "HPCL",
-        "IOCL"
-    ];
+const prev = document.getElementById("prev");
+const next = document.getElementById("next");
 
-    const title = document.getElementById("pageTitle");
-    const description = document.getElementById("description");
-    const root = document.getElementById("locations");
-    const errorMessage = document.getElementById("errorMessage");
+let pdf = null;
+let currentPage = 1;
+let zoom = 1;
+let renderId = 0;
 
-    // Validate company.
-    if (!allowedCompanies.includes(company)) {
+function showError(message) {
 
-        title.textContent = "Invalid Company";
+    status.textContent = message;
+    status.style.color = "#ff9999";
 
-        errorMessage.textContent =
-            "Invalid company selection.";
+}
 
-        return;
-    }
+async function renderPage() {
 
-    // Update page title.
-    document.title =
-        company + " Plant Documents";
+    if (!pdf) return;
 
-    title.textContent =
-        company + " — Plant Selection";
+    const thisRender = ++renderId;
 
-    description.textContent =
-        "Select your " + company +
-        " plant/location to continue to verification.";
+    try {
 
-    // Check configuration file.
-    if (
-        !window.PLANT_ACCESS_CONFIG ||
-        typeof window.PLANT_ACCESS_CONFIG !== "object"
-    ) {
+        const page = await pdf.getPage(currentPage);
 
-        errorMessage.textContent =
-            "Plant configuration could not be loaded. Please check plant-access.js.";
+        if (thisRender !== renderId) return;
 
-        console.error(
-            "PLANT_ACCESS_CONFIG not found."
+        const original = page.getViewport({
+            scale: 1
+        });
+
+        const availableWidth =
+            Math.max(window.innerWidth - 16, 200);
+
+        const fitScale =
+            availableWidth / original.width;
+
+        const scale = Math.min(
+            Math.max(fitScale * zoom, 0.35),
+            3
         );
 
-        return;
-    }
+        const viewport = page.getViewport({
+            scale
+        });
 
-    // Get company locations.
-    const list =
-        window.PLANT_ACCESS_CONFIG[company] || [];
+        pages.replaceChildren();
 
-    if (!Array.isArray(list) || list.length === 0) {
+        const wrapper = document.createElement("div");
 
-        errorMessage.textContent =
-            "No locations configured for " + company + ".";
+        wrapper.className = "pdf-page";
 
-        return;
-    }
+        const canvas = document.createElement("canvas");
 
-    // Generate plant buttons.
-    list.forEach(function (plant) {
+        const context = canvas.getContext("2d");
 
-        if (!plant || !plant.name) {
-            return;
+        const ratio = Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+        canvas.width = Math.floor(
+            viewport.width * ratio
+        );
+
+        canvas.height = Math.floor(
+            viewport.height * ratio
+        );
+
+        canvas.style.width =
+            viewport.width + "px";
+
+        canvas.style.height =
+            viewport.height + "px";
+
+        wrapper.appendChild(canvas);
+
+        pages.appendChild(wrapper);
+
+        await page.render({
+
+            canvasContext: context,
+
+            viewport: viewport,
+
+            transform: [
+                ratio, 0,
+                0, ratio,
+                0, 0
+            ]
+
+        }).promise;
+
+        if (thisRender !== renderId) return;
+
+        status.textContent = "";
+
+        pageInfo.textContent =
+            `Page ${currentPage} / ${pdf.numPages}`;
+
+        prev.disabled = currentPage <= 1;
+
+        next.disabled =
+            currentPage >= pdf.numPages;
+
+        pages.scrollTop = 0;
+        pages.scrollLeft = 0;
+
+    } catch (error) {
+
+        if (thisRender === renderId) {
+            showError(error.message);
         }
 
-        const a = document.createElement("a");
+        console.error(error);
 
-        a.className = "btn";
+    }
+}
 
-        a.href =
-            "/Project/Projects/plant-access.html?company=" +
-            encodeURIComponent(company) +
-            "&plant=" +
-            encodeURIComponent(plant.name);
+async function startViewer() {
 
-        a.textContent =
-            "📍 " + plant.name;
+    try {
 
-        root.appendChild(a);
+        if (!location.hash) {
+
+            throw new Error(
+                "PDF URL missing. Please open the document from the portal."
+            );
+
+        }
+
+        const pdfUrl = decodeURIComponent(
+            location.hash.substring(1)
+        );
+
+        const url = new URL(pdfUrl);
+
+        if (
+            url.protocol !== "https:" ||
+            url.hostname !==
+                "ypxffgqjrckojzzldczm.supabase.co" ||
+            !url.pathname.startsWith(
+                "/storage/v1/object/sign/project-documents/"
+            )
+        ) {
+
+            throw new Error("Invalid PDF link.");
+
+        }
+
+        status.textContent = "Loading PDF...";
+
+        const task = pdfjsLib.getDocument({
+            url: pdfUrl
+        });
+
+        pdf = await task.promise;
+
+        await renderPage();
+
+    } catch (error) {
+
+        console.error("Mobile PDF Viewer Error:", error);
+
+        showError(
+            "PDF Loading Error: " +
+            (error.message || "Unknown error")
+        );
+
+    }
+
+}
+
+prev.addEventListener("click", async () => {
+
+    if (pdf && currentPage > 1) {
+
+        currentPage--;
+
+        await renderPage();
+
+    }
+
+});
+
+next.addEventListener("click", async () => {
+
+    if (pdf && currentPage < pdf.numPages) {
+
+        currentPage++;
+
+        await renderPage();
+
+    }
+
+});
+
+document.getElementById("zoomIn")
+    .addEventListener("click", async () => {
+
+        zoom = Math.min(zoom + 0.15, 2.5);
+
+        await renderPage();
 
     });
 
-    if (root.children.length === 0) {
+document.getElementById("zoomOut")
+    .addEventListener("click", async () => {
 
-        errorMessage.textContent =
-            "No valid plant locations found.";
+        zoom = Math.max(zoom - 0.15, 0.5);
 
-    }
+        await renderPage();
 
-})();
+    });
+
+startViewer();
 
 </script>
 
