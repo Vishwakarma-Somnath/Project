@@ -110,7 +110,7 @@ async function openProjectDocument(path) {
 
             // MOBILE PDF VIEWER
             viewerUrl = new URL(
-                "/Projects/pdf-viewer-mobile.html",
+                "../pdf-viewer-mobile.html",
                 window.location.origin
             );
 
@@ -118,7 +118,7 @@ async function openProjectDocument(path) {
 
             // LAPTOP / DESKTOP PDF VIEWER
             viewerUrl = new URL(
-                "/Projects/pdf-viewer.html",
+                "../pdf-viewer.html",
                 window.location.origin
             );
         }
