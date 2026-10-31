@@ -1,252 +1,781 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HPCL Project Document Viewer</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<title>HPCL Project Document Viewer</title>
 
-        body {
-            margin: 0;
-            background: #25252b;
-            color: #fff;
-            font-family: Arial, sans-serif;
-        }
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/web/pdf_viewer.css">
 
-        header {
-			position: sticky;
-			top: 0;
-			z-index: 10;
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			flex-wrap: wrap;
-			gap: 10px;
-			padding: 12px 20px;
-			background: #17171b;
-			border-bottom: 1px solid #444;
-		}
+<style>
+* {
+    box-sizing: border-box;
+}
 
-		/* Left side: Zoom controls */
-		.zoom-controls {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #252525;
+}
 
-		/* Right side: Previous, page count, Next */
-		.page-controls {
-			display: flex;
-			align-items: center;
-			justify-content: flex-end;
-			gap: 8px;
-		}
-        
-        #pages {
-            width: 100%;
-            padding: 16px 8px 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+/* TOOLBAR */
 
-        .pdf-page {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            margin: 0 auto 18px;
-            text-align: center;
-        }
+#toolbar {
+    height: 52px;
+    width: 100%;
+    background: #323232;
+    color: white;
 
-        canvas {
-            display: block;
-            max-width: 100%;
-            height: auto;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 2px 12px #0008;
-        }
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 10px;
 
-		@media (max-width: 480px) {
-			header {
-				padding: 10px;
-				gap: 12px;
-			}
+    position: relative;
+    z-index: 20;
+}
 
-			.zoom-controls,
-			.page-controls {
-				gap: 5px;
-			}
+.tool-btn {
+    border: 0;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 19px;
+    min-width: 32px;
+    height: 36px;
+    border-radius: 4px;
+}
 
-			button {
-				padding: 8px 9px;
-				font-size: 12px;
-			}
+.tool-btn:hover {
+    background: #505050;
+}
 
-			#pageInfo {
-				min-width: 85px;
-				font-size: 12px;
-			}
-		}
-    </style>
+.tool-btn:disabled {
+    opacity: .35;
+    cursor: default;
+}
+
+#pageNumber {
+    width: 42px;
+    height: 27px;
+    text-align: center;
+    border: 0;
+    background: #171717;
+    color: white;
+}
+
+#pageCount {
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+#zoomValue {
+    min-width: 48px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 25px;
+    background: #666;
+    margin: 0 3px;
+}
+
+#documentTitle {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* MAIN LAYOUT */
+
+#main {
+    position: absolute;
+    top: 52px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+}
+
+/* SIDEBAR */
+
+#sidebar {
+    width: 230px;
+    min-width: 180px;
+    background: #292929;
+    overflow-y: auto;
+    border-right: 1px solid #444;
+    display: none;
+    padding: 12px;
+}
+
+#sidebar.open {
+    display: block;
+}
+
+#thumbnailContainer {
+    position: relative;
+    width: 100%;
+}
+
+#thumbnailContainer .thumbnail {
+    margin: 0 auto 15px;
+}
+
+/* PDF VIEWER */
+
+/* PDF VIEWER CONTAINER */
+
+#viewerContainer {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: auto;
+    background: #525252;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+/* PDF VIEWER */
+
+#viewer {
+    position: relative;
+    padding: 15px 0 30px;
+}
+
+/* SIDEBAR ABOVE PDF */
+
+#sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+
+    z-index: 15;
+
+    width: 230px;
+    min-width: 180px;
+
+    background: #292929;
+    overflow-y: auto;
+
+    border-right: 1px solid #444;
+
+    display: none;
+    padding: 12px;
+}
+
+#sidebar.open {
+    display: block;
+}
+
+#viewer {
+    padding: 15px 0 30px;
+}
+
+/* STATUS */
+
+#status {
+    position: absolute;
+    top: 52px;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    padding: 8px;
+    text-align: center;
+    color: white;
+    background: #252525;
+    font-size: 13px;
+}
+
+#status:empty {
+    display: none;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    #toolbar {
+        gap: 2px;
+        padding: 0 4px;
+        height: 48px;
+    }
+
+    #main {
+        top: 48px;
+    }
+
+    #status {
+        top: 48px;
+    }
+
+    .tool-btn {
+        min-width: 29px;
+        font-size: 16px;
+    }
+
+    #pageNumber {
+        width: 34px;
+    }
+
+    #pageCount {
+        font-size: 11px;
+    }
+
+    #zoomValue {
+        min-width: 40px;
+        font-size: 11px;
+    }
+
+    #documentTitle {
+        display: none;
+    }
+
+    #sidebar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 15;
+        width: 180px;
+    }
+}
+</style>
 </head>
-	<body>
-			
-	<header>
-		<!-- Left side: Page controls -->
-		<div class="page-controls">
-			<button id="prev" disabled>Previous</button>
-			<span id="pageInfo">Loading PDF...</span>
-			<button id="next" disabled>Next</button>
-		</div>
 
-		<!-- Right side: Zoom controls -->
-		<div class="zoom-controls">
-			<button id="zoomOut">− Zoom</button>
-			<button id="zoomIn">+ Zoom</button>
-		</div>
-	</header>
-    <div id="status">Verifying document link...</div>
-    <main id="pages"></main>
+<body>
 
-    <script type="module">
-        import * as pdfjsLib from
-            "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
+<!-- TOOLBAR -->
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-            "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
+<header id="toolbar">
 
-        const status = document.getElementById("status");
-        const pages = document.getElementById("pages");
-        const pageInfo = document.getElementById("pageInfo");
-        const prev = document.getElementById("prev");
-        const next = document.getElementById("next");
+    <button class="tool-btn" id="sidebarBtn"
+            title="Show Thumbnails">☰</button>
 
-        let pdf = null;
-        let currentPage = 1;
-        let zoom = 1;
-        let renderId = 0;
+    <span id="documentTitle">Project Document</span>
 
-        function showError(message) {
-            status.textContent = message;
-            status.style.color = "#ffb4b4";
-        }
+    <div style="flex:1"></div>
 
-        async function renderPage() {
-            if (!pdf) return;
+    <button class="tool-btn" id="prevBtn"
+            title="Previous Page">▲</button>
 
-            const thisRender = ++renderId;
-            const page = await pdf.getPage(currentPage);
+    <input type="number" id="pageNumber"
+           min="1" value="1">
 
-            if (thisRender !== renderId) return;
+    <span id="pageCount">/ 0</span>
 
-            const original = page.getViewport({ scale: 1 });
-            const width = Math.min(window.innerWidth - 24, 1200);
-            const scale = Math.min(
-                Math.max((width / original.width) * zoom, 0.35),
-                3
+    <button class="tool-btn" id="nextBtn"
+            title="Next Page">▼</button>
+
+    <div class="toolbar-divider"></div>
+
+    <button class="tool-btn" id="zoomOut"
+            title="Zoom Out">−</button>
+
+    <span id="zoomValue">100%</span>
+
+    <button class="tool-btn" id="zoomIn"
+            title="Zoom In">+</button>
+
+    <div class="toolbar-divider"></div>
+
+    <button class="tool-btn" id="fitPage"
+            title="Fit Page">▣</button>
+
+    <button class="tool-btn" id="rotateBtn"
+            title="Rotate">↻</button>
+
+</header>
+
+<div id="status">Loading PDF document...</div>
+
+<!-- MAIN -->
+
+<div id="main">
+
+    <!-- THUMBNAILS -->
+
+    <aside id="sidebar">
+        <div id="thumbnailContainer"></div>
+    </aside>
+
+    <!-- PDF PAGES -->
+
+    <div id="viewerContainer">
+        <div id="viewer" class="pdfViewer"></div>
+    </div>
+
+</div>
+
+
+<script type="module">
+
+/* =====================================
+   PDF.JS IMPORTS
+===================================== */
+
+import * as pdfjsLib from
+"https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs";
+
+import {
+    EventBus,
+    PDFViewer,
+    PDFLinkService
+} from
+"https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/web/pdf_viewer.mjs";
+
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs";
+
+
+/* =====================================
+   ELEMENTS
+===================================== */
+
+const status = document.getElementById("status");
+
+const viewerContainer =
+document.getElementById("viewerContainer");
+
+const viewerElement =
+document.getElementById("viewer");
+
+const sidebar =
+document.getElementById("sidebar");
+
+const thumbnailContainer =
+document.getElementById("thumbnailContainer");
+
+const pageNumber =
+document.getElementById("pageNumber");
+
+const pageCount =
+document.getElementById("pageCount");
+
+const zoomValue =
+document.getElementById("zoomValue");
+
+const prevBtn =
+document.getElementById("prevBtn");
+
+const nextBtn =
+document.getElementById("nextBtn");
+
+
+/* =====================================
+   VARIABLES
+===================================== */
+
+let pdfDocument = null;
+let pdfUrl = "";
+
+let currentRotation = 0;
+
+
+/* =====================================
+   PDF.JS COMPONENTS
+===================================== */
+
+const eventBus = new EventBus();
+
+const linkService = new PDFLinkService({
+    eventBus
+});
+
+const pdfViewer = new PDFViewer({
+
+    container: viewerContainer,
+
+    viewer: viewerElement,
+
+    eventBus: eventBus,
+
+    linkService: linkService,
+
+    textLayerMode: 1,
+
+    removePageBorders: false
+
+});
+
+linkService.setViewer(pdfViewer);
+
+/* =====================================
+   PAGE EVENTS
+===================================== */
+
+eventBus.on("pagesinit", () => {
+
+    pdfViewer.currentScaleValue = "page-width";
+
+    status.textContent = "";
+
+    updateControls();
+
+});
+
+
+eventBus.on("pagechanging", (event) => {
+
+    pageNumber.value = event.pageNumber;
+
+    updateControls();
+
+});
+
+
+eventBus.on("scalechanging", (event) => {
+
+    zoomValue.textContent =
+        Math.round(event.scale * 100) + "%";
+
+});
+
+/* =====================================
+   CREATE PDF THUMBNAILS
+===================================== */
+
+async function createThumbnails() {
+
+    if (!pdfDocument) return;
+
+    thumbnailContainer.replaceChildren();
+
+    for (let i = 1; i <= pdfDocument.numPages; i++) {
+
+        const page = await pdfDocument.getPage(i);
+
+        const originalViewport = page.getViewport({
+            scale: 1
+        });
+
+        const scale = 145 / originalViewport.width;
+
+        const viewport = page.getViewport({
+            scale: scale
+        });
+
+        const canvas = document.createElement("canvas");
+
+        const ratio = Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+        canvas.width = Math.floor(viewport.width * ratio);
+        canvas.height = Math.floor(viewport.height * ratio);
+
+        canvas.style.width = viewport.width + "px";
+        canvas.style.height = viewport.height + "px";
+
+        const context = canvas.getContext("2d");
+
+        await page.render({
+
+            canvasContext: context,
+            viewport: viewport,
+            transform: [ratio, 0, 0, ratio, 0, 0]
+
+        }).promise;
+
+        const item = document.createElement("div");
+
+        item.style.width = "100%";
+        item.style.marginBottom = "18px";
+        item.style.textAlign = "center";
+        item.style.cursor = "pointer";
+
+        canvas.style.display = "block";
+        canvas.style.margin = "0 auto";
+        canvas.style.border = "2px solid transparent";
+        canvas.style.boxShadow = "0 1px 5px #0008";
+
+        const label = document.createElement("div");
+
+        label.textContent = i;
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.marginTop = "5px";
+
+        item.appendChild(canvas);
+        item.appendChild(label);
+
+        item.addEventListener("click", () => {
+
+            pdfViewer.currentPageNumber = i;
+
+            if (window.innerWidth <= 600) {
+                sidebar.classList.remove("open");
+            }
+
+        });
+
+        thumbnailContainer.appendChild(item);
+
+    }
+
+}
+
+/* =====================================
+   UPDATE CONTROLS
+===================================== */
+
+function updateControls() {
+
+    if (!pdfDocument) return;
+
+    pageNumber.value = pdfViewer.currentPageNumber;
+
+    pageCount.textContent =
+        "/ " + pdfDocument.numPages;
+
+    prevBtn.disabled =
+        pdfViewer.currentPageNumber <= 1;
+
+    nextBtn.disabled =
+        pdfViewer.currentPageNumber >= pdfDocument.numPages;
+
+}
+
+
+/* =====================================
+   LOAD PDF
+===================================== */
+
+async function startViewer() {
+
+    try {
+
+        if (!location.hash) {
+
+            throw new Error(
+                "PDF URL missing. Open the document from the portal."
             );
-            const viewport = page.getViewport({ scale });
 
-            pages.replaceChildren();
-
-            const wrapper = document.createElement("div");
-            wrapper.className = "pdf-page";
-
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-            const ratio = Math.min(window.devicePixelRatio || 1, 2);
-
-            canvas.width = Math.floor(viewport.width * ratio);
-            canvas.height = Math.floor(viewport.height * ratio);
-            canvas.style.width = `${viewport.width}px`;
-            canvas.style.height = `${viewport.height}px`;
-
-            wrapper.appendChild(canvas);
-            pages.appendChild(wrapper);
-
-            await page.render({
-                canvasContext: context,
-                viewport,
-                transform: [ratio, 0, 0, ratio, 0, 0]
-            }).promise;
-
-            if (thisRender !== renderId) return;
-
-            status.textContent = "";
-            pageInfo.textContent = `Page ${currentPage} / ${pdf.numPages}`;
-            prev.disabled = currentPage <= 1;
-            next.disabled = currentPage >= pdf.numPages;
         }
 
-        async function startViewer() {
-            try {
-                if (!location.hash) {
-                    throw new Error(
-                        "Document URL missing. Please open the PDF from the portal."
-                    );
-                }
+        pdfUrl = decodeURIComponent(
+            location.hash.substring(1)
+        );
 
-                const pdfUrl = decodeURIComponent(
-                    location.hash.slice(1)
-                );
-                const url = new URL(pdfUrl);
+        const url = new URL(pdfUrl);
 
-                if (
-                    url.protocol !== "https:" ||
-                    url.hostname !== "ypxffgqjrckojzzldczm.supabase.co" ||
-                    !url.pathname.startsWith(
-                        "/storage/v1/object/sign/project-documents/"
-                    )
-                ) {
-                    throw new Error("Invalid PDF link.");
-                }
+        if (
 
-                const task = pdfjsLib.getDocument({
-                    url: pdfUrl
-                });
+            url.protocol !== "https:" ||
 
-                pdf = await task.promise;
-                await renderPage();
+            url.hostname !==
+            "ypxffgqjrckojzzldczm.supabase.co" ||
 
-            } catch (error) {
-                console.error("PDF viewer error:", error);
-                showError(
-                    "PDF could not be opened. Check your login, access permission, " +
-                    "signed URL expiry, and browser console."
-                );
-            }
+            !url.pathname.startsWith(
+                "/storage/v1/object/sign/project-documents/"
+            )
+
+        ) {
+
+            throw new Error("Invalid PDF link.");
+
         }
 
-        prev.addEventListener("click", async () => {
-            if (pdf && currentPage > 1) {
-                currentPage--;
-                await renderPage();
-            }
+        status.textContent = "Loading PDF...";
+
+        const loadingTask = pdfjsLib.getDocument({
+
+            url: pdfUrl
+
         });
 
-        next.addEventListener("click", async () => {
-            if (pdf && currentPage < pdf.numPages) {
-                currentPage++;
-                await renderPage();
-            }
-        });
+        pdfDocument = await loadingTask.promise;
 
-        document.getElementById("zoomIn").addEventListener("click", async () => {
-            zoom = Math.min(zoom + 0.15, 2.5);
-            await renderPage();
-        });
+        linkService.setDocument(pdfDocument);
 
-        document.getElementById("zoomOut").addEventListener("click", async () => {
-            zoom = Math.max(zoom - 0.15, 0.5);
-            await renderPage();
-        });
+        pdfViewer.setDocument(pdfDocument);
 
-        startViewer();
-    </script>
+        await createThumbnails();
+
+        pageCount.textContent =
+            "/ " + pdfDocument.numPages;
+
+        document.getElementById("documentTitle").textContent =
+            "Project Document";
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "PDF Loading Error: " + error.message;
+
+    }
+
+}
+
+
+/* =====================================
+   PREVIOUS PAGE
+===================================== */
+
+prevBtn.addEventListener("click", () => {
+
+    if (pdfDocument && pdfViewer.currentPageNumber > 1) {
+
+        pdfViewer.currentPageNumber--;
+
+    }
+
+});
+
+
+/* =====================================
+   NEXT PAGE
+===================================== */
+
+nextBtn.addEventListener("click", () => {
+
+    if (
+        pdfDocument &&
+        pdfViewer.currentPageNumber < pdfDocument.numPages
+    ) {
+
+        pdfViewer.currentPageNumber++;
+
+    }
+
+});
+
+
+/* =====================================
+   PAGE NUMBER INPUT
+===================================== */
+
+pageNumber.addEventListener("change", () => {
+
+    if (!pdfDocument) return;
+
+    let page = parseInt(pageNumber.value, 10);
+
+    if (!Number.isFinite(page)) page = 1;
+
+    page = Math.max(
+        1,
+        Math.min(page, pdfDocument.numPages)
+    );
+
+    pdfViewer.currentPageNumber = page;
+
+});
+
+
+/* =====================================
+   ZOOM IN
+===================================== */
+
+document.getElementById("zoomIn")
+.addEventListener("click", () => {
+
+    pdfViewer.currentScale =
+        Math.min(pdfViewer.currentScale * 1.2, 5);
+
+});
+
+
+/* =====================================
+   ZOOM OUT
+===================================== */
+
+document.getElementById("zoomOut")
+.addEventListener("click", () => {
+
+    pdfViewer.currentScale =
+        Math.max(pdfViewer.currentScale / 1.2, 0.25);
+
+});
+
+
+/* =====================================
+   FIT PAGE
+===================================== */
+
+document.getElementById("fitPage")
+.addEventListener("click", () => {
+
+    pdfViewer.currentScaleValue = "page-fit";
+
+});
+
+
+/* =====================================
+   ROTATE
+===================================== */
+
+document.getElementById("rotateBtn")
+.addEventListener("click", () => {
+
+    currentRotation =
+        (currentRotation + 90) % 360;
+
+    pdfViewer.pagesRotation = currentRotation;
+
+});
+
+
+/* =====================================
+   THUMBNAIL SIDEBAR
+===================================== */
+
+document.getElementById("sidebarBtn")
+.addEventListener("click", () => {
+
+    sidebar.classList.toggle("open");
+
+});
+
+
+/* =====================================
+   MOBILE SIDEBAR CLOSE
+===================================== */
+
+viewerContainer.addEventListener("click", () => {
+
+    if (
+        window.innerWidth <= 600 &&
+        sidebar.classList.contains("open")
+    ) {
+
+        sidebar.classList.remove("open");
+
+    }
+
+});
+
+
+/* =====================================
+   START VIEWER
+===================================== */
+
+startViewer();
+
+</script>
+
 </body>
 </html>
