@@ -295,8 +295,7 @@ import * as pdfjsLib from
 import {
     EventBus,
     PDFViewer,
-    PDFLinkService,
-    PDFThumbnailViewer
+    PDFLinkService
 } from
 "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/web/pdf_viewer.mjs";
 
@@ -377,18 +376,6 @@ const pdfViewer = new PDFViewer({
 
 linkService.setViewer(pdfViewer);
 
-
-const pdfThumbnailViewer = new PDFThumbnailViewer({
-
-    container: thumbnailContainer,
-
-    eventBus: eventBus,
-
-    linkService: linkService
-
-});
-
-
 /* =====================================
    PAGE EVENTS
 ===================================== */
@@ -420,6 +407,90 @@ eventBus.on("scalechanging", (event) => {
 
 });
 
+/* =====================================
+   CREATE PDF THUMBNAILS
+===================================== */
+
+async function createThumbnails() {
+
+    if (!pdfDocument) return;
+
+    thumbnailContainer.replaceChildren();
+
+    for (let i = 1; i <= pdfDocument.numPages; i++) {
+
+        const page = await pdfDocument.getPage(i);
+
+        const originalViewport = page.getViewport({
+            scale: 1
+        });
+
+        const scale = 145 / originalViewport.width;
+
+        const viewport = page.getViewport({
+            scale: scale
+        });
+
+        const canvas = document.createElement("canvas");
+
+        const ratio = Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+        canvas.width = Math.floor(viewport.width * ratio);
+        canvas.height = Math.floor(viewport.height * ratio);
+
+        canvas.style.width = viewport.width + "px";
+        canvas.style.height = viewport.height + "px";
+
+        const context = canvas.getContext("2d");
+
+        await page.render({
+
+            canvasContext: context,
+            viewport: viewport,
+            transform: [ratio, 0, 0, ratio, 0, 0]
+
+        }).promise;
+
+        const item = document.createElement("div");
+
+        item.style.width = "100%";
+        item.style.marginBottom = "18px";
+        item.style.textAlign = "center";
+        item.style.cursor = "pointer";
+
+        canvas.style.display = "block";
+        canvas.style.margin = "0 auto";
+        canvas.style.border = "2px solid transparent";
+        canvas.style.boxShadow = "0 1px 5px #0008";
+
+        const label = document.createElement("div");
+
+        label.textContent = i;
+        label.style.color = "white";
+        label.style.fontSize = "12px";
+        label.style.marginTop = "5px";
+
+        item.appendChild(canvas);
+        item.appendChild(label);
+
+        item.addEventListener("click", () => {
+
+            pdfViewer.currentPageNumber = i;
+
+            if (window.innerWidth <= 600) {
+                sidebar.classList.remove("open");
+            }
+
+        });
+
+        thumbnailContainer.appendChild(item);
+
+    }
+
+}
 
 /* =====================================
    UPDATE CONTROLS
@@ -496,7 +567,7 @@ async function startViewer() {
 
         pdfViewer.setDocument(pdfDocument);
 
-        pdfThumbnailViewer.setDocument(pdfDocument);
+        await createThumbnails();
 
         pageCount.textContent =
             "/ " + pdfDocument.numPages;
