@@ -39,6 +39,7 @@ async function getDocumentSupabaseClient() {
 }
 
 async function openProjectDocument(path) {
+
     // Open a blank tab immediately to reduce popup-blocker issues.
     const pdfTab = window.open("about:blank", "_blank");
 
@@ -54,7 +55,7 @@ async function openProjectDocument(path) {
 
         const client = await getDocumentSupabaseClient();
 
-        // Requires a real Supabase Auth session from your login system.
+        // Check Supabase login session.
         const {
             data: { session },
             error: sessionError
@@ -66,6 +67,7 @@ async function openProjectDocument(path) {
             );
         }
 
+        // Verify document access through Edge Function.
         const { data, error } = await client.functions.invoke(
             "project_portal_users",
             {
@@ -78,9 +80,13 @@ async function openProjectDocument(path) {
 
             try {
                 const response = error.context;
+
                 if (response && typeof response.json === "function") {
                     const details = await response.json();
-                    if (details?.error) message = details.error;
+
+                    if (details?.error) {
+                        message = details.error;
+                    }
                 }
             } catch (_) {
                 // Keep the safe default error message.
@@ -93,12 +99,31 @@ async function openProjectDocument(path) {
             throw new Error("The server did not return a PDF URL.");
         }
 
-        // Use the short-lived URL returned by the server.
-        const viewerUrl = new URL(
-            "/Project/Projects/IOCL/pdf-viewer.html",
-            window.location.origin
+        // Detect mobile devices.
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(
+            navigator.userAgent
         );
 
+        let viewerUrl;
+
+        if (isMobile) {
+
+            // MOBILE PDF VIEWER
+            viewerUrl = new URL(
+                "/Projects/pdf-viewer-mobile.html",
+                window.location.origin
+            );
+
+        } else {
+
+            // LAPTOP / DESKTOP PDF VIEWER
+            viewerUrl = new URL(
+                "/Projects/pdf-viewer.html",
+                window.location.origin
+            );
+        }
+
+        // Open selected HTML viewer with signed PDF URL.
         pdfTab.location.replace(
             viewerUrl.href + "#" + encodeURIComponent(data.url)
         );
@@ -114,5 +139,5 @@ async function openProjectDocument(path) {
     }
 }
 
-// Expose the function to your existing inline onclick buttons.
+// Expose function to existing inline onclick buttons.
 window.openProjectDocument = openProjectDocument;
