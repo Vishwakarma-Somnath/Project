@@ -75,7 +75,10 @@
             font-size: 14px;
         }
 
-        /* PDF CONTAINER */
+        /* =====================================
+           PDF CONTAINER
+        ===================================== */
+
         #pages {
             width: 100%;
             min-height: calc(100vh - 60px);
@@ -89,7 +92,10 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* PDF PAGE */
+        /* =====================================
+           PDF PAGE
+        ===================================== */
+
         .pdf-page {
             position: relative;
             flex: 0 0 auto;
@@ -102,7 +108,10 @@
             overflow: hidden;
         }
 
-        /* PDF CANVAS */
+        /* =====================================
+           PDF CANVAS
+        ===================================== */
+
         .pdf-page canvas {
             position: absolute;
             top: 0;
@@ -114,23 +123,16 @@
 
         /* =====================================
            PDF TEXT LAYER
+           Preserve PDF.js internal styles.
         ===================================== */
 
         .pdf-page .textLayer {
             position: absolute;
-            top: 0;
-            left: 0;
-
-            width: 100%;
-            height: 100%;
+            inset: 0;
 
             z-index: 2;
-            overflow: hidden;
 
-            border: 0 !important;
-            outline: 0 !important;
-            box-shadow: none !important;
-            background: transparent !important;
+            overflow: hidden;
 
             cursor: text;
 
@@ -141,38 +143,10 @@
             pointer-events: auto;
         }
 
-        /* TEXT SPANS */
-        .pdf-page .textLayer span {
-            border: 0 !important;
-            outline: 0 !important;
-            box-shadow: none !important;
+        /* =====================================
+           TEXT SELECTION HIGHLIGHT
+        ===================================== */
 
-            user-select: text;
-            -webkit-user-select: text;
-
-            cursor: text;
-        }
-
-        /* Remove unwanted pseudo elements */
-        .pdf-page .textLayer::before,
-        .pdf-page .textLayer::after {
-            content: none !important;
-            display: none !important;
-        }
-
-        /*
-          PDF.js selection helper:
-          Keep it from creating an unwanted
-          visible selection artifact.
-        */
-        .pdf-page .textLayer .endOfContent {
-            display: none !important;
-            border: none !important;
-            outline: none !important;
-            background: transparent !important;
-        }
-
-        /* TEXT SELECTION */
         .pdf-page .textLayer ::selection {
             background: rgba(0, 120, 215, 0.40);
             color: transparent;
@@ -183,7 +157,12 @@
             color: transparent;
         }
 
+        /* =====================================
+           MOBILE RESPONSIVE
+        ===================================== */
+
         @media (max-width: 480px) {
+
             header {
                 padding: 8px 4px;
             }
@@ -202,6 +181,7 @@
                 font-size: 12px;
             }
         }
+
     </style>
 </head>
 
@@ -224,6 +204,7 @@
 <div id="status">Loading PDF document...</div>
 
 <main id="pages"></main>
+
 
 <script type="module">
 
@@ -372,7 +353,7 @@ async function renderPage() {
 
 
         /* =====================================
-           RENDER CANVAS
+           RENDER PDF CANVAS
         ===================================== */
 
         await page.render({
