@@ -479,48 +479,97 @@
       $("themeBtn").textContent = theme === "dark" ? "☀ Light Mode" : "☾ Dark Mode";
     }
 
-    function startApp() {
-      buildPressureCards();
-      initChart();
+    async function startApp() {
 
-      const savedTheme = localStorage.getItem("hydro-dashboard-theme") || "dark";
-      setTheme(savedTheme);
+  // Supabase library check
+  if (!window.supabase || !window.supabase.createClient) {
+    setConnection("error", "Supabase library failed to load.");
+    return;
+  }
 
-      $("themeBtn").addEventListener("click", () => {
-        const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-        setTheme(next);
-      });
-      $("refreshBtn").addEventListener("click", loadData);
-      $("exportBtn").addEventListener("click", exportCsv);
-      ["dateFrom", "dateTo", "cycleSearch"].forEach(id => {
-        $(id).addEventListener("input", () => renderHistory(allRecords));
-      });
-      $("clearFilters").addEventListener("click", () => {
-        $("dateFrom").value = "";
-        $("dateTo").value = "";
-        $("cycleSearch").value = "";
-        renderHistory(allRecords);
-      });
+  // Supabase connection
+  supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
 
-      if (SUPABASE_ANON_KEY === "PASTE_YOUR_SUPABASE_ANON_KEY_HERE" || !SUPABASE_ANON_KEY.trim()) {
-        setConnection("error", "Supabase key not configured — add the publishable/anon key in this file");
-        return;
-      }
+  // Check existing login session
+  const { data: { session }, error } =
+    await supabaseClient.auth.getSession();
 
-      if (!window.supabase || !window.supabase.createClient) {
-        setConnection("error", "Supabase library failed to load. Check internet/CDN access.");
-        return;
-      }
+  // Session error
+  if (error) {
+    document.body.innerHTML =
+      "<h2>Authentication Error</h2><p>Please try again.</p>";
+    return;
+  }
 
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      loadData();
-      refreshTimer = setInterval(loadData, REFRESH_INTERVAL_MS);
-    }
+  // User not logged in
+  if (!session) {
+    document.body.innerHTML = `
+      <div style="
+        min-height:100vh;
+        display:grid;
+        place-items:center;
+        background:#0b1220;
+        color:white;
+        font-family:Arial;
+        text-align:center;
+        padding:20px;
+      ">
+        <div>
+          <h2>🔒 Login Required</h2>
+          <p>Please sign in to access Hydro Testing Dashboard.</p>
+          <button onclick="history.back()">
+            Go Back to Login
+          </button>
+        </div>
+      </div>
+    `;
+    return;
+  }
 
-    document.addEventListener("DOMContentLoaded", startApp);
-    window.addEventListener("beforeunload", () => {
-      if (refreshTimer) clearInterval(refreshTimer);
-    });
+  // Initialize dashboard only after login verification
+  buildPressureCards();
+  initChart();
+
+  const savedTheme =
+    localStorage.getItem("hydro-dashboard-theme") || "dark";
+
+  setTheme(savedTheme);
+
+  $("themeBtn").addEventListener("click", () => {
+    const next =
+      document.documentElement.dataset.theme === "dark"
+        ? "light" : "dark";
+    setTheme(next);
+  });
+
+  $("refreshBtn").addEventListener("click", loadData);
+  $("exportBtn").addEventListener("click", exportCsv);
+
+  ["dateFrom", "dateTo", "cycleSearch"].forEach(id => {
+    $(id).addEventListener("input", () =>
+      renderHistory(allRecords)
+    );
+  });
+
+  $("clearFilters").addEventListener("click", () => {
+    $("dateFrom").value = "";
+    $("dateTo").value = "";
+    $("cycleSearch").value = "";
+    renderHistory(allRecords);
+  });
+
+  // Load dashboard data
+  await loadData();
+
+  // Auto refresh
+  refreshTimer = setInterval(
+    loadData,
+    REFRESH_INTERVAL_MS
+  );
+}
   </script>
 </body>
 </html>
