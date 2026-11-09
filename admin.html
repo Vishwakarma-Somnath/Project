@@ -138,6 +138,7 @@
                         <option value="userCreation">USER CREATION</option>
                         <option value="userManagement">USER MANAGEMENT</option>
                         <option value="Plant&Location_Addition">PLANT ADDITION</option>
+                        <option value="remotePLC">REMOTE PLC DEVICE MANAGEMENT</option>
                     </select>
                 </div>
 
@@ -533,6 +534,95 @@
 
             <div id="plantLocationList">
                 Plants will appear here after the database is connected.
+            </div>
+
+        </section>
+
+        <!-- ========================================
+             SECTION 5: REMOTE PLC DEVICE MANAGEMENT
+             ADDITIVE SECTION - EXISTING SECTIONS UNCHANGED
+        ========================================= -->
+        <section id="remotePLCSection" class="remote-plc-section" hidden>
+
+            <div class="remote-plc-heading-row">
+                <div>
+                    <h2>Remote PLC Device Management</h2>
+                    <p class="remote-plc-description">
+                        Create one-time enrollment codes and manage registered Remote PLC devices.
+                    </p>
+                </div>
+                <button type="button" id="refreshRemotePLCBtn">
+                    <i class="bx bx-refresh" aria-hidden="true"></i>
+                    Refresh Devices
+                </button>
+            </div>
+
+            <p id="remotePLCStatus" role="status" aria-live="polite">
+                Select this dashboard view to load registered devices.
+            </p>
+
+            <div class="remote-plc-panel">
+                <h3>Create One-Time Enrollment Code</h3>
+                <p class="remote-plc-description">
+                    The code is displayed only once and expires after 24 hours. Share it securely with the intended Client PC.
+                </p>
+
+                <form id="remotePLCEnrollmentForm" autocomplete="off">
+                    <div class="remote-plc-form-grid">
+                        <div class="remote-plc-field">
+                            <label for="remotePLCCompany">Company</label>
+                            <select id="remotePLCCompany" required>
+                                <option value="">Select company</option>
+                                <option value="BPCL">BPCL</option>
+                                <option value="HPCL">HPCL</option>
+                                <option value="IOCL">IOCL</option>
+                            </select>
+                        </div>
+
+                        <div class="remote-plc-field">
+                            <label for="remotePLCLocation">Location</label>
+                            <input id="remotePLCLocation" type="text" minlength="2" maxlength="100"
+                                placeholder="e.g. Madurai" required>
+                        </div>
+
+                        <div class="remote-plc-field">
+                            <label for="remotePLCMachineId">Machine ID</label>
+                            <input id="remotePLCMachineId" type="text" minlength="2" maxlength="80"
+                                placeholder="e.g. HST-01" required>
+                        </div>
+
+                        <div class="remote-plc-field">
+                            <label for="remotePLCDeviceName">Device Name (optional)</label>
+                            <input id="remotePLCDeviceName" type="text" maxlength="100"
+                                placeholder="Defaults to Machine ID">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="createRemotePLCCodeBtn">
+                        Create Enrollment Code
+                    </button>
+                </form>
+
+                <div id="remotePLCEnrollmentResult" hidden>
+                    <p class="remote-plc-code-warning">
+                        Copy this code now and provide it securely to the intended Client PC. It will not be shown again.
+                    </p>
+                    <div class="remote-plc-code-row">
+                        <code id="remotePLCEnrollmentCode"></code>
+                        <button type="button" id="copyRemotePLCCodeBtn">Copy Code</button>
+                    </div>
+                    <p id="remotePLCCodeExpiry"></p>
+                </div>
+            </div>
+
+            <div class="remote-plc-panel">
+                <div class="remote-plc-list-heading">
+                    <h3>Registered Remote PLC Devices</h3>
+                    <span id="remotePLCDeviceCount">0 devices</span>
+                </div>
+                <div id="remotePLCDeviceList" class="remote-plc-device-list">
+                    No devices loaded.
+                </div>
             </div>
 
         </section>

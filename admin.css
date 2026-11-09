@@ -2049,3 +2049,283 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+
+/* =========================================================
+   22. REMOTE PLC DEVICE MANAGEMENT
+   ADDITIVE STYLES - EXISTING CSS ABOVE IS UNCHANGED
+   ========================================================= */
+
+#remotePLCSection[hidden] {
+    display: none !important;
+}
+
+#remotePLCSection {
+    display: block;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    margin: 18px 28px 24px;
+    padding: 22px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #f53b08;
+    border-radius: 12px;
+    background: rgba(20, 20, 24, 0.96);
+    color: #fff;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
+    scrollbar-width: thin;
+    scrollbar-color: #f53b08 rgba(255, 255, 255, 0.15);
+    font-family: Arial, sans-serif;
+}
+
+#remotePLCSection h2,
+#remotePLCSection h3,
+#remotePLCSection p,
+#remotePLCSection label,
+#remotePLCSection button,
+#remotePLCSection input,
+#remotePLCSection select {
+    font-family: Arial, sans-serif;
+}
+
+.remote-plc-heading-row,
+.remote-plc-list-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+#remotePLCSection h2 {
+    margin: 0 0 8px;
+    color: #f53b08;
+    font-size: 23px;
+}
+
+#remotePLCSection h3 {
+    margin: 0 0 10px;
+    color: #f53b08;
+    font-size: 19px;
+}
+
+.remote-plc-description {
+    margin: 0 0 16px;
+    color: #dedee4;
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+#remotePLCStatus,
+#remotePLCCodeExpiry {
+    min-height: 20px;
+    margin: 12px 0;
+    color: #f5e12e;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.remote-plc-panel {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid rgba(228, 96, 51, 0.65);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.remote-plc-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.remote-plc-field {
+    min-width: 0;
+}
+
+.remote-plc-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #f3f3f3;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.remote-plc-field input,
+.remote-plc-field select {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #777;
+    border-radius: 7px;
+    outline: none;
+    background: #090909;
+    color: #fff;
+    font-size: 14px;
+}
+
+.remote-plc-field input:focus,
+.remote-plc-field select:focus {
+    border-color: #f53b08;
+    outline: 2px solid rgba(228, 96, 51, 0.3);
+}
+
+#remotePLCSection button {
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 7px;
+    background: #f53b08;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#remotePLCSection button:hover {
+    background: #c94b22;
+}
+
+#remotePLCSection button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#remotePLCEnrollmentForm > button {
+    width: 100%;
+    margin-top: 17px;
+    min-height: 45px;
+}
+
+#remotePLCEnrollmentResult {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid #d99b28;
+    border-radius: 8px;
+    background: rgba(217, 155, 40, 0.1);
+}
+
+.remote-plc-code-warning {
+    margin-bottom: 10px;
+    color: #ffd36a;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.remote-plc-code-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#remotePLCEnrollmentCode {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 11px;
+    border-radius: 6px;
+    background: #080808;
+    color: #8ff0ad;
+    font-family: Consolas, monospace !important;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+    user-select: all;
+}
+
+#remotePLCDeviceCount {
+    color: #dedee4;
+    font-size: 13px;
+}
+
+.remote-plc-device-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.remote-plc-device-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 9px;
+    background: #fff;
+    color: #222;
+}
+
+.remote-plc-device-info {
+    flex: 1 1 250px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.remote-plc-device-info strong {
+    display: block;
+    margin-bottom: 7px;
+    color: #222;
+    font-size: 16px;
+}
+
+.remote-plc-device-info p {
+    margin: 4px 0;
+    color: #333;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.remote-plc-device-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.remote-plc-device-actions .is-inactive {
+    background: #2459a9 !important;
+}
+
+.remote-plc-device-actions .is-active {
+    background: #9f2018 !important;
+}
+
+#remotePLCSection button:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+    #remotePLCSection {
+        margin: 12px;
+        padding: 15px;
+    }
+
+    .remote-plc-form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .remote-plc-code-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .remote-plc-code-row button {
+        width: 100%;
+    }
+
+    .remote-plc-device-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .remote-plc-device-actions button {
+        flex: 1 1 100%;
+    }
+}
