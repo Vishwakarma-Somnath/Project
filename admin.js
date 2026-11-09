@@ -2119,6 +2119,7 @@ async function loadPlantLocations() {
         }
 
         allPlantLocations = data.plants;
+        document.dispatchEvent(new Event("remotePLCPlantLocationsUpdated"));
 
         // Update Plant & Location Addition panel, if present.
         renderPlantLocations();
@@ -2224,20 +2225,17 @@ if (plantFilterCompany) {
     plantFilterCompany.addEventListener("change", renderPlantLocations);
 }
 
-/*==========================================================
-    REMOTE PLC MANAGEMENT
-============================================================	
-
 /* =========================================================
    REMOTE PLC DEVICE MANAGEMENT
-   ADDITIONAL MODULE — EXISTING CODE IS NOT MODIFIED
+   ADDITIVE MODULE
+   Existing modules above this section remain unchanged.
    ========================================================= */
 
 (() => {
     "use strict";
 
     /* -----------------------------------------------------
-       REMOTE PLC HTML ELEMENTS
+       HTML ELEMENTS — MATCHED WITH admin.html
        ----------------------------------------------------- */
 
     const remotePLCSection =
@@ -2247,10 +2245,10 @@ if (plantFilterCompany) {
         document.getElementById("remotePLCStatus");
 
     const remotePLCRefreshBtn =
-        document.getElementById("refreshRemotePLCDevicesBtn");
+        document.getElementById("refreshRemotePLCBtn");
 
     const remotePLCEnrollForm =
-        document.getElementById("remotePLCEnrollForm");
+        document.getElementById("remotePLCEnrollmentForm");
 
     const remotePLCCompany =
         document.getElementById("remotePLCCompany");
@@ -2273,12 +2271,18 @@ if (plantFilterCompany) {
     const remotePLCCopyCodeBtn =
         document.getElementById("copyRemotePLCCodeBtn");
 
+    const remotePLCCodeExpiry =
+        document.getElementById("remotePLCCodeExpiry");
+
     const remotePLCDevicesList =
         document.getElementById("remotePLCDeviceList");
 
+    const remotePLCDeviceCount =
+        document.getElementById("remotePLCDeviceCount");
+
 
     /* -----------------------------------------------------
-       STATUS MESSAGE
+       STATUS
        ----------------------------------------------------- */
 
     function setRemotePLCStatus(message, isError = false) {
@@ -2292,11 +2296,75 @@ if (plantFilterCompany) {
 
 
     /* -----------------------------------------------------
-       SECURE SUPABASE EDGE FUNCTION REQUEST
+       LOCATION DROPDOWN
+       Uses existing allPlantLocations data.
+       ----------------------------------------------------- */
+
+    function updateRemotePLCLocationOptions() {
+        if (!remotePLCCompany || !remotePLCLocation) return;
+
+        const company = remotePLCCompany.value;
+
+        const previousValue = remotePLCLocation.value;
+
+        const locations = allPlantLocations.filter(
+            (plant) =>
+                plant.company === company &&
+                plant.is_active === true
+        );
+
+        remotePLCLocation.replaceChildren();
+
+        const placeholder = document.createElement("option");
+
+        placeholder.value = "";
+
+        placeholder.textContent = locations.length
+            ? "Select Location"
+            : company
+                ? "No active locations available"
+                : "Select company first";
+
+        remotePLCLocation.appendChild(placeholder);
+
+        locations.forEach((plant) => {
+            const option = document.createElement("option");
+
+            option.value = plant.location_slug;
+            option.textContent = plant.location_name;
+
+            remotePLCLocation.appendChild(option);
+        });
+
+        remotePLCLocation.disabled = locations.length === 0;
+
+        if (
+            locations.some(
+                (plant) => plant.location_slug === previousValue
+            )
+        ) {
+            remotePLCLocation.value = previousValue;
+        }
+    }
+
+    if (remotePLCCompany) {
+        remotePLCCompany.addEventListener(
+            "change",
+            updateRemotePLCLocationOptions
+        );
+    }
+
+    document.addEventListener(
+        "remotePLCPlantLocationsUpdated",
+        updateRemotePLCLocationOptions
+    );
+
+
+    /* -----------------------------------------------------
+       SECURE SUPABASE REQUEST
        ----------------------------------------------------- */
 
     async function callRemotePLC(action, extra = {}) {
-
         if (!auth.currentUser) {
             throw new Error("Please log in again.");
         }
@@ -2311,7 +2379,6 @@ if (plantFilterCompany) {
                         action,
                         ...extra
                     },
-
                     headers: {
                         "x-firebase-id-token": token
                     }
@@ -2334,23 +2401,20 @@ if (plantFilterCompany) {
 
                     if (responseText) {
                         try {
-                            const parsed =
-                                JSON.parse(responseText);
+                            const parsed = JSON.parse(responseText);
 
                             message =
                                 parsed.error ||
                                 parsed.message ||
                                 parsed.msg ||
                                 message;
-
                         } catch {
                             message = responseText;
                         }
                     }
-
                 } catch (readError) {
                     console.warn(
-                        "Remote PLC error response could not be read:",
+                        "Could not read Remote PLC error:",
                         readError
                     );
                 }
@@ -2378,11 +2442,10 @@ if (plantFilterCompany) {
 
 
     /* -----------------------------------------------------
-       FORMAT DEVICE STATUS
+       DEVICE STATUS
        ----------------------------------------------------- */
 
     function getRemotePLCDeviceStatus(device) {
-
         if (device.is_active === false) {
             return "Inactive";
         }
@@ -2400,24 +2463,23 @@ if (plantFilterCompany) {
 
 
     /* -----------------------------------------------------
-       CREATE DEVICE CARD
+       DEVICE CARD
        ----------------------------------------------------- */
 
     function createRemotePLCDeviceCard(device) {
-
         const card = document.createElement("article");
 
         card.className = "remote-plc-device-card";
 
         card.style.cssText = `
-            background: #ffffff;
-            color: #222222;
-            border: 1px solid #dddddd;
-            border-radius: 10px;
-            padding: 16px;
-            margin: 10px 0;
-            overflow-wrap: anywhere;
-            box-shadow: 0 3px 12px rgba(0,0,0,.10);
+            background:#ffffff;
+            color:#222222;
+            border:1px solid #dddddd;
+            border-radius:10px;
+            padding:16px;
+            margin:10px 0;
+            overflow-wrap:anywhere;
+            box-shadow:0 3px 12px rgba(0,0,0,.10);
         `;
 
         const heading = document.createElement("h3");
@@ -2430,8 +2492,8 @@ if (plantFilterCompany) {
         const details = document.createElement("div");
 
         details.style.cssText = `
-            margin-top: 10px;
-            line-height: 1.8;
+            margin-top:10px;
+            line-height:1.8;
         `;
 
         const fields = [
@@ -2443,7 +2505,6 @@ if (plantFilterCompany) {
         ];
 
         fields.forEach(([label, value]) => {
-
             if (
                 value === undefined ||
                 value === null ||
@@ -2454,8 +2515,7 @@ if (plantFilterCompany) {
 
             const line = document.createElement("p");
 
-            line.textContent =
-                label + ": " + String(value);
+            line.textContent = label + ": " + String(value);
 
             details.appendChild(line);
         });
@@ -2463,16 +2523,15 @@ if (plantFilterCompany) {
         const actions = document.createElement("div");
 
         actions.style.cssText = `
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 14px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-top:14px;
         `;
 
         const isActive = device.is_active === true;
 
-        const toggleButton =
-            document.createElement("button");
+        const toggleButton = document.createElement("button");
 
         toggleButton.type = "button";
 
@@ -2480,106 +2539,84 @@ if (plantFilterCompany) {
             isActive ? "Deactivate Device" : "Activate Device";
 
         toggleButton.style.cssText = `
-            padding: 9px 14px;
-            border: 0;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            background: ${isActive ? "#dc3545" : "#198754"};
-            color: #ffffff;
+            padding:9px 14px;
+            border:0;
+            border-radius:6px;
+            cursor:pointer;
+            font-weight:600;
+            background:${isActive ? "#dc3545" : "#198754"};
+            color:#ffffff;
         `;
 
-        toggleButton.addEventListener(
-            "click",
-            async () => {
+        toggleButton.addEventListener("click", async () => {
+            const deviceId = device.device_id || device.id;
 
-                const deviceId =
-                    device.device_id || device.id;
+            if (!deviceId) {
+                setRemotePLCStatus(
+                    "Device ID missing in server response.",
+                    true
+                );
+                return;
+            }
 
-                if (!deviceId) {
-                    setRemotePLCStatus(
-                        "Device ID is missing in server response.",
-                        true
-                    );
-                    return;
-                }
+            const nextState = !isActive;
 
-                const nextState = !isActive;
+            if (!window.confirm(
+                `${nextState ? "Activate" : "Deactivate"} this device?`
+            )) {
+                return;
+            }
 
-                const confirmed = window.confirm(
-                    `${nextState ? "Activate" : "Deactivate"} this device?`
+            toggleButton.disabled = true;
+
+            try {
+                await callRemotePLC("set_device_active", {
+                    device_id: deviceId,
+                    is_active: nextState
+                });
+
+                setRemotePLCStatus(
+                    `Device ${nextState ? "activated" : "deactivated"} successfully.`
                 );
 
-                if (!confirmed) return;
+                await loadRemotePLCDevices();
+            } catch (error) {
+                console.error(
+                    "Remote PLC status update failed:",
+                    error
+                );
 
-                toggleButton.disabled = true;
+                setRemotePLCStatus(error.message, true);
 
-                try {
-
-                    await callRemotePLC(
-                        "set_device_active",
-                        {
-                            device_id: deviceId,
-                            is_active: nextState
-                        }
-                    );
-
-                    setRemotePLCStatus(
-                        `Device ${nextState ? "activated" : "deactivated"} successfully.`
-                    );
-
-                    await loadRemotePLCDevices();
-
-                } catch (error) {
-
-                    console.error(
-                        "Remote PLC device status update failed:",
-                        error
-                    );
-
-                    setRemotePLCStatus(
-                        error.message,
-                        true
-                    );
-
-                    toggleButton.disabled = false;
-                }
+                toggleButton.disabled = false;
             }
-        );
+        });
 
         actions.appendChild(toggleButton);
 
-        card.append(
-            heading,
-            details,
-            actions
-        );
+        card.append(heading, details, actions);
 
         return card;
     }
 
 
     /* -----------------------------------------------------
-       LOAD REGISTERED REMOTE PLC DEVICES
+       LOAD REGISTERED DEVICES
        ----------------------------------------------------- */
 
     let isLoadingRemotePLCDevices = false;
 
     async function loadRemotePLCDevices() {
-
         if (isLoadingRemotePLCDevices) return;
 
         if (!auth.currentUser) {
-            setRemotePLCStatus(
-                "Please log in again.",
-                true
-            );
+            setRemotePLCStatus("Please log in again.", true);
             return;
         }
 
         if (!remotePLCDevicesList) {
             setRemotePLCStatus(
-                "HTML element remotePLCDevicesList not found.",
+                "HTML element remotePLCDeviceList not found.",
                 true
             );
             return;
@@ -2591,15 +2628,10 @@ if (plantFilterCompany) {
             remotePLCRefreshBtn.disabled = true;
         }
 
-        setRemotePLCStatus(
-            "Loading registered Remote PLC devices..."
-        );
+        setRemotePLCStatus("Loading registered Remote PLC devices...");
 
         try {
-
-            const data = await callRemotePLC(
-                "list_devices"
-            );
+            const data = await callRemotePLC("list_devices");
 
             const devices =
                 Array.isArray(data.devices)
@@ -2612,35 +2644,30 @@ if (plantFilterCompany) {
 
             remotePLCDevicesList.replaceChildren();
 
+            if (remotePLCDeviceCount) {
+                remotePLCDeviceCount.textContent =
+                    `${devices.length} device${devices.length === 1 ? "" : "s"}`;
+            }
+
             if (devices.length === 0) {
+                const message = document.createElement("p");
 
-                const emptyMessage =
-                    document.createElement("p");
-
-                emptyMessage.textContent =
+                message.textContent =
                     "No Remote PLC devices registered.";
 
-                remotePLCDevicesList.appendChild(
-                    emptyMessage
-                );
-
+                remotePLCDevicesList.appendChild(message);
             } else {
-
                 devices.forEach((device) => {
-
                     remotePLCDevicesList.appendChild(
                         createRemotePLCDeviceCard(device)
                     );
-
                 });
             }
 
             setRemotePLCStatus(
                 `Loaded ${devices.length} Remote PLC device(s).`
             );
-
         } catch (error) {
-
             console.error(
                 "Remote PLC device loading failed:",
                 error
@@ -2650,9 +2677,7 @@ if (plantFilterCompany) {
                 "Unable to load devices: " + error.message,
                 true
             );
-
         } finally {
-
             isLoadingRemotePLCDevices = false;
 
             if (remotePLCRefreshBtn) {
@@ -2667,18 +2692,14 @@ if (plantFilterCompany) {
        ----------------------------------------------------- */
 
     if (remotePLCEnrollForm) {
-
         remotePLCEnrollForm.addEventListener(
             "submit",
             async (event) => {
-
                 event.preventDefault();
 
-                const company =
-                    remotePLCCompany?.value.trim();
+                const company = remotePLCCompany?.value;
 
-                const location =
-                    remotePLCLocation?.value.trim();
+                const selectedSlug = remotePLCLocation?.value;
 
                 const machineId =
                     remotePLCMachineId?.value.trim();
@@ -2686,9 +2707,7 @@ if (plantFilterCompany) {
                 const deviceName =
                     remotePLCDeviceName?.value.trim();
 
-                if (
-                    !["BPCL", "HPCL", "IOCL"].includes(company)
-                ) {
+                if (!["BPCL", "HPCL", "IOCL"].includes(company)) {
                     setRemotePLCStatus(
                         "Please select a valid company.",
                         true
@@ -2696,9 +2715,28 @@ if (plantFilterCompany) {
                     return;
                 }
 
-                if (!location || !machineId) {
+                const selectedPlant = allPlantLocations.find(
+                    (plant) =>
+                        plant.company === company &&
+                        plant.location_slug === selectedSlug &&
+                        plant.is_active === true
+                );
+
+                if (!selectedPlant) {
                     setRemotePLCStatus(
-                        "Company, location and machine ID are required.",
+                        "Please select a valid active plant location.",
+                        true
+                    );
+                    return;
+                }
+
+                if (
+                    !machineId ||
+                    machineId.length < 2 ||
+                    machineId.length > 80
+                ) {
+                    setRemotePLCStatus(
+                        "Machine ID must contain 2–80 characters.",
                         true
                     );
                     return;
@@ -2713,21 +2751,20 @@ if (plantFilterCompany) {
                     submitButton.disabled = true;
                 }
 
-                setRemotePLCStatus(
-                    "Generating one-time enrollment code..."
-                );
-
                 if (remotePLCEnrollmentResult) {
                     remotePLCEnrollmentResult.hidden = true;
                 }
 
-                try {
+                setRemotePLCStatus(
+                    "Generating one-time enrollment code..."
+                );
 
+                try {
                     const data = await callRemotePLC(
                         "create_enrollment_code",
                         {
                             company,
-                            location,
+                            location: selectedPlant.location_name,
                             machine_id: machineId,
                             ...(deviceName
                                 ? { device_name: deviceName }
@@ -2756,16 +2793,21 @@ if (plantFilterCompany) {
                         remotePLCEnrollmentResult.hidden = false;
                     }
 
+                    if (remotePLCCodeExpiry) {
+                        remotePLCCodeExpiry.textContent =
+                            "Validity: 24 hours | Maximum uses: 1";
+                    }
+
                     setRemotePLCStatus(
-                        "Enrollment code generated successfully. It is valid for 24 hours and can be used once."
+                        "Enrollment code generated successfully. Copy it now; it can be used once within 24 hours."
                     );
 
                     remotePLCEnrollForm.reset();
 
+                    updateRemotePLCLocationOptions();
                 } catch (error) {
-
                     console.error(
-                        "Remote PLC enrollment code creation failed:",
+                        "Enrollment code creation failed:",
                         error
                     );
 
@@ -2774,9 +2816,7 @@ if (plantFilterCompany) {
                         error.message,
                         true
                     );
-
                 } finally {
-
                     if (submitButton) {
                         submitButton.disabled = false;
                     }
@@ -2791,11 +2831,9 @@ if (plantFilterCompany) {
        ----------------------------------------------------- */
 
     if (remotePLCCopyCodeBtn) {
-
         remotePLCCopyCodeBtn.addEventListener(
             "click",
             async () => {
-
                 const code =
                     remotePLCEnrollmentCode?.textContent.trim();
 
@@ -2808,22 +2846,16 @@ if (plantFilterCompany) {
                 }
 
                 try {
-
                     await navigator.clipboard.writeText(code);
 
                     setRemotePLCStatus(
                         "Enrollment code copied successfully."
                     );
-
                 } catch (error) {
-
-                    console.error(
-                        "Enrollment code copy failed:",
-                        error
-                    );
+                    console.error("Code copy failed:", error);
 
                     setRemotePLCStatus(
-                        "Unable to copy code. Please select and copy it manually.",
+                        "Unable to copy code. Please copy it manually.",
                         true
                     );
                 }
@@ -2833,11 +2865,10 @@ if (plantFilterCompany) {
 
 
     /* -----------------------------------------------------
-       REFRESH DEVICES BUTTON
+       REFRESH BUTTON
        ----------------------------------------------------- */
 
     if (remotePLCRefreshBtn) {
-
         remotePLCRefreshBtn.addEventListener(
             "click",
             loadRemotePLCDevices
@@ -2846,41 +2877,30 @@ if (plantFilterCompany) {
 
 
     /* -----------------------------------------------------
-       DASHBOARD VIEW SWITCH — REMOTE PLC
-       Existing switchDashboardView() remains untouched.
-       Capture phase handles only the remotePLC option.
+       DASHBOARD VIEW SWITCH
+       Capture phase handles only remotePLC.
        ----------------------------------------------------- */
 
     if (dashboardViewFilter) {
-
         dashboardViewFilter.addEventListener(
             "change",
             (event) => {
-
-                if (
-                    dashboardViewFilter.value !== "remotePLC"
-                ) {
-
+                if (dashboardViewFilter.value !== "remotePLC") {
                     if (remotePLCSection) {
                         remotePLCSection.hidden = true;
                     }
-
                     return;
                 }
 
                 event.stopImmediatePropagation();
 
-                const sections = [
+                [
                     feedbackSection,
                     userCreationSection,
                     userManagementSection,
                     plantLocationSection
-                ];
-
-                sections.forEach((section) => {
-                    if (section) {
-                        section.hidden = true;
-                    }
+                ].forEach((section) => {
+                    if (section) section.hidden = true;
                 });
 
                 if (remotePLCSection) {
@@ -2889,8 +2909,10 @@ if (plantFilterCompany) {
 
                 if (dashboardSectionTitle) {
                     dashboardSectionTitle.textContent =
-                        "Remote PLC Device Management";
+                        "REMOTE PLC DEVICE MANAGEMENT";
                 }
+
+                updateRemotePLCLocationOptions();
 
                 if (auth.currentUser) {
                     loadRemotePLCDevices();
@@ -2901,12 +2923,16 @@ if (plantFilterCompany) {
     }
 
 
+    /* -----------------------------------------------------
+       INITIALIZATION
+       ----------------------------------------------------- */
+
     console.log(
         "Remote PLC Device Management module initialized."
     );
 
 })();
-
+ 
 /* =========================================================
    END OF ADMIN.JS
    ========================================================= */
