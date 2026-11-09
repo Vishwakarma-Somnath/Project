@@ -2274,7 +2274,7 @@ if (plantFilterCompany) {
         document.getElementById("copyRemotePLCCodeBtn");
 
     const remotePLCDevicesList =
-        document.getElementById("remotePLCDevicesList");
+        document.getElementById("remotePLCDeviceList");
 
 
     /* -----------------------------------------------------
