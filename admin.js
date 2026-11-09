@@ -2461,144 +2461,270 @@ if (plantFilterCompany) {
         return "Active";
     }
 
+        /* =========================================================
+        UPDATED REMOTE PLC DEVICE CARD
+        ADDED:
+        - Online / Offline status
+        - Last Heartbeat (IST)
+        - Agent Version
+        - Adapter Status
+        - COM Port
+        Existing Activate / Deactivate functionality preserved.
+        ========================================================= */
 
-    /* -----------------------------------------------------
-       DEVICE CARD
-       ----------------------------------------------------- */
+        function createRemotePLCDeviceCard(device) {
+            const card = document.createElement("article");
 
-    function createRemotePLCDeviceCard(device) {
-        const card = document.createElement("article");
+            card.className = "remote-plc-device-card";
 
-        card.className = "remote-plc-device-card";
+            card.style.cssText = `
+                background:#ffffff;
+                color:#222222;
+                border:1px solid #dddddd;
+                border-radius:10px;
+                padding:16px;
+                margin:10px 0;
+                overflow-wrap:anywhere;
+                box-shadow:0 3px 12px rgba(0,0,0,.10);
+            `;
 
-        card.style.cssText = `
-            background:#ffffff;
-            color:#222222;
-            border:1px solid #dddddd;
-            border-radius:10px;
-            padding:16px;
-            margin:10px 0;
-            overflow-wrap:anywhere;
-            box-shadow:0 3px 12px rgba(0,0,0,.10);
-        `;
+            const heading = document.createElement("h3");
 
-        const heading = document.createElement("h3");
+            heading.textContent =
+                device.device_name ||
+                device.machine_id ||
+                "Remote PLC Device";
 
-        heading.textContent =
-            device.device_name ||
-            device.machine_id ||
-            "Remote PLC Device";
+            heading.style.cssText = `
+                margin:0 0 12px;
+                font-size:19px;
+                color:#172554;
+            `;
 
-        const details = document.createElement("div");
+            const details = document.createElement("div");
 
-        details.style.cssText = `
-            margin-top:10px;
-            line-height:1.8;
-        `;
+            details.style.cssText = `
+                margin-top:10px;
+                line-height:1.8;
+            `;
 
-        const fields = [
-            ["Company", device.company],
-            ["Location", device.location],
-            ["Machine ID", device.machine_id],
-            ["Device ID", device.id || device.device_id],
-            ["Status", getRemotePLCDeviceStatus(device)]
-        ];
+            /* =====================================================
+            NEW: HEARTBEAT ONLINE / OFFLINE CALCULATION
+            ===================================================== */
 
-        fields.forEach(([label, value]) => {
-            if (
-                value === undefined ||
-                value === null ||
-                value === ""
-            ) {
-                return;
-            }
+            const lastSeen = device.last_seen
+                ? new Date(device.last_seen)
+                : null;
 
-            const line = document.createElement("p");
+            const heartbeatAge = lastSeen
+                ? Date.now() - lastSeen.getTime()
+                : Infinity;
 
-            line.textContent = label + ": " + String(value);
+            const isOnline =
+                device.is_active === true &&
+                device.approval_status === "approved" &&
+                lastSeen !== null &&
+                !Number.isNaN(lastSeen.getTime()) &&
+                heartbeatAge >= 0 &&
+                heartbeatAge <= 2 * 60 * 1000;
 
-            details.appendChild(line);
-        });
+            const connectionStatus = isOnline ? "ONLINE" : "OFFLINE";
 
-        const actions = document.createElement("div");
+            /* =====================================================
+            NEW: FORMAT LAST HEARTBEAT IN INDIAN TIME
+            ===================================================== */
 
-        actions.style.cssText = `
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-            margin-top:14px;
-        `;
+            const formattedLastSeen = lastSeen &&
+                !Number.isNaN(lastSeen.getTime())
+                ? lastSeen.toLocaleString("en-IN", {
+                    timeZone: "Asia/Kolkata",
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true
+                }) + " IST"
+                : "No heartbeat received";
 
-        const isActive = device.is_active === true;
+            /* =====================================================
+            EXISTING DEVICE INFORMATION
+            ===================================================== */
 
-        const toggleButton = document.createElement("button");
+            const fields = [
+                ["Company", device.company],
+                ["Location", device.location],
+                ["Machine ID", device.machine_id],
+                ["Device ID", device.id || device.device_id],
+                ["Approval Status", device.approval_status || "Unknown"],
+                ["Access Status", device.is_active === true ? "Active" : "Inactive"]
+            ];
 
-        toggleButton.type = "button";
+            fields.forEach(([label, value]) => {
+                if (
+                    value === undefined ||
+                    value === null ||
+                    value === ""
+                ) {
+                    return;
+                }
 
-        toggleButton.textContent =
-            isActive ? "Deactivate Device" : "Activate Device";
+                const line = document.createElement("p");
 
-        toggleButton.style.cssText = `
-            padding:9px 14px;
-            border:0;
-            border-radius:6px;
-            cursor:pointer;
-            font-weight:600;
-            background:${isActive ? "#dc3545" : "#198754"};
-            color:#ffffff;
-        `;
+                line.textContent = label + ": " + String(value);
 
-        toggleButton.addEventListener("click", async () => {
-            const deviceId = device.device_id || device.id;
+                details.appendChild(line);
+            });
 
-            if (!deviceId) {
-                setRemotePLCStatus(
-                    "Device ID missing in server response.",
-                    true
-                );
-                return;
-            }
+            /* =====================================================
+            NEW: CONNECTION STATUS
+            ===================================================== */
 
-            const nextState = !isActive;
+            const connectionLine = document.createElement("p");
 
-            if (!window.confirm(
-                `${nextState ? "Activate" : "Deactivate"} this device?`
-            )) {
-                return;
-            }
+            connectionLine.textContent =
+                "Connection Status: " + connectionStatus;
 
-            toggleButton.disabled = true;
+            connectionLine.style.cssText = `
+                font-weight:700;
+                color:${isOnline ? "#16803c" : "#dc2626"};
+            `;
 
-            try {
-                await callRemotePLC("set_device_active", {
-                    device_id: deviceId,
-                    is_active: nextState
-                });
+            details.appendChild(connectionLine);
 
-                setRemotePLCStatus(
-                    `Device ${nextState ? "activated" : "deactivated"} successfully.`
-                );
+            /* =====================================================
+            NEW: LAST HEARTBEAT
+            ===================================================== */
 
-                await loadRemotePLCDevices();
-            } catch (error) {
-                console.error(
-                    "Remote PLC status update failed:",
-                    error
-                );
+            const heartbeatLine = document.createElement("p");
 
-                setRemotePLCStatus(error.message, true);
+            heartbeatLine.textContent =
+                "Last Heartbeat: " + formattedLastSeen;
 
-                toggleButton.disabled = false;
-            }
-        });
+            details.appendChild(heartbeatLine);
 
-        actions.appendChild(toggleButton);
+            /* =====================================================
+            NEW: AGENT VERSION
+            ===================================================== */
 
-        card.append(heading, details, actions);
+            const agentLine = document.createElement("p");
 
-        return card;
-    }
+            agentLine.textContent =
+                "Agent Version: " + (device.agent_version || "Not reported");
 
+            details.appendChild(agentLine);
+
+            /* =====================================================
+            NEW: ADAPTER STATUS
+            ===================================================== */
+
+            const adapterLine = document.createElement("p");
+
+            adapterLine.textContent =
+                "Adapter Status: " + (device.adapter_status || "Unknown");
+
+            adapterLine.style.color =
+                String(device.adapter_status || "").toUpperCase() === "CONNECTED"
+                    ? "#16803c"
+                    : "#b45309";
+
+            details.appendChild(adapterLine);
+
+            /* =====================================================
+            NEW: COM PORT
+            ===================================================== */
+
+            const portLine = document.createElement("p");
+
+            portLine.textContent =
+                "COM Port: " + (device.com_port || "Not reported");
+
+            details.appendChild(portLine);
+
+            /* =====================================================
+            EXISTING ACTION BUTTONS
+            ===================================================== */
+
+            const actions = document.createElement("div");
+
+            actions.style.cssText = `
+                display:flex;
+                flex-wrap:wrap;
+                gap:8px;
+                margin-top:14px;
+            `;
+
+            const isActive = device.is_active === true;
+
+            const toggleButton = document.createElement("button");
+
+            toggleButton.type = "button";
+
+            toggleButton.textContent =
+                isActive ? "Deactivate Device" : "Activate Device";
+
+            toggleButton.style.cssText = `
+                padding:9px 14px;
+                border:0;
+                border-radius:6px;
+                cursor:pointer;
+                font-weight:600;
+                background:${isActive ? "#dc3545" : "#198754"};
+                color:#ffffff;
+            `;
+
+            toggleButton.addEventListener("click", async () => {
+                const deviceId = device.device_id || device.id;
+
+                if (!deviceId) {
+                    setRemotePLCStatus(
+                        "Device ID missing in server response.",
+                        true
+                    );
+                    return;
+                }
+
+                const nextState = !isActive;
+
+                if (!window.confirm(
+                    `${nextState ? "Activate" : "Deactivate"} this device?`
+                )) {
+                    return;
+                }
+
+                toggleButton.disabled = true;
+
+                try {
+                    await callRemotePLC("set_device_active", {
+                        device_id: deviceId,
+                        is_active: nextState
+                    });
+
+                    setRemotePLCStatus(
+                        `Device ${nextState ? "activated" : "deactivated"} successfully.`
+                    );
+
+                    await loadRemotePLCDevices();
+
+                } catch (error) {
+                    console.error(
+                        "Remote PLC status update failed:",
+                        error
+                    );
+
+                    setRemotePLCStatus(error.message, true);
+
+                    toggleButton.disabled = false;
+                }
+            });
+
+            actions.appendChild(toggleButton);
+
+            card.append(heading, details, actions);
+
+            return card;
+        }
 
     /* -----------------------------------------------------
        LOAD REGISTERED DEVICES
