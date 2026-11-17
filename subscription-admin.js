@@ -1,339 +1,161 @@
 import { auth } from "./firebase-config.js";
 import { supabase } from "./supabase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 (() => {
-    const $ = (id) => document.getElementById(id);
-    const dropdown = $("dashboardViewFilter");
-    const section = $("subscriptionManagementSection");
-    const title = $("dashboardSectionTitle");
-    const status = $("subscriptionAdminStatus");
-    const refreshBtn = $("refreshSubscriptionAdminBtn");
-    const requestBody = $("subscriptionPaymentRequestList");
-    const keyHost = $("subscriptionKeyManagementList");
-    const requestCount = $("subscriptionRequestCount");
-    const pendingCount = $("subscriptionPendingCount");
-    const activeKeyCount = $("subscriptionActiveKeyCount");
+  const $ = (id) => document.getElementById(id);
+  const dropdown = $("dashboardViewFilter");
+  const section = $("subscriptionManagementSection");
+  const title = $("dashboardSectionTitle");
+  const statusEl = $("subscriptionAdminStatus");
+  const keyHost = $("subscriptionKeyManagementList");
+  const requestHost = $("subscriptionPaymentRequestList");
+  const refreshBtn = $("refreshSubscriptionAdminBtn");
+  if (!dropdown || !section || !keyHost || !requestHost) return;
 
-    if (!dropdown || !section || !requestBody || !keyHost) {
-        console.error("Subscription Management: required HTML element missing.");
-        return;
+  const otherSections = ["feedbackSection", "userCreationSection", "userManagementSection", "plantLocationSection", "remotePLCSection"]
+    .map($).filter(Boolean);
+  let plants = [], requests = [], keys = [], selectedCompany = "", selectedLocation = "";
+  let busy = false;
+
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const money = (paise, currency="INR") => new Intl.NumberFormat("en-IN", {style:"currency",currency,maximumFractionDigits:2}).format(Number(paise||0)/100);
+  const date = (v) => v ? new Date(v).toLocaleString("en-IN") : "—";
+  function setStatus(message, error=false) { statusEl.textContent = message; statusEl.style.borderColor = error ? "#dc5656" : "#4b9b6b"; statusEl.style.color = error ? "#ffb5b5" : "#b8f3c9"; }
+
+  async function api(action, extra={}) {
+    if (!auth.currentUser) throw new Error("Admin session missing. Please login again.");
+    const token = await auth.currentUser.getIdToken(true);
+    const {data,error} = await supabase.functions.invoke("subscription-admin", {body:{action,...extra},headers:{"x-firebase-id-token":token}});
+    if (error) {
+      let msg=error.message||"Subscription admin request failed";
+      if (error.context?.clone) { try { const body=await error.context.clone().json(); msg=body.error||body.message||msg; } catch {} }
+      throw new Error(msg);
     }
+    if (!data || data.error || data.success===false) throw new Error(data?.error||"Empty server response");
+    return data;
+  }
 
-    const otherSections = [
-        "feedbackSection", "userCreationSection", "userManagementSection",
-        "plantLocationSection", "remotePLCSection"
-    ].map((id) => $(id)).filter(Boolean);
+  function ensureControls() {
+    const panel = keyHost.closest(".subscription-admin-panel");
+    const head = panel?.querySelector(".subscription-admin-panel-heading");
+    if (!panel || $("subscriptionKeyFilters")) return;
+    const controls=document.createElement("div"); controls.id="subscriptionKeyFilters"; controls.className="subscription-key-filters";
+    controls.innerHTML=`<label>Company <select id="subscriptionCompany"><option value="">All Companies</option></select></label><label>Plant / Location <select id="subscriptionLocation" disabled><option value="">Select company first</option></select></label><button type="button" id="loadAllSubscriptionKeys">Show All Plant Keys</button>`;
+    head?.insertAdjacentElement("afterend",controls);
+    $("subscriptionCompany").addEventListener("change",()=>{selectedCompany=$("subscriptionCompany").value; selectedLocation=""; populateLocations(); renderKeys();});
+    $("subscriptionLocation").addEventListener("change",()=>{selectedLocation=$("subscriptionLocation").value; renderKeys();});
+    $("loadAllSubscriptionKeys").addEventListener("click",()=>{selectedCompany="";selectedLocation="";$("subscriptionCompany").value="";populateLocations();renderKeys();});
+    const help=document.createElement("p"); help.className="subscription-key-help"; help.textContent="Select a company to filter its plants. Select a plant to view its activation keys, or Show All Plant Keys to view every licensed plant."; controls.insertAdjacentElement("afterend",help);
+  }
 
-    let requests = [];
-    let selectedPlant = { company: "HPCL", location: "" };
-    let keySearchReady = false;
+  function populateCompanies() {
+    const sel=$("subscriptionCompany"); if(!sel)return;
+    const old=selectedCompany; sel.replaceChildren(new Option("All Companies",""));
+    [...new Set(plants.map(p=>p.company))].sort().forEach(c=>sel.add(new Option(c,c)));
+    sel.value=old;
+    populateLocations();
+  }
+  function populateLocations() {
+    const sel=$("subscriptionLocation"); if(!sel)return;
+    const old=selectedLocation; sel.replaceChildren(new Option(selectedCompany?"All Plants":"Select company first",""));
+    const list=plants.filter(p=>!selectedCompany||p.company===selectedCompany);
+    list.forEach(p=>sel.add(new Option(p.location_name,p.location_name)));
+    sel.disabled=!selectedCompany; sel.value=list.some(p=>p.location_name===old)?old:"";
+    selectedLocation=sel.value;
+  }
 
-    const text = (value) => String(value ?? "");
-    const escapeText = (value) => text(value);
+  async function loadAll() {
+    if(busy)return; busy=true; refreshBtn.disabled=true;
+    setStatus("Loading licensed plants, payment requests and activation keys...");
+    try {
+      const [p,r,k]=await Promise.all([api("list_plants"),api("list_requests"),api("list_all_keys")]);
+      plants=p.plants||[]; requests=r.requests||[]; keys=k.keys||[];
+      populateCompanies(); renderRequests(); renderKeys(); updateSummary();
+      setStatus(`Loaded ${plants.length} active plants, ${requests.length} payment requests and ${keys.length} key records.`);
+    } catch(e) { setStatus(e.message,true); }
+    finally { busy=false; refreshBtn.disabled=false; }
+  }
+  function updateSummary(){
+    $("subscriptionRequestCount").textContent=String(requests.length);
+    $("subscriptionPendingCount").textContent=String(requests.filter(x=>x.status==="pending").length);
+    $("subscriptionActiveKeyCount").textContent=String(keys.filter(x=>x.status==="active").length);
+  }
 
-    function setStatus(message, isError = false) {
-        if (!status) return;
-        status.textContent = message;
-        status.style.borderColor = isError ? "#c0392b" : "#9a6b1d";
-        status.style.color = isError ? "#ffb4ab" : "#ffdc91";
-    }
-
-    function node(tag, content, className) {
-        const el = document.createElement(tag);
-        if (content !== undefined && content !== null) el.textContent = text(content);
-        if (className) el.className = className;
-        return el;
-    }
-
-    function button(label, onClick, className = "subscription-admin-action") {
-        const el = node("button", label, className);
-        el.type = "button";
-        el.addEventListener("click", onClick);
-        return el;
-    }
-
-    async function callAdmin(action, extra = {}) {
-        if (!auth.currentUser) throw new Error("Admin session missing. Please sign in again.");
-        const token = await auth.currentUser.getIdToken(true);
-        const { data, error } = await supabase.functions.invoke("subscription-admin", {
-            body: { action, ...extra },
-            headers: { "x-firebase-id-token": token }
-        });
-        if (error) {
-            let message = error.message || "Subscription Admin request failed.";
-            if (error.context && typeof error.context.clone === "function") {
-                try {
-                    const raw = await error.context.clone().text();
-                    if (raw) {
-                        try {
-                            const parsed = JSON.parse(raw);
-                            message = parsed.error || parsed.message || message;
-                        } catch { message = raw; }
-                    }
-                } catch { /* keep SDK message */ }
-            }
-            throw new Error(message);
-        }
-        if (!data || data.error || data.success === false) {
-            throw new Error(data?.error || data?.message || "Server did not confirm the action.");
-        }
-        return data;
-    }
-
-    function addKeySearchControls() {
-        if (keySearchReady) return;
-        keySearchReady = true;
-        keyHost.replaceChildren();
-        const form = node("form", null, "subscription-admin-key-search");
-        const companyLabel = node("label", "Company");
-        const company = node("select");
-        company.id = "subscriptionKeyCompany";
-        for (const name of ["HPCL", "BPCL", "IOCL"]) {
-            const option = node("option", name);
-            option.value = name;
-            company.append(option);
-        }
-        const locationLabel = node("label", "Plant / Location");
-        const location = node("input");
-        location.id = "subscriptionKeyLocation";
-        location.type = "text";
-        location.maxLength = 100;
-        location.required = true;
-        location.placeholder = "Enter exact plant / location";
-        const search = node("button", "Load Keys");
-        search.type = "submit";
-        companyLabel.append(company);
-        locationLabel.append(location);
-        form.append(companyLabel, locationLabel, search);
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-            selectedPlant = { company: company.value, location: location.value.trim() };
-            if (!selectedPlant.location) return;
-            await loadKeys();
-        });
-        const result = node("div", "Select a company and enter the exact plant/location to view its activation keys.", "subscription-admin-key-results");
-        result.id = "subscriptionKeyResults";
-        keyHost.append(form, result);
-    }
-
-    function renderRequests() {
-        requestBody.replaceChildren();
-        if (!requests.length) {
-            const tr = node("tr");
-            const td = node("td", "No payment requests found.", "subscription-admin-empty");
-            td.colSpan = 7;
-            tr.append(td);
-            requestBody.append(tr);
-            return;
-        }
-
-        for (const item of requests) {
-            const tr = node("tr");
-            const customer = node("td");
-            customer.append(node("strong", item.customer_name), node("br"), node("span", item.customer_email));
-            const mobile = node("td", item.customer_mobile);
-            const payment = node("td", item.payment_note || "Manual payment");
-            const utrCell = node("td");
-            const utr = node("input");
-            utr.type = "text";
-            utr.maxLength = 80;
-            utr.value = item.utr || "";
-            utr.placeholder = "Enter UTR / Transaction ID";
-            utr.disabled = item.status !== "pending";
-            utrCell.append(utr);
-            const amount = node("td", `₹${(Number(item.amount_paise || 0) / 100).toFixed(2)}`);
-            const statusCell = node("td", item.status.toUpperCase());
-            const actions = node("td", null, "subscription-admin-actions");
-
-            if (item.status === "pending") {
-                actions.append(button("Save UTR", async () => {
-                    try {
-                        await callAdmin("record_utr", { request_id: item.id, utr: utr.value.trim() });
-                        setStatus(`UTR saved for ${item.company} / ${item.location}.`);
-                        await loadRequests();
-                    } catch (error) { setStatus(error.message, true); }
-                }));
-                actions.append(button("Verify Payment", async () => {
-                    if (!item.utr && !utr.value.trim()) { setStatus("Please save the UTR before verifying payment.", true); return; }
-                    if (!confirm(`Confirm payment verification for ${item.company} / ${item.location}?`)) return;
-                    try {
-                        if (utr.value.trim() !== (item.utr || "")) {
-                            await callAdmin("record_utr", { request_id: item.id, utr: utr.value.trim() });
-                        }
-                        await callAdmin("verify_payment", { request_id: item.id });
-                        setStatus("Payment verified. Key generation remains a separate manual action.");
-                        await loadRequests();
-                    } catch (error) { setStatus(error.message, true); }
-                }));
-                actions.append(button("Reject", async () => {
-                    if (!confirm(`Reject payment request for ${item.company} / ${item.location}?`)) return;
-                    try {
-                        if (utr.value.trim() && utr.value.trim() !== (item.utr || "")) {
-                            await callAdmin("record_utr", { request_id: item.id, utr: utr.value.trim() });
-                        }
-                        await callAdmin("reject_payment", { request_id: item.id, admin_note: "Rejected by administrator" });
-                        setStatus("Payment request rejected.");
-                        await loadRequests();
-                    } catch (error) { setStatus(error.message, true); }
-                }, "subscription-admin-action danger"));
-            } else if (item.status === "verified") {
-                actions.append(button("Generate Key", async () => {
-                    if (!confirm(`Generate activation key for ${item.company} / ${item.location}?`)) return;
-                    try {
-                        const result = await callAdmin("generate_key", {
-                            company: item.company, location: item.location, request_id: item.id
-                        });
-                        selectedPlant = { company: item.company, location: item.location };
-                        addKeySearchControls();
-                        $("subscriptionKeyCompany").value = item.company;
-                        $("subscriptionKeyLocation").value = item.location;
-                        await loadKeys();
-                        showNewKey(result.activation_key, item.company, item.location);
-                        setStatus("Activation key generated. Copy it now; it cannot be retrieved later.");
-                    } catch (error) { setStatus(error.message, true); }
-                }));
-            }
-
-            tr.append(customer, mobile, payment, utrCell, amount, statusCell, actions);
-            requestBody.append(tr);
-        }
-    }
-
-    function showNewKey(rawKey, companyName, locationName) {
-        const host = $("subscriptionKeyResults");
-        if (!host) return;
-        const box = node("div", null, "subscription-admin-new-key");
-        box.append(node("strong", `New activation key — ${companyName} / ${locationName}`));
-        const keyText = node("code", rawKey);
-        keyText.style.display = "block";
-        keyText.style.userSelect = "all";
-        keyText.style.margin = "8px 0";
-        box.append(keyText);
-        box.append(button("Copy Key", async () => {
-            try {
-                await navigator.clipboard.writeText(rawKey);
-                setStatus("Activation key copied to clipboard. Store it securely; it will not be shown again.");
-            } catch {
-                window.prompt("Copy this activation key now:", rawKey);
-            }
-        }));
-        host.prepend(box);
-    }
-
-    async function loadRequests() {
-        setStatus("Loading payment requests…");
-        const result = await callAdmin("list_requests");
-        requests = Array.isArray(result.requests) ? result.requests : [];
-        if (requestCount) requestCount.textContent = String(requests.length);
-        if (pendingCount) pendingCount.textContent = String(requests.filter(x => x.status === "pending").length);
-        renderRequests();
-        setStatus(`Loaded ${requests.length} payment request(s).`);
-    }
-
-    async function loadKeys() {
-        if (!selectedPlant.location) return;
-        const resultHost = $("subscriptionKeyResults");
-        if (resultHost) resultHost.replaceChildren(node("p", "Loading keys…"));
-        try {
-            const result = await callAdmin("list_keys", selectedPlant);
-            const keys = Array.isArray(result.keys) ? result.keys : [];
-            if (activeKeyCount) activeKeyCount.textContent = String(keys.filter(k => k.status === "active").length);
-            if (!resultHost) return;
-            resultHost.replaceChildren();
-            if (!keys.length) resultHost.append(node("p", "No activation keys found for this plant."));
-            for (const key of keys) {
-                const card = node("article", null, "subscription-admin-key-card");
-                card.append(node("strong", `${key.company} / ${key.location}`));
-                card.append(node("p", `Status: ${key.status.toUpperCase()} · Generated: ${new Date(key.generated_at).toLocaleString("en-IN")}`));
-                card.append(node("small", `Key record: ${key.id} · Payment request: ${key.payment_request_id || "—"}`));
-                const actions = node("div", null, "subscription-admin-actions");
-                if (key.status === "active") {
-                    actions.append(button("Regenerate Key", async () => {
-                        if (!key.payment_request_id) { setStatus("This key has no linked verified payment request.", true); return; }
-                        if (!confirm(`Regenerate key for ${key.company} / ${key.location}? The current key will be revoked.`)) return;
-                        try {
-                            const generated = await callAdmin("regenerate_key", {
-                                company: key.company, location: key.location,
-                                request_id: key.payment_request_id
-                            });
-                            await loadKeys();
-                            showNewKey(generated.activation_key, key.company, key.location);
-                            setStatus("Key regenerated. Copy the new key now.");
-                        } catch (error) { setStatus(error.message, true); }
-                    }));
-                    actions.append(button("Block", async () => {
-                        try { await callAdmin("block_key", { company: key.company, location: key.location, key_id: key.id }); setStatus("Key blocked."); await loadKeys(); }
-                        catch (error) { setStatus(error.message, true); }
-                    }));
-                } else if (key.status === "blocked") {
-                    actions.append(button("Unblock", async () => {
-                        try { await callAdmin("unblock_key", { company: key.company, location: key.location, key_id: key.id }); setStatus("Key unblocked."); await loadKeys(); }
-                        catch (error) { setStatus(error.message, true); }
-                    }));
-                }
-                if (["active", "blocked"].includes(key.status)) {
-                    actions.append(button("Revoke / Delete", async () => {
-                        if (!confirm("Revoke this key? It will remain in the audit history and cannot be used.")) return;
-                        try { await callAdmin("revoke_key", { company: key.company, location: key.location, key_id: key.id }); setStatus("Key revoked. Audit record retained."); await loadKeys(); }
-                        catch (error) { setStatus(error.message, true); }
-                    }, "subscription-admin-action danger"));
-                }
-                card.append(actions);
-                resultHost.append(card);
-            }
-        } catch (error) {
-            if (resultHost) resultHost.replaceChildren(node("p", error.message));
-            setStatus(error.message, true);
-        }
-    }
-
-    async function refreshAll() {
-        if (refreshBtn) refreshBtn.disabled = true;
-        try {
-            await loadRequests();
-            if (selectedPlant.location) await loadKeys();
-        } catch (error) { setStatus(error.message, true); }
-        finally { if (refreshBtn) refreshBtn.disabled = false; }
-    }
-
-    function handleViewChange(event) {
-        const selected = dropdown.value === "subscriptionManagement";
-        section.hidden = !selected;
-        if (!selected) return;
-        event.stopImmediatePropagation();
-        event.stopPropagation();
-        otherSections.forEach((item) => { item.hidden = true; });
-        if (title) title.textContent = "SUBSCRIPTION MANAGEMENT";
-        addKeySearchControls();
-        refreshAll();
-    }
-
-    dropdown.addEventListener("change", handleViewChange, true);
-    if (refreshBtn) {
-        refreshBtn.disabled = false;
-        refreshBtn.addEventListener("click", refreshAll);
-    }
-
-    section.hidden = dropdown.value !== "subscriptionManagement";
-    if (dropdown.value === "subscriptionManagement") {
-        dropdown.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            requests = [];
-            requestBody.replaceChildren();
-            if (requestCount) requestCount.textContent = "—";
-            if (pendingCount) pendingCount.textContent = "—";
-            if (activeKeyCount) activeKeyCount.textContent = "—";
-            setStatus("Please sign in with an authorized administrator account.");
-            if (refreshBtn) refreshBtn.disabled = true;
-            return;
-        }
-        if (refreshBtn) refreshBtn.disabled = false;
-        if (dropdown.value === "subscriptionManagement") refreshAll();
+  function renderRequests(){
+    requestHost.replaceChildren();
+    if(!requests.length){requestHost.innerHTML='<tr><td colspan="7" class="subscription-admin-empty">No payment requests found.</td></tr>';return;}
+    requests.forEach(r=>{
+      const tr=document.createElement("tr");
+      const td=(html)=>{const el=document.createElement("td");el.innerHTML=html;tr.append(el);};
+      td(`<strong>${esc(r.customer_name)}</strong><br>${esc(r.customer_email)}<br>${esc(r.company)} / ${esc(r.location)}`);
+      td(esc(r.customer_mobile)); td(esc(r.currency||"INR"));
+      td(`<input class="sub-utr-input" aria-label="UTR" placeholder="Enter UTR" value="${esc(r.utr||"")}" ${r.status!=="pending"?"disabled":""}>`);
+      td(money(r.amount_paise,r.currency||"INR")); td(`<strong>${esc(r.status)}</strong><br><small>${date(r.submitted_at)}</small>`);
+      const actions=document.createElement("td");
+      if(r.status==="pending"){
+        const save=document.createElement("button");save.textContent="Save UTR";save.type="button";
+        const verify=document.createElement("button");verify.textContent="Verify Payment";verify.type="button";
+        const reject=document.createElement("button");reject.textContent="Reject";reject.type="button";
+        const inp=tr.querySelector(".sub-utr-input");
+        save.onclick=async()=>{try{await api("record_utr",{request_id:r.id,utr:inp.value.trim()});r.utr=inp.value.trim();setStatus("Admin UTR saved.");renderRequests();}catch(e){setStatus(e.message,true);}};
+        verify.onclick=async()=>{try{if(!r.utr) { if(!inp.value.trim()) throw new Error("Enter UTR first"); await api("record_utr",{request_id:r.id,utr:inp.value.trim()});r.utr=inp.value.trim();} await api("verify_payment",{request_id:r.id});setStatus("Payment verified. You can now generate this plant's key.");await loadAll();}catch(e){setStatus(e.message,true);}};
+        reject.onclick=async()=>{if(!confirm(`Reject payment request for ${r.company}/${r.location}?`))return;try{await api("reject_payment",{request_id:r.id});await loadAll();}catch(e){setStatus(e.message,true);}};
+        actions.append(save,verify,reject);
+      } else {actions.textContent="Reviewed";}
+      tr.append(actions);requestHost.append(tr);
     });
+  }
 
-    console.log("Subscription Management admin API module initialized.");
+  function renderKeys(){
+    keyHost.replaceChildren();
+    const filtered=keys.filter(k=>(!selectedCompany||k.company===selectedCompany)&&(!selectedLocation||k.location.toLowerCase()===selectedLocation.toLowerCase()));
+    const groups=new Map();
+    filtered.forEach(k=>{const key=`${k.company}||${k.location}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(k);});
+    const plantList=plants.filter(p=>(!selectedCompany||p.company===selectedCompany)&&(!selectedLocation||p.location_name.toLowerCase()===selectedLocation.toLowerCase()));
+    plantList.forEach(p=>{const key=`${p.company}||${p.location_name}`;if(!groups.has(key))groups.set(key,[]);});
+    if(!groups.size){keyHost.textContent="No active plants found. Add a plant in Plant Addition first.";return;}
+    groups.forEach((list,group)=>{
+      const [company,location]=group.split("||");
+      const wrap=document.createElement("article");wrap.className="subscription-plant-group";
+      const h=document.createElement("h4");h.textContent=`${company} / ${location}`;wrap.append(h);
+      if(!list.length){const empty=document.createElement("p");empty.className="subscription-admin-empty-block";empty.textContent="No activation key generated for this plant yet.";wrap.append(empty);}
+      list.forEach(k=>{
+        const card=document.createElement("div");card.className="subscription-key-card";
+        const label=document.createElement("h5");label.textContent=`${company} / ${location}`;
+        const state=document.createElement("p");state.className="subscription-key-state";state.textContent=`Status: ${k.status.toUpperCase()} · Generated: ${date(k.generated_at)}`;
+        const record=document.createElement("small");record.textContent=`KEY RECORD: ${k.id} · PAYMENT REQUEST: ${k.payment_request_id||"—"}`;
+        const actions=document.createElement("div");actions.className="subscription-key-actions";
+        const add=(label,action,confirmText)=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.onclick=async()=>{if(confirmText&&!confirm(confirmText))return;try{const result=await api(action,{company,location,key_id:k.id,request_id:k.payment_request_id});await loadAll();if(result.activation_key){const payment=requests.find(r=>r.id===k.payment_request_id);showNewKey(result.activation_key,company,location,payment?.customer_email||"");}}catch(e){setStatus(e.message,true);}};actions.append(b);};
+        add("Regenerate Key","regenerate_key");
+        if(k.status==="blocked") add("Unblock Key","unblock_key"); else if(k.status==="active") add("Block Key","block_key");
+        if(k.status!=="revoked") add("Delete / Revoke Key","revoke_key",`Revoke this key for ${company}/${location}?`);
+        card.append(label,state,record,actions);wrap.append(card);
+      });
+      const verified=requests.filter(r=>r.company===company&&r.location.toLowerCase()===location.toLowerCase()&&r.status==="verified");
+      const used=new Set(list.map(k=>k.payment_request_id));
+      const available=verified.find(r=>!used.has(r.id));
+      if(available){const gen=document.createElement("button");gen.type="button";gen.className="subscription-generate-key";gen.textContent="GENERATE KEY";gen.onclick=async()=>{try{const result=await api("generate_key",{company,location,request_id:available.id});await loadAll();showNewKey(result.activation_key,company,location,available.customer_email);}catch(e){setStatus(e.message,true);}};wrap.append(gen);}
+      keyHost.append(wrap);
+    });
+  }
+
+  function showNewKey(key,company,location,email){
+    let box=$("subscriptionNewKeyResult");if(!box){box=document.createElement("div");box.id="subscriptionNewKeyResult";box.className="subscription-new-key-result";keyHost.prepend(box);}
+    box.innerHTML=`<h4>NEW ACTIVATION KEY — ${esc(company)} / ${esc(location)}</h4><code>${esc(key)}</code><div class="subscription-key-actions"><button type="button" id="copyNewSubscriptionKey">Copy Key</button>${email?'<button type="button" id="mailNewSubscriptionKey">Open Email Draft</button>':''}</div><p>Copy this key now. It cannot be retrieved later.</p>`;
+    $("copyNewSubscriptionKey").onclick=async()=>{try{await navigator.clipboard.writeText(key);setStatus("Activation key copied.");}catch{setStatus("Clipboard unavailable. Select and copy the key manually.",true);}};
+    if(email){$("mailNewSubscriptionKey").onclick=()=>{const subject=encodeURIComponent(`Activation Key — ${company}/${location}`);const body=encodeURIComponent(`Your plant activation key is:\n\n${key}\n\nCompany: ${company}\nPlant: ${location}\n\nPlease keep this key secure.`);window.location.href=`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;};}
+  }
+
+  function handleView(event){
+    const selected=dropdown.value==="subscriptionManagement";
+    section.hidden=!selected;if(!selected)return;
+    event.stopImmediatePropagation();event.stopPropagation();otherSections.forEach(s=>s.hidden=true);
+    if(title)title.textContent="SUBSCRIPTION MANAGEMENT";
+    ensureControls();
+    if(!plants.length&&!busy)loadAll();
+  }
+  dropdown.addEventListener("change",handleView,true);
+  refreshBtn.disabled=false;refreshBtn.addEventListener("click",loadAll);
+  section.hidden=dropdown.value!=="subscriptionManagement";
+  if(dropdown.value==="subscriptionManagement")dropdown.dispatchEvent(new Event("change",{bubbles:true}));
 })();
