@@ -16,6 +16,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   const newKeyEl = $("subscriptionNewKeyResult");
   const refreshBtn = $("refreshSubscriptionAdminBtn");
   const refreshPlantsBtn = $("refreshSubscriptionPlantsBtn");
+  const windowLimitInput = $("subscriptionMaxWindows");
+  const saveWindowLimitBtn = $("saveSubscriptionMaxWindowsBtn");
+  const disablePlantAccessBtn = $("disablePlantAccessBtn");
+  const deletePlantSubscriptionBtn = $("deletePlantSubscriptionBtn");
   if (!dropdown || !section) return;
 
   const otherSections = ["feedbackSection","userCreationSection","userManagementSection","plantLocationSection","remotePLCSection"]
@@ -65,7 +69,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   companySelect?.addEventListener("change",()=>{
     selectedCompany=companySelect.value; selectedLocation=""; populatePlantSelect(); renderSelectedKeys();
   });
-  plantSelect?.addEventListener("change",()=>{selectedLocation=plantSelect.value;renderSelectedKeys();});
+  plantSelect?.addEventListener("change",()=>{selectedLocation=plantSelect.value;syncPlantControls();renderSelectedKeys();});
+  saveWindowLimitBtn?.addEventListener("click",saveWindowLimit);
+  disablePlantAccessBtn?.addEventListener("click",disablePlantAccess);
+  deletePlantSubscriptionBtn?.addEventListener("click",deletePlantSubscription);
 
   onAuthStateChanged(auth,user=>{
     currentUser=user;
@@ -106,6 +113,63 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
     if(!locations.some(p=>p.location_name===selectedLocation)) selectedLocation=locations[0]?.location_name||"";
     plantSelect.innerHTML=locations.length?locations.map(p=>`<option value="${esc(p.location_name)}">${esc(p.location_name)}</option>`).join(""):'<option value="">No key-generated plant</option>';
     plantSelect.disabled=!locations.length; plantSelect.value=selectedLocation;
+    syncPlantControls();
+  }
+
+  function selectedPlant(){
+    return plants.find(p=>p.company===selectedCompany&&p.location_name===selectedLocation)||null;
+  }
+  function syncPlantControls(){
+    const plant=selectedPlant();
+    if(windowLimitInput) windowLimitInput.value=String(plant?.max_windows??1);
+    if(saveWindowLimitBtn) saveWindowLimitBtn.disabled=!plant;
+    if(disablePlantAccessBtn){
+      disablePlantAccessBtn.disabled=!plant;
+      disablePlantAccessBtn.textContent=plant?.access_enabled===false?"Enable Plant Access":"Disable Plant Access";
+      disablePlantAccessBtn.classList.toggle("primary",plant?.access_enabled===false);
+    }
+    if(deletePlantSubscriptionBtn) deletePlantSubscriptionBtn.disabled=!plant;
+  }
+
+  async function saveWindowLimit(){
+    const plant=selectedPlant(); if(!plant) return;
+    const value=Number(windowLimitInput?.value);
+    if(!Number.isInteger(value)||value<1||value>50){say("Maximum windows must be a whole number from 1 to 50.",true);return;}
+    saveWindowLimitBtn.disabled=true;
+    try{
+      await call("set_window_limit",{company:plant.company,location:plant.location_name,max_windows:value});
+      plant.max_windows=value; syncPlantControls();
+      say(`Maximum simultaneous windows set to ${value} for ${plant.company} / ${plant.location_name}.`);
+      await loadEligiblePlants(false);
+    }catch(e){say(e.message||"Unable to save window limit.",true);}finally{saveWindowLimitBtn.disabled=false;}
+  }
+
+  async function disablePlantAccess(){
+    const plant=selectedPlant(); if(!plant) return;
+    const enabling=plant.access_enabled===false;
+    const prompt=enabling
+      ? `Enable access control for ${plant.company} / ${plant.location_name}? The subscription will resume only if its existing validity dates are still current.`
+      : `Disable dashboard access for ALL users/windows of ${plant.company} / ${plant.location_name}? The subscription will be suspended.`;
+    if(!confirm(prompt)) return;
+    disablePlantAccessBtn.disabled=true;
+    try{
+      await call(enabling?"enable_plant_access":"disable_plant_access",{company:plant.company,location:plant.location_name});
+      plant.access_enabled=enabling; syncPlantControls();
+      say(enabling?`Plant access control enabled for ${plant.company} / ${plant.location_name}. If its subscription has expired, use administrator activation.`:`Plant access disabled for ${plant.company} / ${plant.location_name}.`,!enabling);
+      await refreshAll();
+    }catch(e){say(e.message||"Unable to change plant access.",true);}finally{disablePlantAccessBtn.disabled=false;}
+  }
+
+  async function deletePlantSubscription(){
+    const plant=selectedPlant(); if(!plant) return;
+    const phrase=`${plant.company} / ${plant.location_name}`;
+    if(!confirm(`Delete User: remove subscription records, activation keys, payment requests and orders for ${phrase}?\n\nThis does NOT delete the Project User/login, Auth account, Plant/Location, PLC/machine records or pressure history. Audit history is retained. This cannot be undone.`)) return;
+    deletePlantSubscriptionBtn.disabled=true;
+    try{
+      const result=await call("delete_user",{company:plant.company,location:plant.location_name});
+      say(`Plant subscription records deleted. Keys: ${result.deleted_keys||0}, payment requests: ${result.deleted_payment_requests||0}, orders: ${result.deleted_orders||0}. User account and plant data preserved.`);
+      newKeyEl.hidden=true; await refreshAll();
+    }catch(e){say(e.message||"Unable to delete plant subscription records.",true);}finally{deletePlantSubscriptionBtn.disabled=false;}
   }
 
   async function renderSelectedKeys(){
@@ -120,7 +184,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
         const actionButtons=[];
         if(status==="active") actionButtons.push(`<button data-action="block_key" data-id="${esc(k.id)}">Block</button>`);
         if(status==="blocked") actionButtons.push(`<button class="primary" data-action="unblock_key" data-id="${esc(k.id)}">Unblock</button>`);
-        if(status!=="revoked") actionButtons.push(`<button class="danger" data-action="revoke_key" data-id="${esc(k.id)}">Revoke / Delete Access</button>`);
+        if(status!=="revoked") actionButtons.push(`<button class="danger" data-action="revoke_key" data-id="${esc(k.id)}">Revoke Key</button>`);
+        actionButtons.push(`<button class="danger" data-action="delete_key" data-id="${esc(k.id)}">Delete Key</button>`);
         const req=requests.find(r=>r.id===k.payment_request_id);
         if(req?.status==="verified") actionButtons.push(`<button data-action="regenerate_key" data-id="${esc(k.id)}" data-request="${esc(req.id)}">Regenerate Key</button>`);
         return `<article class="subscription-key-card"><h4>${esc(k.company)} · ${esc(k.location)}</h4><span class="subscription-key-status ${esc(status)}">${esc(status)}</span><div class="subscription-key-meta"><span>Key Record: ${esc(k.id)}</span><span>Generated: ${esc(date(k.generated_at))}</span><span>Activated: ${esc(date(k.activated_at))}</span><span>Payment Request: ${esc(k.payment_request_id||"—")}</span></div><div class="subscription-key-actions">${actionButtons.join("")||"No actions available"}</div></article>`;
@@ -172,13 +237,14 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
     const action=btn.dataset.action,id=btn.dataset.id; btn.disabled=true;
     try{
       if(action==="revoke_key"&&!confirm("Revoke this activation key? The key will stop working.")) return;
+      if(action==="delete_key"&&!confirm("Permanently delete this activation key record? The payment request and plant subscription will remain.")) return;
       const payload={company:selectedCompany,location:selectedLocation,key_id:id};
       if(action==="regenerate_key"){
         const result=await call(action,{...payload,request_id:btn.dataset.request});
         showNewKey(result.activation_key,{company:selectedCompany,location:selectedLocation});
         say("Key regenerated. Copy the new key now; it cannot be retrieved again.");
       }else{
-        await call(action,payload); say(action==="revoke_key"?"Key revoked.":`Key ${action.replace("_key","")} successful.`);
+        await call(action,payload); say(action==="revoke_key"?"Key revoked.":action==="delete_key"?"Activation key record deleted.":`Key ${action.replace("_key","")} successful.`);
       }
       await refreshAll();
     }catch(e){say(e.message||"Key operation failed.",true);}finally{btn.disabled=false;}
