@@ -2384,19 +2384,30 @@
     .subscription-admin-heading button { width:100%; }
 }
 
-
-/* Subscription Management action controls (UI only until secure API deployment). */
-.subscription-admin-actions { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
-.subscription-admin-btn {
-    min-height:36px; padding:8px 12px; border:1px solid #ff6b35; border-radius:7px;
-    background:#f05a28; color:#fff; font:700 12px Arial,sans-serif; cursor:pointer;
+/* SUBSCRIPTION MANAGEMENT — BACKEND ACTION CONTROLS */
+.subscription-admin-actions { display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+.subscription-admin-action, .subscription-admin-key-search button {
+    min-height:32px; padding:7px 10px; border:1px solid #555; border-radius:6px;
+    background:#333; color:#fff; font:600 12px Arial,sans-serif; cursor:pointer;
 }
-.subscription-admin-btn:hover { background:#d94818; }
-.subscription-admin-btn:focus-visible { outline:3px solid #ffd166; outline-offset:2px; }
-.subscription-admin-btn-danger { border-color:#d64545; background:#b92f38; }
-.subscription-admin-btn-danger:hover { background:#92232b; }
-.subscription-admin-panel-heading > div:first-child { min-width:180px; }
+.subscription-admin-action:hover, .subscription-admin-key-search button:hover { background:#4b4b4b; }
+.subscription-admin-action.danger { border-color:#a93226; background:#7b241c; }
+.subscription-admin-table input, .subscription-admin-key-search input, .subscription-admin-key-search select {
+    min-width:150px; max-width:220px; min-height:32px; padding:6px 8px;
+    border:1px solid #aaa; border-radius:5px; font:13px Arial,sans-serif;
+}
+.subscription-admin-key-search { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin-bottom:14px; }
+.subscription-admin-key-search label { display:flex; flex-direction:column; gap:5px; color:#eee; font:13px Arial,sans-serif; }
+.subscription-admin-key-results { display:grid; gap:10px; }
+.subscription-admin-key-card, .subscription-admin-new-key {
+    padding:13px; border:1px solid rgba(255,255,255,.2); border-radius:8px;
+    background:rgba(0,0,0,.2); color:#fff; overflow-wrap:anywhere;
+}
+.subscription-admin-key-card p { margin:7px 0; color:#ddd; font:13px/1.5 Arial,sans-serif; }
+.subscription-admin-key-card small { color:#bbb; }
+.subscription-admin-new-key { border-color:#4b9b67; background:rgba(35,100,57,.18); }
+.subscription-admin-new-key code { padding:9px; border-radius:5px; background:#111; color:#a8f0bd; font:700 14px/1.7 monospace; }
 @media (max-width:700px) {
-    .subscription-admin-actions { justify-content:flex-start; width:100%; }
-    .subscription-admin-actions .subscription-admin-btn { flex:1 1 140px; }
+    .subscription-admin-key-search { align-items:stretch; flex-direction:column; }
+    .subscription-admin-key-search input, .subscription-admin-key-search select { width:100%; max-width:none; }
 }
