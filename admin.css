@@ -2383,3 +2383,20 @@
     .subscription-admin-heading { align-items:stretch; flex-direction:column; }
     .subscription-admin-heading button { width:100%; }
 }
+
+
+/* Subscription Management action controls (UI only until secure API deployment). */
+.subscription-admin-actions { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+.subscription-admin-btn {
+    min-height:36px; padding:8px 12px; border:1px solid #ff6b35; border-radius:7px;
+    background:#f05a28; color:#fff; font:700 12px Arial,sans-serif; cursor:pointer;
+}
+.subscription-admin-btn:hover { background:#d94818; }
+.subscription-admin-btn:focus-visible { outline:3px solid #ffd166; outline-offset:2px; }
+.subscription-admin-btn-danger { border-color:#d64545; background:#b92f38; }
+.subscription-admin-btn-danger:hover { background:#92232b; }
+.subscription-admin-panel-heading > div:first-child { min-width:180px; }
+@media (max-width:700px) {
+    .subscription-admin-actions { justify-content:flex-start; width:100%; }
+    .subscription-admin-actions .subscription-admin-btn { flex:1 1 140px; }
+}

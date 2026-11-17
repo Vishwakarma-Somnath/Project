@@ -641,7 +641,7 @@
                         Review payment requests, verify UPI payments and manage subscription access keys.
                     </p>
                 </div>
-                <button type="button" id="refreshSubscriptionAdminBtn" disabled>
+                <button type="button" id="refreshSubscriptionAdminBtn" class="subscription-admin-btn" data-subscription-action="refresh">
                     <i class="bx bx-refresh" aria-hidden="true"></i>
                     Refresh Requests
                 </button>
@@ -668,8 +668,14 @@
 
             <div class="subscription-admin-panel">
                 <div class="subscription-admin-panel-heading">
-                    <h3>Payment Requests</h3>
-                    <span>UPI / Razorpay</span>
+                    <div>
+                        <h3>Payment Requests</h3>
+                        <span>UPI / Razorpay</span>
+                    </div>
+                    <div class="subscription-admin-actions">
+                        <button type="button" class="subscription-admin-btn" data-subscription-action="verify-payment">Verify Payment</button>
+                        <button type="button" class="subscription-admin-btn subscription-admin-btn-danger" data-subscription-action="reject-payment">Reject Payment</button>
+                    </div>
                 </div>
                 <div class="subscription-admin-table-wrap">
                     <table class="subscription-admin-table">
@@ -697,8 +703,19 @@
 
             <div class="subscription-admin-panel">
                 <div class="subscription-admin-panel-heading">
-                    <h3>Subscription Keys</h3>
-                    <span>Generate / Regenerate / Block / Revoke</span>
+                    <div>
+                        <h3>Subscription Keys</h3>
+                        <span>Generate / Regenerate / Block / Revoke</span>
+                    </div>
+                    <div class="subscription-admin-actions">
+                        <button type="button" class="subscription-admin-btn" data-subscription-action="generate-key">Generate Key</button>
+                        <button type="button" class="subscription-admin-btn" data-subscription-action="regenerate-key">Regenerate Key</button>
+                        <button type="button" class="subscription-admin-btn" data-subscription-action="send-mail">Send Mail</button>
+                        <button type="button" class="subscription-admin-btn" data-subscription-action="block-key">Block Key</button>
+                        <button type="button" class="subscription-admin-btn" data-subscription-action="unblock-key">Unblock Key</button>
+                        <button type="button" class="subscription-admin-btn subscription-admin-btn-danger" data-subscription-action="delete-key">Delete Key</button>
+                        <button type="button" class="subscription-admin-btn subscription-admin-btn-danger" data-subscription-action="delete-user">Delete User</button>
+                    </div>
                 </div>
                 <div id="subscriptionKeyManagementList" class="subscription-admin-empty-block">
                     Key management will be enabled after the key storage, validation and audit backend is added.
