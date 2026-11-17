@@ -2384,25 +2384,24 @@
     .subscription-admin-heading button { width:100%; }
 }
 
-/* Subscription key cards and automatic plant selectors */
-.subscription-key-filters{display:flex;align-items:end;flex-wrap:wrap;gap:14px;margin:14px 0;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:9px}
-.subscription-key-filters label{display:flex;flex-direction:column;gap:6px;color:#fff;font:13px Arial,sans-serif;min-width:180px}
-.subscription-key-filters select{min-width:180px;padding:10px;border-radius:6px;border:1px solid #bbb;background:#fff;color:#222}
-.subscription-key-filters button,.subscription-key-actions button,.subscription-generate-key{padding:9px 13px;border:1px solid #666;border-radius:6px;background:#444;color:#fff;font-weight:700;cursor:pointer;margin:3px}
-.subscription-key-help{color:#ddd;font:13px/1.5 Arial,sans-serif;margin:0 0 12px}
-.subscription-plant-group{border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:14px;margin:12px 0;background:rgba(0,0,0,.18)}
-.subscription-plant-group>h4{color:#ff7043;text-align:center;margin:4px 0 14px;font:700 16px Arial,sans-serif}
-.subscription-key-card{border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:13px;margin:10px 0;background:rgba(255,255,255,.035)}
-.subscription-key-card h5{text-align:center;color:#fff;margin:2px 0 8px;font-size:15px}
-.subscription-key-state{text-align:center;color:#bde8cc;font:14px Arial,sans-serif}
-.subscription-key-card small{display:block;text-align:center;color:#c9c9cf;overflow-wrap:anywhere;margin:8px 0;font:11px monospace}
-.subscription-key-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:10px}
-.subscription-key-actions button{font:700 12px Arial,sans-serif}
-.subscription-key-actions button:hover,.subscription-key-filters button:hover,.subscription-generate-key:hover{filter:brightness(1.2)}
-.subscription-generate-key{display:block;margin:12px auto;background:#176b3a;border-color:#329b5e}
-.subscription-new-key-result{border:1px solid #36a66a;background:rgba(26,105,60,.2);border-radius:10px;padding:16px;margin-bottom:14px;text-align:center}
-.subscription-new-key-result h4{color:#a6ffc7;margin:3px 0 12px}
-.subscription-new-key-result code{display:block;background:#111;color:#8cffad;border-radius:7px;padding:15px;overflow-wrap:anywhere;font:700 14px monospace}
-.subscription-new-key-result p{color:#ddd;font:12px Arial,sans-serif}
-.sub-utr-input{width:140px;padding:7px;border:1px solid #bbb;border-radius:5px}
-#subscriptionPaymentRequestList button{margin:2px;padding:7px 9px;border:0;border-radius:5px;background:#444;color:#fff;cursor:pointer;font-weight:700}
+
+/* SUBSCRIPTION MANAGEMENT — LIVE ADMIN CONTROLS */
+.subscription-plant-filters{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr)) auto;gap:12px;align-items:end;margin:10px 0 18px}
+.subscription-plant-filters label{display:grid;gap:7px;color:#eee;font:600 13px Arial,sans-serif}
+.subscription-plant-filters select{min-height:42px;padding:9px 12px;border:1px solid #777;border-radius:7px;background:#fff;color:#222}
+.subscription-plant-filters button,.subscription-key-actions button,.subscription-payment-actions button{min-height:36px;padding:8px 12px;border:0;border-radius:6px;font-weight:700;cursor:pointer}
+.subscription-key-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.subscription-key-card{padding:16px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:rgba(255,255,255,.07);color:#fff;min-width:0}
+.subscription-key-card h4{margin:0 0 8px;color:#ff875b;font:700 16px Arial,sans-serif}
+.subscription-key-meta{display:grid;gap:5px;color:#ddd;font:12px/1.5 Arial,sans-serif;overflow-wrap:anywhere}
+.subscription-key-status{display:inline-block;margin:9px 0;padding:5px 9px;border-radius:20px;background:#374151;color:#fff;font:700 11px Arial,sans-serif;text-transform:uppercase}
+.subscription-key-status.active{background:#166534}.subscription-key-status.blocked{background:#92400e}.subscription-key-status.revoked{background:#7f1d1d}
+.subscription-key-actions,.subscription-payment-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.subscription-key-actions button{background:#e5e7eb;color:#111}.subscription-key-actions button.danger,.subscription-payment-actions button.danger{background:#fecaca;color:#7f1d1d}
+.subscription-key-actions button.primary,.subscription-payment-actions button.primary{background:#86efac;color:#14532d}
+.subscription-utr-input{width:145px;max-width:100%;padding:8px;border:1px solid #aaa;border-radius:5px}
+.subscription-new-key{margin-top:14px;padding:16px;border:2px solid #16a34a;border-radius:10px;background:#052e16;color:#dcfce7}
+.subscription-new-key code{display:block;margin:10px 0;padding:12px;background:#fff;color:#111;border-radius:6px;overflow-wrap:anywhere;font-weight:700}
+.subscription-new-key button{margin:4px 6px 0 0;padding:8px 12px;border:0;border-radius:6px;cursor:pointer;font-weight:700}
+.subscription-admin-table td{vertical-align:middle}
+@media(max-width:760px){.subscription-plant-filters{grid-template-columns:1fr}.subscription-key-grid{grid-template-columns:1fr}}

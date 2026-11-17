@@ -1,5 +1,7 @@
+/* Subscription Management live admin module. Additive; existing admin.js remains unchanged. */
 import { auth } from "./firebase-config.js";
 import { supabase } from "./supabase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -7,155 +9,198 @@ import { supabase } from "./supabase-config.js";
   const section = $("subscriptionManagementSection");
   const title = $("dashboardSectionTitle");
   const statusEl = $("subscriptionAdminStatus");
-  const keyHost = $("subscriptionKeyManagementList");
-  const requestHost = $("subscriptionPaymentRequestList");
+  const requestsEl = $("subscriptionPaymentRequestList");
+  const companySelect = $("subscriptionCompanyFilter");
+  const plantSelect = $("subscriptionPlantFilter");
+  const keysEl = $("subscriptionKeyManagementList");
+  const newKeyEl = $("subscriptionNewKeyResult");
   const refreshBtn = $("refreshSubscriptionAdminBtn");
-  if (!dropdown || !section || !keyHost || !requestHost) return;
+  const refreshPlantsBtn = $("refreshSubscriptionPlantsBtn");
+  if (!dropdown || !section) return;
 
-  const otherSections = ["feedbackSection", "userCreationSection", "userManagementSection", "plantLocationSection", "remotePLCSection"]
-    .map($).filter(Boolean);
-  let plants = [], requests = [], keys = [], selectedCompany = "", selectedLocation = "";
+  const otherSections = ["feedbackSection","userCreationSection","userManagementSection","plantLocationSection","remotePLCSection"]
+    .map(id => $(id)).filter(Boolean);
+  let currentUser = auth.currentUser || null;
+  let requests = [];
+  let plants = [];
+  let allKeys = [];
+  let selectedCompany = "";
+  let selectedLocation = "";
   let busy = false;
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  const money = (paise, currency="INR") => new Intl.NumberFormat("en-IN", {style:"currency",currency,maximumFractionDigits:2}).format(Number(paise||0)/100);
+  const money = (paise, currency="INR") => new Intl.NumberFormat("en-IN",{style:"currency",currency}).format(Number(paise||0)/100);
   const date = (v) => v ? new Date(v).toLocaleString("en-IN") : "—";
-  function setStatus(message, error=false) { statusEl.textContent = message; statusEl.style.borderColor = error ? "#dc5656" : "#4b9b6b"; statusEl.style.color = error ? "#ffb5b5" : "#b8f3c9"; }
+  const say = (message, error=false) => { if(statusEl){statusEl.textContent=message;statusEl.style.borderColor=error?"#dc2626":"#9a6b1d";statusEl.style.color=error?"#fecaca":"#ffdc91";} };
 
-  async function api(action, extra={}) {
-    if (!auth.currentUser) throw new Error("Admin session missing. Please login again.");
+  async function call(action, extra={}) {
+    if (!auth.currentUser) throw new Error("Please log in again.");
     const token = await auth.currentUser.getIdToken(true);
-    const {data,error} = await supabase.functions.invoke("subscription-admin", {body:{action,...extra},headers:{"x-firebase-id-token":token}});
-    if (error) {
-      let msg=error.message||"Subscription admin request failed";
-      if (error.context?.clone) { try { const body=await error.context.clone().json(); msg=body.error||body.message||msg; } catch {} }
-      throw new Error(msg);
+    const {data,error} = await supabase.functions.invoke("subscription-admin", {
+      body:{action,...extra}, headers:{"x-firebase-id-token":token}
+    });
+    if(error){
+      let message=error.message||"Subscription admin request failed.";
+      try { const body=await error.context?.clone?.().json(); message=body?.error||message; } catch {}
+      throw new Error(message);
     }
-    if (!data || data.error || data.success===false) throw new Error(data?.error||"Empty server response");
+    if(!data || data.success===false || data.error) throw new Error(data?.error||"Backend did not confirm the operation.");
     return data;
   }
 
-  function ensureControls() {
-    const panel = keyHost.closest(".subscription-admin-panel");
-    const head = panel?.querySelector(".subscription-admin-panel-heading");
-    if (!panel || $("subscriptionKeyFilters")) return;
-    const controls=document.createElement("div"); controls.id="subscriptionKeyFilters"; controls.className="subscription-key-filters";
-    controls.innerHTML=`<label>Company <select id="subscriptionCompany"><option value="">All Companies</option></select></label><label>Plant / Location <select id="subscriptionLocation" disabled><option value="">Select company first</option></select></label><button type="button" id="loadAllSubscriptionKeys">Show All Plant Keys</button>`;
-    head?.insertAdjacentElement("afterend",controls);
-    $("subscriptionCompany").addEventListener("change",()=>{selectedCompany=$("subscriptionCompany").value; selectedLocation=""; populateLocations(); renderKeys();});
-    $("subscriptionLocation").addEventListener("change",()=>{selectedLocation=$("subscriptionLocation").value; renderKeys();});
-    $("loadAllSubscriptionKeys").addEventListener("click",()=>{selectedCompany="";selectedLocation="";$("subscriptionCompany").value="";populateLocations();renderKeys();});
-    const help=document.createElement("p"); help.className="subscription-key-help"; help.textContent="Select a company to filter its plants. Select a plant to view its activation keys, or Show All Plant Keys to view every licensed plant."; controls.insertAdjacentElement("afterend",help);
+  function switchView(event) {
+    const active=dropdown.value==="subscriptionManagement";
+    section.hidden=!active;
+    if(!active) return;
+    event?.stopImmediatePropagation?.(); event?.stopPropagation?.();
+    otherSections.forEach(el=>el.hidden=true);
+    if(title) title.textContent="SUBSCRIPTION MANAGEMENT";
+    if(!busy) refreshAll();
+  }
+  dropdown.addEventListener("change",switchView,true);
+  section.hidden=dropdown.value!=="subscriptionManagement";
+  if(refreshBtn) refreshBtn.disabled=false;
+  refreshBtn?.addEventListener("click",refreshAll);
+  refreshPlantsBtn?.addEventListener("click",loadEligiblePlants);
+  companySelect?.addEventListener("change",()=>{
+    selectedCompany=companySelect.value; selectedLocation=""; populatePlantSelect(); renderSelectedKeys();
+  });
+  plantSelect?.addEventListener("change",()=>{selectedLocation=plantSelect.value;renderSelectedKeys();});
+
+  onAuthStateChanged(auth,user=>{
+    currentUser=user;
+    if(user && dropdown.value==="subscriptionManagement") refreshAll();
+  });
+
+  async function refreshAll(){
+    if(busy || !auth.currentUser){ if(!auth.currentUser) say("Please sign in to load subscription records.",true); return; }
+    busy=true; say("Loading payment requests and eligible plant keys…");
+    try{
+      const [r,k]=await Promise.all([call("list_requests"),call("list_all_keys")]);
+      requests=r.requests||[]; allKeys=k.keys||[];
+      renderRequests();
+      $("subscriptionRequestCount").textContent=String(requests.length);
+      $("subscriptionPendingCount").textContent=String(requests.filter(x=>x.status==="pending").length);
+      $("subscriptionActiveKeyCount").textContent=String(allKeys.filter(x=>x.status==="active").length);
+      await loadEligiblePlants(false);
+      say("Loaded successfully. Plant dropdown includes only verified-payment plants with at least one generated key.");
+    }catch(e){say(e.message||"Unable to load subscription data.",true);console.error("Subscription admin:",e);}
+    finally{busy=false;}
   }
 
-  function populateCompanies() {
-    const sel=$("subscriptionCompany"); if(!sel)return;
-    const old=selectedCompany; sel.replaceChildren(new Option("All Companies",""));
-    [...new Set(plants.map(p=>p.company))].sort().forEach(c=>sel.add(new Option(c,c)));
-    sel.value=old;
-    populateLocations();
-  }
-  function populateLocations() {
-    const sel=$("subscriptionLocation"); if(!sel)return;
-    const old=selectedLocation; sel.replaceChildren(new Option(selectedCompany?"All Plants":"Select company first",""));
-    const list=plants.filter(p=>!selectedCompany||p.company===selectedCompany);
-    list.forEach(p=>sel.add(new Option(p.location_name,p.location_name)));
-    sel.disabled=!selectedCompany; sel.value=list.some(p=>p.location_name===old)?old:"";
-    selectedLocation=sel.value;
+  async function loadEligiblePlants(showMessage=true){
+    try{
+      const data=await call("list_plants"); plants=data.plants||[];
+      const companies=[...new Set(plants.map(p=>p.company))].sort((a,b)=>a.localeCompare(b));
+      if(!companies.includes(selectedCompany)) selectedCompany=companies[0]||"";
+      companySelect.innerHTML=companies.length?companies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(""):'<option value="">No eligible company</option>';
+      companySelect.value=selectedCompany;
+      populatePlantSelect();
+      if(showMessage) say(`${plants.length} eligible plant(s) loaded.`);
+      renderSelectedKeys();
+    }catch(e){say(e.message||"Unable to load eligible plants.",true);throw e;}
   }
 
-  async function loadAll() {
-    if(busy)return; busy=true; refreshBtn.disabled=true;
-    setStatus("Loading licensed plants, payment requests and activation keys...");
-    try {
-      const [p,r,k]=await Promise.all([api("list_plants"),api("list_requests"),api("list_all_keys")]);
-      plants=p.plants||[]; requests=r.requests||[]; keys=k.keys||[];
-      populateCompanies(); renderRequests(); renderKeys(); updateSummary();
-      setStatus(`Loaded ${plants.length} active plants, ${requests.length} payment requests and ${keys.length} key records.`);
-    } catch(e) { setStatus(e.message,true); }
-    finally { busy=false; refreshBtn.disabled=false; }
+  function populatePlantSelect(){
+    const locations=plants.filter(p=>p.company===selectedCompany);
+    if(!locations.some(p=>p.location_name===selectedLocation)) selectedLocation=locations[0]?.location_name||"";
+    plantSelect.innerHTML=locations.length?locations.map(p=>`<option value="${esc(p.location_name)}">${esc(p.location_name)}</option>`).join(""):'<option value="">No key-generated plant</option>';
+    plantSelect.disabled=!locations.length; plantSelect.value=selectedLocation;
   }
-  function updateSummary(){
-    $("subscriptionRequestCount").textContent=String(requests.length);
-    $("subscriptionPendingCount").textContent=String(requests.filter(x=>x.status==="pending").length);
-    $("subscriptionActiveKeyCount").textContent=String(keys.filter(x=>x.status==="active").length);
+
+  async function renderSelectedKeys(){
+    if(!selectedCompany||!selectedLocation){keysEl.innerHTML='<div class="subscription-admin-empty-block">No plant with verified payment and generated key is available.</div>';return;}
+    keysEl.innerHTML='<div class="subscription-admin-empty-block">Loading activation keys…</div>';
+    try{
+      const data=await call("list_keys",{company:selectedCompany,location:selectedLocation});
+      const keys=data.keys||[];
+      if(!keys.length){keysEl.innerHTML='<div class="subscription-admin-empty-block">No key records found for this plant.</div>';return;}
+      keysEl.innerHTML=keys.map(k=>{
+        const status=String(k.status||"unknown").toLowerCase();
+        const actionButtons=[];
+        if(status==="active") actionButtons.push(`<button data-action="block_key" data-id="${esc(k.id)}">Block</button>`);
+        if(status==="blocked") actionButtons.push(`<button class="primary" data-action="unblock_key" data-id="${esc(k.id)}">Unblock</button>`);
+        if(status!=="revoked") actionButtons.push(`<button class="danger" data-action="revoke_key" data-id="${esc(k.id)}">Revoke / Delete Access</button>`);
+        const req=requests.find(r=>r.id===k.payment_request_id);
+        if(req?.status==="verified") actionButtons.push(`<button data-action="regenerate_key" data-id="${esc(k.id)}" data-request="${esc(req.id)}">Regenerate Key</button>`);
+        return `<article class="subscription-key-card"><h4>${esc(k.company)} · ${esc(k.location)}</h4><span class="subscription-key-status ${esc(status)}">${esc(status)}</span><div class="subscription-key-meta"><span>Key Record: ${esc(k.id)}</span><span>Generated: ${esc(date(k.generated_at))}</span><span>Activated: ${esc(date(k.activated_at))}</span><span>Payment Request: ${esc(k.payment_request_id||"—")}</span></div><div class="subscription-key-actions">${actionButtons.join("")||"No actions available"}</div></article>`;
+      }).join("");
+      keysEl.querySelectorAll("button[data-action]").forEach(btn=>btn.addEventListener("click",()=>handleKeyAction(btn)));
+    }catch(e){keysEl.innerHTML=`<div class="subscription-admin-empty-block">${esc(e.message)}</div>`;}
   }
 
   function renderRequests(){
-    requestHost.replaceChildren();
-    if(!requests.length){requestHost.innerHTML='<tr><td colspan="7" class="subscription-admin-empty">No payment requests found.</td></tr>';return;}
-    requests.forEach(r=>{
-      const tr=document.createElement("tr");
-      const td=(html)=>{const el=document.createElement("td");el.innerHTML=html;tr.append(el);};
-      td(`<strong>${esc(r.customer_name)}</strong><br>${esc(r.customer_email)}<br>${esc(r.company)} / ${esc(r.location)}`);
-      td(esc(r.customer_mobile)); td(esc(r.currency||"INR"));
-      td(`<input class="sub-utr-input" aria-label="UTR" placeholder="Enter UTR" value="${esc(r.utr||"")}" ${r.status!=="pending"?"disabled":""}>`);
-      td(money(r.amount_paise,r.currency||"INR")); td(`<strong>${esc(r.status)}</strong><br><small>${date(r.submitted_at)}</small>`);
-      const actions=document.createElement("td");
-      if(r.status==="pending"){
-        const save=document.createElement("button");save.textContent="Save UTR";save.type="button";
-        const verify=document.createElement("button");verify.textContent="Verify Payment";verify.type="button";
-        const reject=document.createElement("button");reject.textContent="Reject";reject.type="button";
-        const inp=tr.querySelector(".sub-utr-input");
-        save.onclick=async()=>{try{await api("record_utr",{request_id:r.id,utr:inp.value.trim()});r.utr=inp.value.trim();setStatus("Admin UTR saved.");renderRequests();}catch(e){setStatus(e.message,true);}};
-        verify.onclick=async()=>{try{if(!r.utr) { if(!inp.value.trim()) throw new Error("Enter UTR first"); await api("record_utr",{request_id:r.id,utr:inp.value.trim()});r.utr=inp.value.trim();} await api("verify_payment",{request_id:r.id});setStatus("Payment verified. You can now generate this plant's key.");await loadAll();}catch(e){setStatus(e.message,true);}};
-        reject.onclick=async()=>{if(!confirm(`Reject payment request for ${r.company}/${r.location}?`))return;try{await api("reject_payment",{request_id:r.id});await loadAll();}catch(e){setStatus(e.message,true);}};
-        actions.append(save,verify,reject);
-      } else {actions.textContent="Reviewed";}
-      tr.append(actions);requestHost.append(tr);
+    if(!requests.length){requestsEl.innerHTML='<tr><td colspan="7" class="subscription-admin-empty">No payment requests found.</td></tr>';return;}
+    const generated=new Set(allKeys.map(k=>k.payment_request_id));
+    requestsEl.innerHTML=requests.map(r=>{
+      const pending=r.status==="pending";
+      const hasKey=generated.has(r.id);
+      let actions="";
+      if(pending) actions=`<input class="subscription-utr-input" aria-label="UTR" placeholder="Enter UTR" value="${esc(r.utr||"")}" data-utr="${esc(r.id)}"><div class="subscription-payment-actions"><button class="primary" data-pay="save" data-id="${esc(r.id)}">Save UTR</button><button class="primary" data-pay="verify" data-id="${esc(r.id)}">Verify</button><button class="danger" data-pay="reject" data-id="${esc(r.id)}">Reject</button></div>`;
+      else if(r.status==="verified"&&!hasKey) actions=`<div class="subscription-payment-actions"><button class="primary" data-pay="generate" data-id="${esc(r.id)}">Generate Key</button></div>`;
+      else if(r.status==="verified"&&hasKey) actions='<span>Key generated</span>';
+      else actions='<span>—</span>';
+      return `<tr><td>${esc(r.company)}<br><strong>${esc(r.location)}</strong></td><td>${esc(r.customer_name)}<br>${esc(r.customer_email)}</td><td>${esc(r.customer_mobile)}</td><td>${esc(money(r.amount_paise,r.currency||"INR"))}</td><td>${esc(r.utr||"Not entered")}</td><td>${esc(r.status)}</td><td>${actions}</td></tr>`;
+    }).join("");
+    requestsEl.querySelectorAll("button[data-pay]").forEach(btn=>btn.addEventListener("click",()=>handlePaymentAction(btn)));
+  }
+
+  async function handlePaymentAction(btn){
+    const id=btn.dataset.id, action=btn.dataset.pay; btn.disabled=true;
+    try{
+      if(action==="save"){
+        const input=requestsEl.querySelector(`[data-utr="${CSS.escape(id)}"]`);
+        await call("record_utr",{request_id:id,utr:input?.value.trim()||""});
+        say("Admin UTR saved.");
+      }else if(action==="verify"){
+        const row=requests.find(x=>x.id===id);
+        if(!row?.utr) throw new Error("First enter and save the UTR.");
+        await call("verify_payment",{request_id:id}); say("Payment verified. Generate the activation key from this row.");
+      }else if(action==="reject"){
+        if(!confirm("Reject this payment request?")) return;
+        await call("reject_payment",{request_id:id}); say("Payment request rejected.");
+      }else if(action==="generate"){
+        const row=requests.find(x=>x.id===id); if(!row) throw new Error("Payment request not found.");
+        const result=await call("generate_key",{company:row.company,location:row.location,request_id:id});
+        showNewKey(result.activation_key,row); say("Activation key generated. Copy it now; it cannot be retrieved again.");
+      }
+      await refreshAll();
+    }catch(e){say(e.message||"Payment action failed.",true);}finally{btn.disabled=false;}
+  }
+
+  async function handleKeyAction(btn){
+    const action=btn.dataset.action,id=btn.dataset.id; btn.disabled=true;
+    try{
+      if(action==="revoke_key"&&!confirm("Revoke this activation key? The key will stop working.")) return;
+      const payload={company:selectedCompany,location:selectedLocation,key_id:id};
+      if(action==="regenerate_key"){
+        const result=await call(action,{...payload,request_id:btn.dataset.request});
+        showNewKey(result.activation_key,{company:selectedCompany,location:selectedLocation});
+        say("Key regenerated. Copy the new key now; it cannot be retrieved again.");
+      }else{
+        await call(action,payload); say(action==="revoke_key"?"Key revoked.":`Key ${action.replace("_key","")} successful.`);
+      }
+      await refreshAll();
+    }catch(e){say(e.message||"Key operation failed.",true);}finally{btn.disabled=false;}
+  }
+
+  function showNewKey(key,row){
+    if(!key) throw new Error("Backend did not return the one-time activation key.");
+    newKeyEl.hidden=false;
+    newKeyEl.innerHTML=`<strong>NEW ACTIVATION KEY — COPY NOW</strong><div>${esc(row.company)} · ${esc(row.location)}</div><code id="subscriptionPlainKey">${esc(key)}</code><button type="button" id="copySubscriptionKeyBtn">Copy Key</button><button type="button" id="prepareSubscriptionMailBtn">Prepare Email</button><small>Plaintext is shown only in this session and cannot be recovered after closing or refreshing.</small>`;
+    $("copySubscriptionKeyBtn").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(key);say("Activation key copied.");}catch{say("Clipboard access failed. Select and copy the key manually.",true);}});
+    $("prepareSubscriptionMailBtn").addEventListener("click",()=>{
+      const req=requests.find(x=>x.company===row.company&&x.location===row.location&&x.status==="verified");
+      const to=req?.customer_email||"";
+      const subject=encodeURIComponent(`Plant Dashboard Activation Key — ${row.company} / ${row.location}`);
+      const body=encodeURIComponent(`Dear ${req?.customer_name||"Customer"},\n\nYour plant dashboard activation key is:\n${key}\n\nCompany: ${row.company}\nPlant: ${row.location}\n\nRegards`);
+      window.location.href=`mailto:${encodeURIComponent(to)}?subject=${subject}&body=${body}`;
     });
   }
 
-  function renderKeys(){
-    keyHost.replaceChildren();
-    const filtered=keys.filter(k=>(!selectedCompany||k.company===selectedCompany)&&(!selectedLocation||k.location.toLowerCase()===selectedLocation.toLowerCase()));
-    const groups=new Map();
-    filtered.forEach(k=>{const key=`${k.company}||${k.location}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(k);});
-    const plantList=plants.filter(p=>(!selectedCompany||p.company===selectedCompany)&&(!selectedLocation||p.location_name.toLowerCase()===selectedLocation.toLowerCase()));
-    plantList.forEach(p=>{const key=`${p.company}||${p.location_name}`;if(!groups.has(key))groups.set(key,[]);});
-    if(!groups.size){keyHost.textContent="No active plants found. Add a plant in Plant Addition first.";return;}
-    groups.forEach((list,group)=>{
-      const [company,location]=group.split("||");
-      const wrap=document.createElement("article");wrap.className="subscription-plant-group";
-      const h=document.createElement("h4");h.textContent=`${company} / ${location}`;wrap.append(h);
-      if(!list.length){const empty=document.createElement("p");empty.className="subscription-admin-empty-block";empty.textContent="No activation key generated for this plant yet.";wrap.append(empty);}
-      list.forEach(k=>{
-        const card=document.createElement("div");card.className="subscription-key-card";
-        const label=document.createElement("h5");label.textContent=`${company} / ${location}`;
-        const state=document.createElement("p");state.className="subscription-key-state";state.textContent=`Status: ${k.status.toUpperCase()} · Generated: ${date(k.generated_at)}`;
-        const record=document.createElement("small");record.textContent=`KEY RECORD: ${k.id} · PAYMENT REQUEST: ${k.payment_request_id||"—"}`;
-        const actions=document.createElement("div");actions.className="subscription-key-actions";
-        const add=(label,action,confirmText)=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.onclick=async()=>{if(confirmText&&!confirm(confirmText))return;try{const result=await api(action,{company,location,key_id:k.id,request_id:k.payment_request_id});await loadAll();if(result.activation_key){const payment=requests.find(r=>r.id===k.payment_request_id);showNewKey(result.activation_key,company,location,payment?.customer_email||"");}}catch(e){setStatus(e.message,true);}};actions.append(b);};
-        add("Regenerate Key","regenerate_key");
-        if(k.status==="blocked") add("Unblock Key","unblock_key"); else if(k.status==="active") add("Block Key","block_key");
-        if(k.status!=="revoked") add("Delete / Revoke Key","revoke_key",`Revoke this key for ${company}/${location}?`);
-        card.append(label,state,record,actions);wrap.append(card);
-      });
-      const verified=requests.filter(r=>r.company===company&&r.location.toLowerCase()===location.toLowerCase()&&r.status==="verified");
-      const used=new Set(list.map(k=>k.payment_request_id));
-      const available=verified.find(r=>!used.has(r.id));
-      if(available){const gen=document.createElement("button");gen.type="button";gen.className="subscription-generate-key";gen.textContent="GENERATE KEY";gen.onclick=async()=>{try{const result=await api("generate_key",{company,location,request_id:available.id});await loadAll();showNewKey(result.activation_key,company,location,available.customer_email);}catch(e){setStatus(e.message,true);}};wrap.append(gen);}
-      keyHost.append(wrap);
-    });
+  if(dropdown.value==="subscriptionManagement"){
+    otherSections.forEach(el=>el.hidden=true); section.hidden=false; if(title)title.textContent="SUBSCRIPTION MANAGEMENT";
+    queueMicrotask(()=>refreshAll());
   }
-
-  function showNewKey(key,company,location,email){
-    let box=$("subscriptionNewKeyResult");if(!box){box=document.createElement("div");box.id="subscriptionNewKeyResult";box.className="subscription-new-key-result";keyHost.prepend(box);}
-    box.innerHTML=`<h4>NEW ACTIVATION KEY — ${esc(company)} / ${esc(location)}</h4><code>${esc(key)}</code><div class="subscription-key-actions"><button type="button" id="copyNewSubscriptionKey">Copy Key</button>${email?'<button type="button" id="mailNewSubscriptionKey">Open Email Draft</button>':''}</div><p>Copy this key now. It cannot be retrieved later.</p>`;
-    $("copyNewSubscriptionKey").onclick=async()=>{try{await navigator.clipboard.writeText(key);setStatus("Activation key copied.");}catch{setStatus("Clipboard unavailable. Select and copy the key manually.",true);}};
-    if(email){$("mailNewSubscriptionKey").onclick=()=>{const subject=encodeURIComponent(`Activation Key — ${company}/${location}`);const body=encodeURIComponent(`Your plant activation key is:\n\n${key}\n\nCompany: ${company}\nPlant: ${location}\n\nPlease keep this key secure.`);window.location.href=`mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;};}
-  }
-
-  function handleView(event){
-    const selected=dropdown.value==="subscriptionManagement";
-    section.hidden=!selected;if(!selected)return;
-    event.stopImmediatePropagation();event.stopPropagation();otherSections.forEach(s=>s.hidden=true);
-    if(title)title.textContent="SUBSCRIPTION MANAGEMENT";
-    ensureControls();
-    if(!plants.length&&!busy)loadAll();
-  }
-  dropdown.addEventListener("change",handleView,true);
-  refreshBtn.disabled=false;refreshBtn.addEventListener("click",loadAll);
-  section.hidden=dropdown.value!=="subscriptionManagement";
-  if(dropdown.value==="subscriptionManagement")dropdown.dispatchEvent(new Event("change",{bubbles:true}));
+  console.log("Subscription Management live module initialized.");
 })();

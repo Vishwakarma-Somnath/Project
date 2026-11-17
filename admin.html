@@ -675,21 +675,17 @@
                     <table class="subscription-admin-table">
                         <thead>
                             <tr>
+                                <th>Company / Plant</th>
                                 <th>Name / Email</th>
                                 <th>Mobile</th>
-                                <th>Payment</th>
-                                <th>UTR / Transaction ID</th>
                                 <th>Amount</th>
+                                <th>Admin UTR</th>
                                 <th>Status</th>
-                                <th>Admin Actions</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="subscriptionPaymentRequestList">
-                            <tr>
-                                <td colspan="7" class="subscription-admin-empty">
-                                    Payment request records will appear here after the secure backend is connected.
-                                </td>
-                            </tr>
+                            <tr><td colspan="7" class="subscription-admin-empty">Loading payment requests…</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -700,13 +696,23 @@
                     <h3>Subscription Keys</h3>
                     <span>Generate / Regenerate / Block / Revoke</span>
                 </div>
-                <div id="subscriptionKeyManagementList" class="subscription-admin-empty-block">
-                    Key management will be enabled after the key storage, validation and audit backend is added.
+                <div class="subscription-plant-filters">
+                    <label>Company
+                        <select id="subscriptionCompanyFilter"><option value="">Loading companies…</option></select>
+                    </label>
+                    <label>Plant / Location
+                        <select id="subscriptionPlantFilter" disabled><option value="">Select company first</option></select>
+                    </label>
+                    <button type="button" id="refreshSubscriptionPlantsBtn">Refresh Plant List</button>
                 </div>
+                <div id="subscriptionKeyManagementList" class="subscription-key-grid">
+                    <div class="subscription-admin-empty-block">Only plants with verified payment and at least one generated activation key will appear here.</div>
+                </div>
+                <div id="subscriptionNewKeyResult" class="subscription-new-key" hidden aria-live="polite"></div>
             </div>
 
             <p class="subscription-admin-security-note">
-                Security: raw activation keys must be shown only once. The database will store key hashes. Payment verification, key generation, blocking and revocation must run through an administrator-authorized server function.
+                Security: activation keys are stored as hashes. A newly generated key is shown only once. Existing plaintext keys cannot be recovered.
             </p>
         </section>
 
