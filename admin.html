@@ -139,6 +139,7 @@
                         <option value="userManagement">USER MANAGEMENT</option>
                         <option value="Plant&Location_Addition">PLANT ADDITION</option>
                         <option value="remotePLC">REMOTE PLC DEVICE MANAGEMENT</option>
+                        <option value="subscriptionManagement">SUBSCRIPTION MANAGEMENT</option>
                     </select>
                 </div>
 
@@ -628,6 +629,87 @@
 
         </section>
 
+        <!-- ========================================
+             SECTION 6: SUBSCRIPTION MANAGEMENT
+             ADDITIVE SECTION - EXISTING SECTIONS UNCHANGED
+        ========================================= -->
+        <section id="subscriptionManagementSection" class="subscription-admin-section" hidden>
+            <div class="subscription-admin-heading">
+                <div>
+                    <h2>Subscription Management</h2>
+                    <p class="subscription-admin-description">
+                        Review payment requests, verify UPI payments and manage subscription access keys.
+                    </p>
+                </div>
+                <button type="button" id="refreshSubscriptionAdminBtn" disabled>
+                    <i class="bx bx-refresh" aria-hidden="true"></i>
+                    Refresh Requests
+                </button>
+            </div>
+
+            <p id="subscriptionAdminStatus" class="subscription-admin-status" role="status" aria-live="polite">
+                Subscription administration backend is not connected yet. Existing payment and subscription data has not been changed.
+            </p>
+
+            <div class="subscription-admin-summary">
+                <article class="subscription-admin-stat">
+                    <span>Payment Requests</span>
+                    <strong id="subscriptionRequestCount">—</strong>
+                </article>
+                <article class="subscription-admin-stat">
+                    <span>Awaiting Verification</span>
+                    <strong id="subscriptionPendingCount">—</strong>
+                </article>
+                <article class="subscription-admin-stat">
+                    <span>Active Keys</span>
+                    <strong id="subscriptionActiveKeyCount">—</strong>
+                </article>
+            </div>
+
+            <div class="subscription-admin-panel">
+                <div class="subscription-admin-panel-heading">
+                    <h3>Payment Requests</h3>
+                    <span>UPI / Razorpay</span>
+                </div>
+                <div class="subscription-admin-table-wrap">
+                    <table class="subscription-admin-table">
+                        <thead>
+                            <tr>
+                                <th>Name / Email</th>
+                                <th>Mobile</th>
+                                <th>Payment</th>
+                                <th>UTR / Transaction ID</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Admin Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscriptionPaymentRequestList">
+                            <tr>
+                                <td colspan="7" class="subscription-admin-empty">
+                                    Payment request records will appear here after the secure backend is connected.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="subscription-admin-panel">
+                <div class="subscription-admin-panel-heading">
+                    <h3>Subscription Keys</h3>
+                    <span>Generate / Regenerate / Block / Revoke</span>
+                </div>
+                <div id="subscriptionKeyManagementList" class="subscription-admin-empty-block">
+                    Key management will be enabled after the key storage, validation and audit backend is added.
+                </div>
+            </div>
+
+            <p class="subscription-admin-security-note">
+                Security: raw activation keys must be shown only once. The database will store key hashes. Payment verification, key generation, blocking and revocation must run through an administrator-authorized server function.
+            </p>
+        </section>
+
     </section>
     <!-- ADMIN DASHBOARD CLOSED -->
 
@@ -666,6 +748,7 @@
 
     <!-- EXISTING ADMIN JAVASCRIPT -->
     <script type="module" src="./admin.js"></script>
+    <script type="module" src="./subscription-admin.js"></script>
 
 
     <!-- ========================================
