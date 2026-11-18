@@ -705,6 +705,16 @@
                     </label>
                     <button type="button" id="refreshSubscriptionPlantsBtn">Refresh Plant List</button>
                 </div>
+                <div class="subscription-window-controls">
+                    <label for="subscriptionMaxWindows">Maximum Simultaneous Windows (1–50)</label>
+                    <div class="subscription-window-control-row">
+                        <input id="subscriptionMaxWindows" type="number" min="1" max="50" step="1" value="1" inputmode="numeric">
+                        <button type="button" id="saveSubscriptionMaxWindowsBtn" class="primary">Save Window Limit</button>
+                        <button type="button" id="disablePlantAccessBtn" class="danger">Disable Plant Access</button>
+                        <button type="button" id="deletePlantSubscriptionBtn" class="danger">Delete User</button>
+                    </div>
+                    <small>Limit applies to all browser windows accessing the selected plant. Delete User removes only this plant’s subscription records; Project User, login, plant, PLC and pressure history remain unchanged.</small>
+                </div>
                 <div id="subscriptionKeyManagementList" class="subscription-key-grid">
                     <div class="subscription-admin-empty-block">Only plants with verified payment and at least one generated activation key will appear here.</div>
                 </div>
@@ -757,75 +767,7 @@
     <script type="module" src="./subscription-admin.js"></script>
 
 
-    <!-- ========================================
-         DASHBOARD DROPDOWN VIEW SWITCHING
-    ========================================= -->
-    <script>
-        (() => {
-            const dropdown =
-                document.getElementById("dashboardViewFilter");
-
-            const feedback =
-                document.getElementById("feedbackSection");
-
-            const creation =
-                document.getElementById("userCreationSection");
-
-            const management =
-                document.getElementById("userManagementSection");
-
-            const plants =
-                document.getElementById("plantLocationSection");
-
-            const title =
-                document.getElementById("dashboardSectionTitle");
-
-            if (
-                !dropdown ||
-                !feedback ||
-                !creation ||
-                !management ||
-                !plants
-            ) {
-                console.error(
-                    "Dashboard view switching: required HTML element missing."
-                );
-                return;
-            }
-
-            const titles = {
-                feedback: "FEEDBACK MANAGEMENT",
-                userCreation: "USER CREATION",
-                userManagement: "USER MANAGEMENT",
-                "Plant&Location_Addition": "Plant Addition"
-            };
-
-            function switchView(view) {
-                const validView = Object.prototype.hasOwnProperty.call(
-                    titles,
-                    view
-                ) ? view : "feedback";
-
-                feedback.hidden = validView !== "feedback";
-                creation.hidden = validView !== "userCreation";
-                management.hidden = validView !== "userManagement";
-                plants.hidden =
-                    validView !== "Plant&Location_Addition";
-
-                if (title) {
-                    title.textContent = titles[validView];
-                }
-            }
-
-            dropdown.addEventListener("change", () => {
-                switchView(dropdown.value);
-            });
-
-            // Set the correct section when the page initializes.
-            switchView(dropdown.value);
-
-        })();
-    </script>
+    <!-- Dashboard view switching is centralized in admin.js. -->
 
 </body>
 </html>

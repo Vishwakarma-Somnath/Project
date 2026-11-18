@@ -511,9 +511,8 @@ document.addEventListener("keydown", (event) => {
 });
 
 /* =========================================================
-   DASHBOARD VIEW SWITCHER
-   Supports all 3 values in your HTML:
-   feedback / userCreation / userManagement
+   CENTRAL DASHBOARD VIEW SWITCHER
+   One owner controls visibility for every dashboard section.
    ========================================================= */
 
 function switchDashboardView() {
@@ -523,35 +522,35 @@ function switchDashboardView() {
         "feedback",
         "userCreation",
         "userManagement",
-        "Plant&Location_Addition"
+        "Plant&Location_Addition",
+        "remotePLC",
+        "subscriptionManagement"
     ];
 
     const selectedView = validViews.includes(dashboardViewFilter.value)
         ? dashboardViewFilter.value
         : "feedback";
 
-    if (feedbackSection) {
-        feedbackSection.hidden = selectedView !== "feedback";
-    }
+    const sections = {
+        feedback: feedbackSection,
+        userCreation: userCreationSection,
+        userManagement: userManagementSection,
+        "Plant&Location_Addition": plantLocationSection,
+        remotePLC: $("remotePLCSection"),
+        subscriptionManagement: $("subscriptionManagementSection")
+    };
 
-    if (userCreationSection) {
-        userCreationSection.hidden = selectedView !== "userCreation";
-    }
-
-    if (userManagementSection) {
-        userManagementSection.hidden = selectedView !== "userManagement";
-    }
-
-    if (plantLocationSection) {
-        plantLocationSection.hidden =
-            selectedView !== "Plant&Location_Addition";
-    }
+    Object.entries(sections).forEach(([view, section]) => {
+        if (section) section.hidden = view !== selectedView;
+    });
 
     const titles = {
-    feedback: "Feedback Management",
-    userCreation: "User Creation",
-    userManagement: "User Management",
-    "Plant&Location_Addition": "Plant Addition"
+        feedback: "Feedback Management",
+        userCreation: "User Creation",
+        userManagement: "User Management",
+        "Plant&Location_Addition": "Plant Addition",
+        remotePLC: "REMOTE PLC DEVICE MANAGEMENT",
+        subscriptionManagement: "SUBSCRIPTION MANAGEMENT"
     };
 
     if (dashboardSectionTitle) {
@@ -566,28 +565,23 @@ function switchDashboardView() {
     ) {
         loadProjectUsers();
     }
-   
-    if (
-        selectedView === "Plant&Location_Addition" &&
-        auth.currentUser
-    ) {
-        loadPlantLocations();
-    }
 
     if (
-        selectedView === "userCreation" &&
+        (selectedView === "Plant&Location_Addition" || selectedView === "userCreation") &&
         auth.currentUser &&
         !isLoadingPlantLocations
     ) {
         loadPlantLocations();
     }
-    
-    if (dashboardViewFilter) {
-        dashboardViewFilter.addEventListener(
-            "change",
-            switchDashboardView
-        );
-    }
+
+    // Feature modules load their own data, but do not control section visibility.
+    document.dispatchEvent(new CustomEvent("adminDashboardViewChanged", {
+        detail: { view: selectedView }
+    }));
+}
+
+if (dashboardViewFilter) {
+    dashboardViewFilter.addEventListener("change", switchDashboardView);
 }
 
 /* =========================================================
@@ -3035,50 +3029,15 @@ if (plantFilterCompany) {
 
 
     /* -----------------------------------------------------
-       DASHBOARD VIEW SWITCH
-       Capture phase handles only remotePLC.
+       DASHBOARD DATA ACTIVATION
+       Central switcher owns visibility; this module only loads data.
        ----------------------------------------------------- */
 
-    if (dashboardViewFilter) {
-        dashboardViewFilter.addEventListener(
-            "change",
-            (event) => {
-                if (dashboardViewFilter.value !== "remotePLC") {
-                    if (remotePLCSection) {
-                        remotePLCSection.hidden = true;
-                    }
-                    return;
-                }
-
-                event.stopImmediatePropagation();
-
-                [
-                    feedbackSection,
-                    userCreationSection,
-                    userManagementSection,
-                    plantLocationSection
-                ].forEach((section) => {
-                    if (section) section.hidden = true;
-                });
-
-                if (remotePLCSection) {
-                    remotePLCSection.hidden = false;
-                }
-
-                if (dashboardSectionTitle) {
-                    dashboardSectionTitle.textContent =
-                        "REMOTE PLC DEVICE MANAGEMENT";
-                }
-
-                updateRemotePLCLocationOptions();
-
-                if (auth.currentUser) {
-                    loadRemotePLCDevices();
-                }
-            },
-            true
-        );
-    }
+    document.addEventListener("adminDashboardViewChanged", (event) => {
+        if (event.detail?.view !== "remotePLC") return;
+        updateRemotePLCLocationOptions();
+        if (auth.currentUser) loadRemotePLCDevices();
+    });
 
 
     /* -----------------------------------------------------
