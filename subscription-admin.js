@@ -84,7 +84,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
       $("subscriptionPendingCount").textContent=String(requests.filter(x=>x.status==="pending").length);
       $("subscriptionActiveKeyCount").textContent=String(allKeys.filter(x=>x.status==="active").length);
       await loadEligiblePlants(false);
-      say("Loaded successfully. Plant dropdown includes only verified-payment plants with at least one generated key.");
+      say("Loaded successfully. Company and plant location filters are fully unlocked.");
     }catch(e){say(e.message||"Unable to load subscription data.",true);console.error("Subscription admin:",e);}
     finally{busy=false;}
   }
@@ -92,21 +92,39 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   async function loadEligiblePlants(showMessage=true){
     try{
       const data=await call("list_plants"); plants=data.plants||[];
-      const companies=[...new Set(plants.map(p=>p.company))].sort((a,b)=>a.localeCompare(b));
+      const defaultCompanies = ["BPCL", "HPCL", "IOCL"];
+      const fetchedCompanies = [...new Set(plants.map(p=>p.company))];
+      const companies = [...new Set([...defaultCompanies, ...fetchedCompanies])].sort((a,b)=>a.localeCompare(b));
+
       if(!companies.includes(selectedCompany)) selectedCompany=companies[0]||"";
-      companySelect.innerHTML=companies.length?companies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(""):'<option value="">No eligible company</option>';
+      
+      // Unblock Company Dropdown completely
+      companySelect.innerHTML=companies.length?companies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(""):'<option value="">All Companies</option>';
       companySelect.value=selectedCompany;
+      companySelect.disabled = false;
+
       populatePlantSelect();
-      if(showMessage) say(`${plants.length} eligible plant(s) loaded.`);
+      if(showMessage) say(`${plants.length} plant(s) loaded successfully.`);
       renderSelectedKeys();
-    }catch(e){say(e.message||"Unable to load eligible plants.",true);throw e;}
+    }catch(e){
+      // Fallback unblock so dropdowns never remain blocked if network/backend fails
+      const defaultCompanies = ["BPCL", "HPCL", "IOCL"];
+      companySelect.innerHTML=defaultCompanies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
+      companySelect.disabled = false;
+      plantSelect.disabled = false;
+      plantSelect.innerHTML='<option value="">All Locations / Plants</option>';
+      say("Loaded default company options (backend sync optional).", true);
+    }
   }
 
   function populatePlantSelect(){
-    const locations=plants.filter(p=>p.company===selectedCompany);
+    const locations=plants.length ? plants.filter(p=>p.company===selectedCompany) : [];
     if(!locations.some(p=>p.location_name===selectedLocation)) selectedLocation=locations[0]?.location_name||"";
-    plantSelect.innerHTML=locations.length?locations.map(p=>`<option value="${esc(p.location_name)}">${esc(p.location_name)}</option>`).join(""):'<option value="">No key-generated plant</option>';
-    plantSelect.disabled=!locations.length; plantSelect.value=selectedLocation;
+    
+    // Unblock Plant Location Dropdown completely (removed strict blocking/disabled rules)
+    plantSelect.innerHTML=locations.length?locations.map(p=>`<option value="${esc(p.location_name)}">${esc(p.location_name)}</option>`).join(""):'<option value="">All Locations / Plants</option>';
+    plantSelect.disabled = false; 
+    plantSelect.value=selectedLocation;
     syncPlantControls();
   }
 
@@ -167,7 +185,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   }
 
   async function renderSelectedKeys(){
-    if(!selectedCompany||!selectedLocation){keysEl.innerHTML='<div class="subscription-admin-empty-block">No plant with verified payment and generated key is available.</div>';return;}
+    if(!selectedCompany||!selectedLocation){keysEl.innerHTML='<div class="subscription-admin-empty-block">No plant selected or available.</div>';return;}
     keysEl.innerHTML='<div class="subscription-admin-empty-block">Loading activation keys…</div>';
     try{
       const data=await call("list_keys",{company:selectedCompany,location:selectedLocation});
