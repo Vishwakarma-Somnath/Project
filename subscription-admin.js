@@ -176,7 +176,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
     if(!selectedCompany||!selectedLocation){keysEl.innerHTML='<div class="subscription-admin-empty-block">No plant with verified payment and generated key is available.</div>';return;}
     keysEl.innerHTML='<div class="subscription-admin-empty-block">Loading activation keys…</div>';
     try{
-      const data=await call("list_keys",{company:selectedCompany,location:selectedLocation});
+      const requestedCompany=selectedCompany, requestedLocation=selectedLocation;
+      const data=await call("list_keys",{company:requestedCompany,location:requestedLocation});
+      if(requestedCompany!==selectedCompany || requestedLocation!==selectedLocation) return;
       const keys=data.keys||[];
       if(!keys.length){keysEl.innerHTML='<div class="subscription-admin-empty-block">No key records found for this plant.</div>';return;}
       keysEl.innerHTML=keys.map(k=>{
@@ -236,10 +238,12 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   async function handleKeyAction(btn){
     const action=btn.dataset.action,id=btn.dataset.id; btn.disabled=true;
     try{
-      if(action==="revoke_key"&&!confirm("Revoke this activation key? The key will stop working.")) return;
-      if(action==="delete_key"&&!confirm("Permanently delete this activation key record? The payment request and plant subscription will remain.")) return;
+      const scope=`${selectedCompany} / ${selectedLocation}`;
+      if(action==="revoke_key"&&!confirm(`Revoke this activation key for ${scope}? The key will stop working only for this plant.`)) return;
+      if(action==="delete_key"&&!confirm(`Permanently delete this activation key record for ${scope}? The payment request and plant subscription will remain.`)) return;
       const payload={company:selectedCompany,location:selectedLocation,key_id:id};
       if(action==="regenerate_key"){
+        if(!confirm(`Regenerate the activation key for ${scope}? The previous active key for this same plant will be revoked.`)) return;
         const result=await call(action,{...payload,request_id:btn.dataset.request});
         showNewKey(result.activation_key,{company:selectedCompany,location:selectedLocation});
         say("Key regenerated. Copy the new key now; it cannot be retrieved again.");
