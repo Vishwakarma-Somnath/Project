@@ -16,10 +16,6 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   const newKeyEl = $("subscriptionNewKeyResult");
   const refreshBtn = $("refreshSubscriptionAdminBtn");
   const refreshPlantsBtn = $("refreshSubscriptionPlantsBtn");
-  const windowLimitInput = $("subscriptionMaxWindows");
-  const saveWindowLimitBtn = $("saveSubscriptionMaxWindowsBtn");
-  const disablePlantAccessBtn = $("disablePlantAccessBtn");
-  const deletePlantSubscriptionBtn = $("deletePlantSubscriptionBtn");
   if (!dropdown || !section) return;
 
   const otherSections = ["feedbackSection","userCreationSection","userManagementSection","plantLocationSection","remotePLCSection"]
@@ -70,9 +66,15 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
     selectedCompany=companySelect.value; selectedLocation=""; populatePlantSelect(); renderSelectedKeys();
   });
   plantSelect?.addEventListener("change",()=>{selectedLocation=plantSelect.value;syncPlantControls();renderSelectedKeys();});
-  saveWindowLimitBtn?.addEventListener("click",saveWindowLimit);
-  disablePlantAccessBtn?.addEventListener("click",disablePlantAccess);
-  deletePlantSubscriptionBtn?.addEventListener("click",deletePlantSubscription);
+  // All subscription/key action buttons are wired here through delegation.
+  keysEl?.addEventListener("click", event => {
+    const button = event.target.closest("button");
+    if (!button || !keysEl.contains(button)) return;
+    if (button.matches("[data-action]")) handleKeyAction(button);
+    else if (button.id === "saveSubscriptionMaxWindowsBtn") saveWindowLimit();
+    else if (button.id === "disablePlantAccessBtn") disablePlantAccess();
+    else if (button.id === "deletePlantSubscriptionBtn") deletePlantSubscription();
+  });
 
   onAuthStateChanged(auth,user=>{
     currentUser=user;
@@ -121,6 +123,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   }
   function syncPlantControls(){
     const plant=selectedPlant();
+    const windowLimitInput=$("subscriptionMaxWindows");
+    const saveWindowLimitBtn=$("saveSubscriptionMaxWindowsBtn");
+    const disablePlantAccessBtn=$("disablePlantAccessBtn");
+    const deletePlantSubscriptionBtn=$("deletePlantSubscriptionBtn");
     if(windowLimitInput) windowLimitInput.value=String(plant?.max_windows??1);
     if(saveWindowLimitBtn) saveWindowLimitBtn.disabled=!plant;
     if(disablePlantAccessBtn){
@@ -133,6 +139,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
 
   async function saveWindowLimit(){
     const plant=selectedPlant(); if(!plant) return;
+    const windowLimitInput=$("subscriptionMaxWindows");
+    const saveWindowLimitBtn=$("saveSubscriptionMaxWindowsBtn");
     const value=Number(windowLimitInput?.value);
     if(!Number.isInteger(value)||value<1||value>50){say("Maximum windows must be a whole number from 1 to 50.",true);return;}
     saveWindowLimitBtn.disabled=true;
@@ -151,36 +159,46 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
       ? `Enable access control for ${plant.company} / ${plant.location_name}? The subscription will resume only if its existing validity dates are still current.`
       : `Disable dashboard access for ALL users/windows of ${plant.company} / ${plant.location_name}? The subscription will be suspended.`;
     if(!confirm(prompt)) return;
-    disablePlantAccessBtn.disabled=true;
+    const disablePlantAccessBtn=$("disablePlantAccessBtn");
+    if(disablePlantAccessBtn) disablePlantAccessBtn.disabled=true;
     try{
       await call(enabling?"enable_plant_access":"disable_plant_access",{company:plant.company,location:plant.location_name});
       plant.access_enabled=enabling; syncPlantControls();
       say(enabling?`Plant access control enabled for ${plant.company} / ${plant.location_name}. If its subscription has expired, use administrator activation.`:`Plant access disabled for ${plant.company} / ${plant.location_name}.`,!enabling);
       await refreshAll();
-    }catch(e){say(e.message||"Unable to change plant access.",true);}finally{disablePlantAccessBtn.disabled=false;}
+    }catch(e){say(e.message||"Unable to change plant access.",true);}finally{if(disablePlantAccessBtn) disablePlantAccessBtn.disabled=false;}
   }
 
   async function deletePlantSubscription(){
     const plant=selectedPlant(); if(!plant) return;
     const phrase=`${plant.company} / ${plant.location_name}`;
     if(!confirm(`Delete User: remove subscription records, activation keys, payment requests and orders for ${phrase}?\n\nThis does NOT delete the Project User/login, Auth account, Plant/Location, PLC/machine records or pressure history. Audit history is retained. This cannot be undone.`)) return;
-    deletePlantSubscriptionBtn.disabled=true;
+    const deletePlantSubscriptionBtn=$("deletePlantSubscriptionBtn");
+    if(deletePlantSubscriptionBtn) deletePlantSubscriptionBtn.disabled=true;
     try{
       const result=await call("delete_user",{company:plant.company,location:plant.location_name});
       say(`Plant subscription records deleted. Keys: ${result.deleted_keys||0}, payment requests: ${result.deleted_payment_requests||0}, orders: ${result.deleted_orders||0}. User account and plant data preserved.`);
       newKeyEl.hidden=true; await refreshAll();
-    }catch(e){say(e.message||"Unable to delete plant subscription records.",true);}finally{deletePlantSubscriptionBtn.disabled=false;}
+    }catch(e){say(e.message||"Unable to delete plant subscription records.",true);}finally{if(deletePlantSubscriptionBtn) deletePlantSubscriptionBtn.disabled=false;}
   }
 
   async function renderSelectedKeys(){
     if(!selectedCompany||!selectedLocation){keysEl.innerHTML='<div class="subscription-admin-empty-block">No plant with verified payment and generated key is available.</div>';return;}
     keysEl.innerHTML='<div class="subscription-admin-empty-block">Loading activation keys…</div>';
     try{
-      const requestedCompany=selectedCompany, requestedLocation=selectedLocation;
-      const data=await call("list_keys",{company:requestedCompany,location:requestedLocation});
-      if(requestedCompany!==selectedCompany || requestedLocation!==selectedLocation) return;
+      const data=await call("list_keys",{company:selectedCompany,location:selectedLocation});
       const keys=data.keys||[];
-      if(!keys.length){keysEl.innerHTML='<div class="subscription-admin-empty-block">No key records found for this plant.</div>';return;}
+      if(!keys.length){
+        keysEl.innerHTML=`<div class="subscription-admin-empty-block">No key records found for this plant.</div>
+          <div class="subscription-key-actions" style="display:flex;flex-wrap:nowrap;align-items:center;gap:8px;overflow-x:auto;white-space:nowrap;padding:10px 0;">
+            <span style="color:#eee;font-size:12px;white-space:nowrap;">Max Windows</span>
+            <input id="subscriptionMaxWindows" aria-label="Maximum simultaneous windows" style="flex:0 0 72px;width:72px;min-width:72px;" type="number" min="1" max="50" step="1" value="${esc(selectedPlant()?.max_windows??1)}">
+            <button type="button" id="saveSubscriptionMaxWindowsBtn" class="primary">Save Window Limit</button>
+            <button type="button" id="disablePlantAccessBtn" class="danger">${selectedPlant()?.access_enabled===false?"Enable Plant Access":"Disable Plant Access"}</button>
+            <button type="button" id="deletePlantSubscriptionBtn" class="danger">Delete User</button>
+          </div>`;
+        syncPlantControls(); return;
+      }
       keysEl.innerHTML=keys.map(k=>{
         const status=String(k.status||"unknown").toLowerCase();
         const actionButtons=[];
@@ -190,9 +208,18 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
         actionButtons.push(`<button class="danger" data-action="delete_key" data-id="${esc(k.id)}">Delete Key</button>`);
         const req=requests.find(r=>r.id===k.payment_request_id);
         if(req?.status==="verified") actionButtons.push(`<button data-action="regenerate_key" data-id="${esc(k.id)}" data-request="${esc(req.id)}">Regenerate Key</button>`);
-        return `<article class="subscription-key-card"><h4>${esc(k.company)} · ${esc(k.location)}</h4><span class="subscription-key-status ${esc(status)}">${esc(status)}</span><div class="subscription-key-meta"><span>Key Record: ${esc(k.id)}</span><span>Generated: ${esc(date(k.generated_at))}</span><span>Activated: ${esc(date(k.activated_at))}</span><span>Payment Request: ${esc(k.payment_request_id||"—")}</span></div><div class="subscription-key-actions">${actionButtons.join("")||"No actions available"}</div></article>`;
+        // Plant-level controls appear once, alongside the first key's actions.
+        if(keys.indexOf(k)===0) actionButtons.push(`
+          <span style="display:inline-flex;align-items:center;gap:6px;color:#eee;font-size:12px;white-space:nowrap;">Max Windows</span>
+          <input id="subscriptionMaxWindows" aria-label="Maximum simultaneous windows" style="flex:0 0 72px;width:72px;min-width:72px;min-height:34px;padding:5px 7px;border-radius:5px;" type="number" min="1" max="50" step="1" value="${esc(selectedPlant()?.max_windows??1)}" inputmode="numeric">
+          <button type="button" id="saveSubscriptionMaxWindowsBtn" class="primary">Save Window Limit</button>
+          <button type="button" id="disablePlantAccessBtn" class="danger">${selectedPlant()?.access_enabled===false?"Enable Plant Access":"Disable Plant Access"}</button>
+          <button type="button" id="deletePlantSubscriptionBtn" class="danger">Delete User</button>
+        `);
+        const plantNote=keys.indexOf(k)===0?`<small style="display:block;margin-top:7px;color:#cbd5e1;white-space:normal;">Window limit applies to all browser windows for this selected plant. Delete User removes only this plant’s subscription records; Project User, login, plant, PLC and pressure history remain unchanged.</small>`:"";
+        return `<article class="subscription-key-card"><h4>${esc(k.company)} · ${esc(k.location)}</h4><span class="subscription-key-status ${esc(status)}">${esc(status)}</span><div class="subscription-key-meta"><span>Key Record: ${esc(k.id)}</span><span>Generated: ${esc(date(k.generated_at))}</span><span>Activated: ${esc(date(k.activated_at))}</span><span>Payment Request: ${esc(k.payment_request_id||"—")}</span></div><div class="subscription-key-actions" style="display:flex;flex-wrap:nowrap;align-items:center;gap:8px;overflow-x:auto;white-space:nowrap;padding-bottom:5px;">${actionButtons.join("")||"No actions available"}</div>${plantNote}</article>`;
       }).join("");
-      keysEl.querySelectorAll("button[data-action]").forEach(btn=>btn.addEventListener("click",()=>handleKeyAction(btn)));
+      syncPlantControls();
     }catch(e){keysEl.innerHTML=`<div class="subscription-admin-empty-block">${esc(e.message)}</div>`;}
   }
 
@@ -238,12 +265,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   async function handleKeyAction(btn){
     const action=btn.dataset.action,id=btn.dataset.id; btn.disabled=true;
     try{
-      const scope=`${selectedCompany} / ${selectedLocation}`;
-      if(action==="revoke_key"&&!confirm(`Revoke this activation key for ${scope}? The key will stop working only for this plant.`)) return;
-      if(action==="delete_key"&&!confirm(`Permanently delete this activation key record for ${scope}? The payment request and plant subscription will remain.`)) return;
+      if(action==="revoke_key"&&!confirm("Revoke this activation key? The key will stop working.")) return;
+      if(action==="delete_key"&&!confirm("Permanently delete this activation key record? The payment request and plant subscription will remain.")) return;
       const payload={company:selectedCompany,location:selectedLocation,key_id:id};
       if(action==="regenerate_key"){
-        if(!confirm(`Regenerate the activation key for ${scope}? The previous active key for this same plant will be revoked.`)) return;
         const result=await call(action,{...payload,request_id:btn.dataset.request});
         showNewKey(result.activation_key,{company:selectedCompany,location:selectedLocation});
         say("Key regenerated. Copy the new key now; it cannot be retrieved again.");

@@ -708,16 +708,6 @@
                 <div id="subscriptionKeyManagementList" class="subscription-key-grid">
                     <div class="subscription-admin-empty-block">Only plants with verified payment and at least one generated activation key will appear here.</div>
                 </div>
-                <div class="subscription-window-controls" style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,.15);">
-                    <label for="subscriptionMaxWindows">Maximum Simultaneous Windows (1–50)</label>
-                    <div class="subscription-window-control-row" style="display:flex; flex-wrap:nowrap; align-items:center; gap:8px; overflow-x:auto; white-space:nowrap; padding-bottom:4px;">
-                        <input id="subscriptionMaxWindows" style="flex:0 0 92px; width:92px; min-width:92px;" type="number" min="1" max="50" step="1" value="1" inputmode="numeric">
-                        <button type="button" id="saveSubscriptionMaxWindowsBtn" class="primary" style="flex:0 0 auto; white-space:nowrap;">Save Window Limit</button>
-                        <button type="button" id="disablePlantAccessBtn" class="danger" style="flex:0 0 auto; white-space:nowrap;">Disable Plant Access</button>
-                        <button type="button" id="deletePlantSubscriptionBtn" class="danger" style="flex:0 0 auto; white-space:nowrap;">Delete User</button>
-                    </div>
-                    <small>Limit applies to all browser windows accessing the selected plant. Delete User removes only this plant’s subscription records; Project User, login, plant, PLC and pressure history remain unchanged.</small>
-                </div>
                 <div id="subscriptionNewKeyResult" class="subscription-new-key" hidden aria-live="polite"></div>
             </div>
 
@@ -764,7 +754,7 @@
 
     <!-- EXISTING ADMIN JAVASCRIPT -->
     <script type="module" src="./admin.js"></script>
-    <script type="module" src="./subscription-admin.js?v=20261118-plant-scope"></script>
+    <script type="module" src="./subscription-admin.js"></script>
 
 
     <!-- ========================================
