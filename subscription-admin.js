@@ -35,6 +35,15 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const money = (paise, currency="INR") => new Intl.NumberFormat("en-IN",{style:"currency",currency}).format(Number(paise||0)/100);
   const date = (v) => v ? new Date(v).toLocaleString("en-IN") : "—";
+  const formatKeyLife = (r) => {
+    const raw = r?.key_life ?? r?.key_life_days ?? r?.validity_days ?? r?.duration_days ?? r?.plan_days ?? r?.validity;
+    if (raw === null || raw === undefined || String(raw).trim() === "") return "—";
+    if (typeof raw === "number" || /^\d+$/.test(String(raw).trim())) {
+      const days = Number(raw);
+      return `${days} ${days === 1 ? "day" : "days"}`;
+    }
+    return String(raw).trim();
+  };
   const say = (message, error=false) => { if(statusEl){statusEl.textContent=message;statusEl.style.borderColor=error?"#dc2626":"#9a6b1d";statusEl.style.color=error?"#fecaca":"#ffdc91";} };
 
   async function call(action, extra={}) {
@@ -97,7 +106,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
       const companies = [...new Set([...defaultCompanies, ...fetchedCompanies])].sort((a,b)=>a.localeCompare(b));
 
       if(!companies.includes(selectedCompany)) selectedCompany=companies[0]||"";
-      
+
       // Unblock Company Dropdown completely
       companySelect.innerHTML=companies.length?companies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(""):'<option value="">All Companies</option>';
       companySelect.value=selectedCompany;
@@ -120,10 +129,10 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   function populatePlantSelect(){
     const locations=plants.length ? plants.filter(p=>p.company===selectedCompany) : [];
     if(!locations.some(p=>p.location_name===selectedLocation)) selectedLocation=locations[0]?.location_name||"";
-    
+
     // Unblock Plant Location Dropdown completely (removed strict blocking/disabled rules)
     plantSelect.innerHTML=locations.length?locations.map(p=>`<option value="${esc(p.location_name)}">${esc(p.location_name)}</option>`).join(""):'<option value="">All Locations / Plants</option>';
-    plantSelect.disabled = false; 
+    plantSelect.disabled = false;
     plantSelect.value=selectedLocation;
     syncPlantControls();
   }
@@ -207,7 +216,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   }
 
   function renderRequests(){
-    if(!requests.length){requestsEl.innerHTML='<tr><td colspan="7" class="subscription-admin-empty">No payment requests found.</td></tr>';return;}
+    if(!requests.length){requestsEl.innerHTML='<tr><td colspan="8" class="subscription-admin-empty">No payment requests found.</td></tr>';return;}
     const generated=new Set(allKeys.map(k=>k.payment_request_id));
     requestsEl.innerHTML=requests.map(r=>{
       const pending=r.status==="pending";
@@ -217,7 +226,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
       else if(r.status==="verified"&&!hasKey) actions=`<div class="subscription-payment-actions"><button class="primary" data-pay="generate" data-id="${esc(r.id)}">Generate Key</button></div>`;
       else if(r.status==="verified"&&hasKey) actions='<span>Key generated</span>';
       else actions='<span>—</span>';
-      return `<tr><td>${esc(r.company)}<br><strong>${esc(r.location)}</strong></td><td>${esc(r.customer_name)}<br>${esc(r.customer_email)}</td><td>${esc(r.customer_mobile)}</td><td>${esc(money(r.amount_paise,r.currency||"INR"))}</td><td>${esc(r.utr||"Not entered")}</td><td>${esc(r.status)}</td><td>${actions}</td></tr>`;
+      return `<tr><td>${esc(r.company)}<br><strong>${esc(r.location)}</strong></td><td>${esc(r.customer_name)}<br>${esc(r.customer_email)}</td><td>${esc(r.customer_mobile)}</td><td>${esc(money(r.amount_paise,r.currency||"INR"))}</td><td>${esc(formatKeyLife(r))}</td><td>${esc(r.utr||"Not entered")}</td><td>${esc(r.status)}</td><td>${actions}</td></tr>`;
     }).join("");
     requestsEl.querySelectorAll("button[data-pay]").forEach(btn=>btn.addEventListener("click",()=>handlePaymentAction(btn)));
   }
