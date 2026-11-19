@@ -20,6 +20,17 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   const saveWindowLimitBtn = $("saveSubscriptionMaxWindowsBtn");
   const disablePlantAccessBtn = $("disablePlantAccessBtn");
   const deletePlantSubscriptionBtn = $("deletePlantSubscriptionBtn");
+
+  const planForm = $("subscriptionPlanForm");
+  const planCodeInput = $("planCodeInput");
+  const planNameInput = $("planNameInput");
+  const planDurationInput = $("planDurationDaysInput");
+  const planPriceInput = $("planBasePriceInput");
+  const planGstInput = $("planGstPercentInput");
+  const planOrderInput = $("planSortOrderInput");
+  const resetPlanBtn = $("resetSubscriptionPlanBtn");
+  const plansListEl = $("subscriptionPlansList");
+
   if (!dropdown || !section) return;
 
   const otherSections = ["feedbackSection","userCreationSection","userManagementSection","plantLocationSection","remotePLCSection"]
@@ -28,6 +39,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   let requests = [];
   let plants = [];
   let allKeys = [];
+  let plansConfig = [];
   let selectedCompany = "";
   let selectedLocation = "";
   let busy = false;
@@ -36,18 +48,24 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   const money = (paise, currency="INR") => new Intl.NumberFormat("en-IN",{style:"currency",currency}).format(Number(paise||0)/100);
   const date = (v) => v ? new Date(v).toLocaleString("en-IN") : "—";
 
-  const PLAN_LABELS = {
+  const dynamicPlanLabels = {
     month_1: "1 Month (30 days)",
     month_3: "3 Months (90 days)",
     month_6: "6 Months (180 days)",
     yearly: "1 Year (365 days)"
   };
 
+  function rebuildPlanLabels() {
+    for (const p of plansConfig) {
+      dynamicPlanLabels[p.plan_code] = `${p.plan_name} (${p.duration_days} ${p.duration_days === 1 ? "day" : "days"})`;
+    }
+  }
+
   const formatKeyLife = (r) => {
     const raw = r?.key_life ?? r?.key_life_days ?? r?.validity_days ?? r?.duration_days ?? r?.plan_days ?? r?.validity ?? r?.plan;
     if (raw === null || raw === undefined || String(raw).trim() === "") return "—";
     const str = String(raw).trim();
-    if (PLAN_LABELS[str]) return PLAN_LABELS[str];
+    if (dynamicPlanLabels[str]) return dynamicPlanLabels[str];
     if (typeof raw === "number" || /^\d+$/.test(str)) {
       const days = Number(raw);
       return `${days} ${days === 1 ? "day" : "days"}`;
@@ -94,17 +112,122 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   disablePlantAccessBtn?.addEventListener("click",disablePlantAccess);
   deletePlantSubscriptionBtn?.addEventListener("click",deletePlantSubscription);
 
+  resetPlanBtn?.addEventListener("click", () => {
+    planForm?.reset();
+    if (planCodeInput) planCodeInput.readOnly = false;
+    if (planGstInput) planGstInput.value = "18";
+    if (planOrderInput) planOrderInput.value = "10";
+  });
+
+  planForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const saveBtn = $("saveSubscriptionPlanBtn");
+    if (saveBtn) saveBtn.disabled = true;
+    try {
+      await call("upsert_plan", {
+        plan_code: planCodeInput?.value.trim(),
+        plan_name: planNameInput?.value.trim(),
+        duration_days: Number(planDurationInput?.value),
+        base_price_rupees: Number(planPriceInput?.value),
+        gst_percent: Number(planGstInput?.value ?? 18),
+        sort_order: Number(planOrderInput?.value ?? 100),
+        is_active: true,
+      });
+      say("Subscription plan saved successfully.");
+      resetPlanBtn?.click();
+      await loadPlansConfig();
+    } catch (err) {
+      say(err.message || "Unable to save plan.", true);
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
+    }
+  });
+
   onAuthStateChanged(auth,user=>{
     currentUser=user;
     if(user && dropdown.value==="subscriptionManagement") refreshAll();
   });
 
+  async function loadPlansConfig() {
+    if (!plansListEl) return;
+    try {
+      const res = await call("list_plans_config");
+      plansConfig = res.plans || [];
+      rebuildPlanLabels();
+      renderRequests();
+      renderPlansTable();
+    } catch (e) {
+      plansListEl.innerHTML = `<tr><td colspan="8" class="subscription-admin-empty">${esc(e.message || "Unable to load plans")}</td></tr>`;
+    }
+  }
+
+  function renderPlansTable() {
+    if (!plansListEl) return;
+    if (!plansConfig.length) {
+      plansListEl.innerHTML = '<tr><td colspan="8" class="subscription-admin-empty">No plans configured yet. Add one above.</td></tr>';
+      return;
+    }
+    plansListEl.innerHTML = plansConfig.map(p => {
+      const gstBps = Number(p.gst_rate_bps ?? 1800);
+      const basePaise = Number(p.base_price_paise ?? 0);
+      const totalPaise = basePaise + Math.round((basePaise * gstBps) / 10000);
+      const active = p.is_active !== false;
+      return `<tr>
+        <td><code>${esc(p.plan_code)}</code></td>
+        <td><strong>${esc(p.plan_name)}</strong></td>
+        <td>${esc(p.duration_days)} days</td>
+        <td>${esc(money(basePaise, "INR"))}</td>
+        <td>${esc((gstBps / 100).toFixed(2))}%</td>
+        <td><strong>${esc(money(totalPaise, "INR"))}</strong></td>
+        <td>${active ? "Active" : "Disabled"}</td>
+        <td>
+          <div class="subscription-payment-actions">
+            <button type="button" data-plan-edit="${esc(p.plan_code)}">Edit</button>
+            <button type="button" class="${active ? "danger" : "primary"}" data-plan-toggle="${esc(p.plan_code)}" data-next="${active ? "0" : "1"}">${active ? "Disable" : "Enable"}</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join("");
+
+    plansListEl.querySelectorAll("button[data-plan-edit]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const p = plansConfig.find(x => x.plan_code === btn.dataset.planEdit);
+        if (!p) return;
+        if (planCodeInput) { planCodeInput.value = p.plan_code; planCodeInput.readOnly = true; }
+        if (planNameInput) planNameInput.value = p.plan_name;
+        if (planDurationInput) planDurationInput.value = String(p.duration_days);
+        if (planPriceInput) planPriceInput.value = String((Number(p.base_price_paise || 0) / 100));
+        if (planGstInput) planGstInput.value = String((Number(p.gst_rate_bps ?? 1800) / 100));
+        if (planOrderInput) planOrderInput.value = String(p.sort_order ?? 100);
+        say(`Editing plan "${p.plan_code}". Change price or duration and click Save Plan.`);
+      });
+    });
+
+    plansListEl.querySelectorAll("button[data-plan-toggle]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        try {
+          const code = btn.dataset.planToggle;
+          const nextActive = btn.dataset.next === "1";
+          await call("toggle_plan", { plan_code: code, is_active: nextActive });
+          say(`Plan "${code}" ${nextActive ? "enabled" : "disabled"}.`);
+          await loadPlansConfig();
+        } catch (e) {
+          say(e.message || "Unable to update plan status.", true);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
   async function refreshAll(){
     if(busy || !auth.currentUser){ if(!auth.currentUser) say("Please sign in to load subscription records.",true); return; }
-    busy=true; say("Loading payment requests and plant keys…");
+    busy=true; say("Loading payment requests, plans and plant keys…");
     try{
       const [r,k]=await Promise.all([call("list_requests"),call("list_all_keys")]);
       requests=r.requests||[]; allKeys=k.keys||[];
+      await loadPlansConfig();
       renderRequests();
       $("subscriptionRequestCount").textContent=String(requests.length);
       $("subscriptionPendingCount").textContent=String(requests.filter(x=>x.status==="pending").length);

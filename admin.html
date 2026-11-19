@@ -665,7 +665,56 @@
                     <strong id="subscriptionActiveKeyCount">—</strong>
                 </article>
             </div>
+            
+            <div class="subscription-admin-panel">
+                <div class="subscription-admin-panel-heading">
+                    <h3>Subscription Plans Manager</h3>
+                    <span>Add / Update Plan Price & Validity</span>
+                </div>
 
+                <form id="subscriptionPlanForm" class="subscription-plant-filters" autocomplete="off">
+                    <label>Plan Code
+                        <input id="planCodeInput" type="text" placeholder="e.g. month_1 or day_15" required>
+                    </label>
+                    <label>Plan Name
+                        <input id="planNameInput" type="text" placeholder="e.g. 1 Month" required>
+                    </label>
+                    <label>Key Life (Days)
+                        <input id="planDurationDaysInput" type="number" min="1" max="3650" step="1" placeholder="30" required>
+                    </label>
+                    <label>Base Price (₹)
+                        <input id="planBasePriceInput" type="number" min="0" step="0.01" placeholder="20000" required>
+                    </label>
+                    <label>GST (%)
+                        <input id="planGstPercentInput" type="number" min="0" max="100" step="0.01" value="18" required>
+                    </label>
+                    <label>Order
+                        <input id="planSortOrderInput" type="number" min="1" max="999" step="1" value="10">
+                    </label>
+                    <button type="submit" id="saveSubscriptionPlanBtn" class="primary">Save Plan</button>
+                    <button type="button" id="resetSubscriptionPlanBtn">Clear / New</button>
+                </form>
+
+                <div class="subscription-admin-table-wrap">
+                    <table class="subscription-admin-table">
+                        <thead>
+                            <tr>
+                                <th>Plan Code</th>
+                                <th>Plan Name</th>
+                                <th>Key Life</th>
+                                <th>Base Price</th>
+                                <th>GST</th>
+                                <th>Total (Incl. GST)</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscriptionPlansList">
+                            <tr><td colspan="8" class="subscription-admin-empty">Loading plans…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
             <div class="subscription-admin-panel">
                 <div class="subscription-admin-panel-heading">
                     <h3>Payment Requests</h3>
