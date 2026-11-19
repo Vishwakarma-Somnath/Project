@@ -35,16 +35,33 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const money = (paise, currency="INR") => new Intl.NumberFormat("en-IN",{style:"currency",currency}).format(Number(paise||0)/100);
   const date = (v) => v ? new Date(v).toLocaleString("en-IN") : "—";
+
+  const PLAN_LABELS = {
+    month_1: "1 Month (30 days)",
+    month_3: "3 Months (90 days)",
+    month_6: "6 Months (180 days)",
+    yearly: "1 Year (365 days)"
+  };
+
   const formatKeyLife = (r) => {
-    const raw = r?.key_life ?? r?.key_life_days ?? r?.validity_days ?? r?.duration_days ?? r?.plan_days ?? r?.validity;
+    const raw = r?.key_life ?? r?.key_life_days ?? r?.validity_days ?? r?.duration_days ?? r?.plan_days ?? r?.validity ?? r?.plan;
     if (raw === null || raw === undefined || String(raw).trim() === "") return "—";
-    if (typeof raw === "number" || /^\d+$/.test(String(raw).trim())) {
+    const str = String(raw).trim();
+    if (PLAN_LABELS[str]) return PLAN_LABELS[str];
+    if (typeof raw === "number" || /^\d+$/.test(str)) {
       const days = Number(raw);
       return `${days} ${days === 1 ? "day" : "days"}`;
     }
-    return String(raw).trim();
+    return str;
   };
-  const say = (message, error=false) => { if(statusEl){statusEl.textContent=message;statusEl.style.borderColor=error?"#dc2626":"#9a6b1d";statusEl.style.color=error?"#fecaca":"#ffdc91";} };
+
+  const say = (message, error=false) => {
+    if(statusEl){
+      statusEl.textContent=message;
+      statusEl.style.borderColor=error?"#dc2626":"#9a6b1d";
+      statusEl.style.color=error?"#fecaca":"#ffdc91";
+    }
+  };
 
   async function call(action, extra={}) {
     if (!auth.currentUser) throw new Error("Please log in again.");
@@ -84,7 +101,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
 
   async function refreshAll(){
     if(busy || !auth.currentUser){ if(!auth.currentUser) say("Please sign in to load subscription records.",true); return; }
-    busy=true; say("Loading payment requests and eligible plant keys…");
+    busy=true; say("Loading payment requests and plant keys…");
     try{
       const [r,k]=await Promise.all([call("list_requests"),call("list_all_keys")]);
       requests=r.requests||[]; allKeys=k.keys||[];
@@ -93,14 +110,40 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
       $("subscriptionPendingCount").textContent=String(requests.filter(x=>x.status==="pending").length);
       $("subscriptionActiveKeyCount").textContent=String(allKeys.filter(x=>x.status==="active").length);
       await loadEligiblePlants(false);
-      say("Loaded successfully. Company and plant location filters are fully unlocked.");
+      say("Loaded successfully. Company and plant location filters are unlocked.");
     }catch(e){say(e.message||"Unable to load subscription data.",true);console.error("Subscription admin:",e);}
     finally{busy=false;}
   }
 
+  function mergePlantRecords(backendPlants){
+    const map = new Map();
+    for (const p of (backendPlants || [])) {
+      const comp = String(p.company || "").trim().toUpperCase();
+      const loc = String(p.location_name || p.location || "").trim();
+      if (!comp || !loc) continue;
+      map.set(`${comp}::${loc.toLowerCase()}`, {
+        company: comp,
+        location_name: loc,
+        max_windows: p.max_windows ?? 1,
+        access_enabled: p.access_enabled
+      });
+    }
+    for (const src of [...requests, ...allKeys]) {
+      const comp = String(src.company || "").trim().toUpperCase();
+      const loc = String(src.location || src.location_name || "").trim();
+      if (!comp || !loc) continue;
+      const key = `${comp}::${loc.toLowerCase()}`;
+      if (!map.has(key)) {
+        map.set(key, { company: comp, location_name: loc, max_windows: 1, access_enabled: true });
+      }
+    }
+    return [...map.values()].sort((a,b)=>a.company.localeCompare(b.company)||a.location_name.localeCompare(b.location_name));
+  }
+
   async function loadEligiblePlants(showMessage=true){
     try{
-      const data=await call("list_plants"); plants=data.plants||[];
+      const data=await call("list_plants");
+      plants = mergePlantRecords(data.plants || []);
       const defaultCompanies = ["BPCL", "HPCL", "IOCL"];
       const fetchedCompanies = [...new Set(plants.map(p=>p.company))];
       const companies = [...new Set([...defaultCompanies, ...fetchedCompanies])].sort((a,b)=>a.localeCompare(b));
@@ -116,12 +159,11 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
       if(showMessage) say(`${plants.length} plant(s) loaded successfully.`);
       renderSelectedKeys();
     }catch(e){
-      // Fallback unblock so dropdowns never remain blocked if network/backend fails
+      plants = mergePlantRecords([]);
       const defaultCompanies = ["BPCL", "HPCL", "IOCL"];
       companySelect.innerHTML=defaultCompanies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
       companySelect.disabled = false;
-      plantSelect.disabled = false;
-      plantSelect.innerHTML='<option value="">All Locations / Plants</option>';
+      populatePlantSelect();
       say("Loaded default company options (backend sync optional).", true);
     }
   }
@@ -130,7 +172,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
     const locations=plants.length ? plants.filter(p=>p.company===selectedCompany) : [];
     if(!locations.some(p=>p.location_name===selectedLocation)) selectedLocation=locations[0]?.location_name||"";
 
-    // Unblock Plant Location Dropdown completely (removed strict blocking/disabled rules)
+    // Unblock Plant Location Dropdown completely
     plantSelect.innerHTML=locations.length?locations.map(p=>`<option value="${esc(p.location_name)}">${esc(p.location_name)}</option>`).join(""):'<option value="">All Locations / Plants</option>';
     plantSelect.disabled = false;
     plantSelect.value=selectedLocation;
@@ -140,6 +182,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/fi
   function selectedPlant(){
     return plants.find(p=>p.company===selectedCompany&&p.location_name===selectedLocation)||null;
   }
+
   function syncPlantControls(){
     const plant=selectedPlant();
     if(windowLimitInput) windowLimitInput.value=String(plant?.max_windows??1);
