@@ -2365,6 +2365,12 @@
     min-width:0; padding:16px; border:1px solid rgba(255,255,255,.14);
     border-radius:10px; background:rgba(255,255,255,.06);
 }
+#subscriptionPlanForm input {
+  height: 46px;         /* Jitni height chahiye (e.g. 42px, 46px, 50px) */
+  padding: 10px 14px;   /* Andar ka space */
+  font-size: 15px;      /* Text size thoda bada aur clear */
+  box-sizing: border-box;
+}
 .subscription-admin-stat span { display:block; color:#ddd; font:13px Arial,sans-serif; }
 .subscription-admin-stat strong { display:block; margin-top:8px; color:#fff; font:700 26px Arial,sans-serif; }
 .subscription-admin-panel { margin-top:16px; }
