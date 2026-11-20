@@ -2366,7 +2366,7 @@
     border-radius:10px; background:rgba(255,255,255,.06);
 }
 #subscriptionPlanForm input {
-  height: 46px;         /* Jitni height chahiye (e.g. 42px, 46px, 50px) */
+  height: 36px;         /* Jitni height chahiye (e.g. 42px, 46px, 50px) */
   padding: 10px 14px;   /* Andar ka space */
   font-size: 15px;      /* Text size thoda bada aur clear */
   border-radius: 12px;      /* Rounded corners */
