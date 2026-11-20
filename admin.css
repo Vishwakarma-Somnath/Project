@@ -2369,6 +2369,10 @@
   height: 46px;         /* Jitni height chahiye (e.g. 42px, 46px, 50px) */
   padding: 10px 14px;   /* Andar ka space */
   font-size: 15px;      /* Text size thoda bada aur clear */
+  border-radius: 12px;      /* Rounded corners */
+  border: 1px solid #777; /* Border color */
+  background-color: #090909; /* Background color */
+  color: #fff;          /* Text color */
   box-sizing: border-box;
 }
 .subscription-admin-stat span { display:block; color:#ddd; font:13px Arial,sans-serif; }
